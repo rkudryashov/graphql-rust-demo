@@ -12,10 +12,6 @@ impl QueryRoot {
     async fn planets(
         &self,
         ctx: &Context<'_>,
-        #[arg(
-        desc = "Test param."
-        )]
-        test_param: i32,
     ) -> Vec<Planet> {
         ctx.data::<Storage>().planets()
     }
