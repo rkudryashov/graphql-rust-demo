@@ -4,14 +4,14 @@ use async_graphql::*;
 
 #[derive(Clone)]
 pub struct Satellite {
-    id: i32,
+    id: ID,
     name: &'static str,
 }
 
 #[Object]
 impl Satellite {
-    async fn id(&self) -> i32 {
-        self.id
+    async fn id(&self) -> &ID {
+        &self.id
     }
 
     async fn name(&self) -> &str {
@@ -26,7 +26,7 @@ pub struct Storage {
 impl Storage {
     pub fn new() -> Self {
         let moon = Satellite {
-            id: 1,
+            id: "1".into(),
             name: "Moon",
         };
 

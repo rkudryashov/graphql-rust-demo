@@ -8,7 +8,7 @@ use crate::numbers::{CustomBigInt, CustomDecimal};
 
 #[derive(Clone)]
 pub struct Planet {
-    id: i32,
+    id: ID,
     name: &'static str,
     planet_type: Type,
     details: Details,
@@ -16,8 +16,8 @@ pub struct Planet {
 
 #[Object]
 impl Planet {
-    async fn id(&self) -> i32 {
-        self.id
+    async fn id(&self) -> &ID {
+        &self.id
     }
 
     async fn name(&self) -> &str {
@@ -104,7 +104,7 @@ pub struct Storage {
 impl Storage {
     pub fn new() -> Self {
         let earth = Planet {
-            id: 1,
+            id: "1".into(),
             name: "Earth",
             planet_type: Type::TerrestrialPlanet,
             details: InhabitedPlanetDetails {
