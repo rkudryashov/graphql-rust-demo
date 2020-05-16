@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 
 use async_graphql::*;
+use num_bigint::*;
+use rust_decimal_macros::dec;
+
+use crate::numbers::{CustomBigInt, CustomDecimal};
 
 #[derive(Clone)]
 pub struct Planet {
@@ -44,8 +48,8 @@ enum Type {
 }
 
 #[Interface(
-field(name = "mean_radius", type = "f32", context),
-field(name = "mass", type = "f32", context),
+field(name = "mean_radius", type = "&CustomDecimal", context),
+field(name = "mass", type = "&CustomBigInt", context),
 )]
 #[derive(Clone)]
 enum Details {
@@ -55,41 +59,41 @@ enum Details {
 
 #[derive(Clone)]
 struct InhabitedPlanetDetails {
-    mean_radius: f32,
-    mass: f32,
-    population: f32,
+    mean_radius: CustomDecimal,
+    mass: CustomBigInt,
+    population: CustomDecimal,
 }
 
 #[Object]
 impl InhabitedPlanetDetails {
-    async fn mean_radius(&self) -> f32 {
-        self.mean_radius
+    async fn mean_radius(&self) -> &CustomDecimal {
+        &self.mean_radius
     }
 
-    async fn mass(&self) -> f32 {
-        self.mass
+    async fn mass(&self) -> &CustomBigInt {
+        &self.mass
     }
 
     #[field(desc = "in billions")]
-    async fn population(&self) -> f32 {
-        self.population
+    async fn population(&self) -> &CustomDecimal {
+        &self.population
     }
 }
 
 #[derive(Clone)]
 struct UninhabitedPlanetDetails {
-    mean_radius: f32,
-    mass: f32,
+    mean_radius: CustomDecimal,
+    mass: CustomBigInt,
 }
 
 #[Object]
 impl UninhabitedPlanetDetails {
-    async fn mean_radius(&self) -> f32 {
-        self.mean_radius
+    async fn mean_radius(&self) -> &CustomDecimal {
+        &self.mean_radius
     }
 
-    async fn mass(&self) -> f32 {
-        self.mass
+    async fn mass(&self) -> &CustomBigInt {
+        &self.mass
     }
 }
 
@@ -104,9 +108,9 @@ impl Storage {
             name: "Earth",
             planet_type: Type::TerrestrialPlanet,
             details: InhabitedPlanetDetails {
-                mean_radius: 1.0,
-                mass: 1.0,
-                population: 7.0,
+                mean_radius: CustomDecimal(dec!(6371.0)),
+                mass: CustomBigInt(5.97e24_f64.to_bigint().expect("Can't get BigInt")),
+                population: CustomDecimal(dec!(7.53)),
             }.into(),
         };
 

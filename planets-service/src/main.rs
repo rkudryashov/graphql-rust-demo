@@ -8,6 +8,7 @@ use model::Storage;
 
 mod graphql;
 mod model;
+mod numbers;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {

@@ -4,7 +4,11 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-async-graphql = "1.12.7"
-async-graphql-actix-web = "1.4.7"
+async-graphql = "1.12.9"
+async-graphql-actix-web = "1.4.8"
 actix-web = "2.0.0"
 actix-rt = "1.1.1"
+rust_decimal = { version = "1.5.0", features = ["serde-float"] }
+rust_decimal_macros = "1.5.0"
+num-bigint = { version = "0.2.6", features = ["serde"] }
+serde = { version = "1.0.110", features = ["derive"] }
