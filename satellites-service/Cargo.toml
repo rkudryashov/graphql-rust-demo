@@ -1,0 +1,12 @@
+[package]
+name = "satellites-service"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+async-graphql = "1.12.9"
+async-graphql-warp = "1.4.9"
+warp = "0.2.2"
+tokio = { version = "0.2.21", features = ["macros"] }
+serde = { version = "1.0.110", features = ["derive"] }
+http = "0.2.1"
