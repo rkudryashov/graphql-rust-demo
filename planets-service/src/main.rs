@@ -3,7 +3,7 @@ use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use async_graphql::http::{GQLResponse, playground_source};
 use async_graphql_actix_web::GQLRequest;
 
-use graphql::{QueryRoot, TestSchema};
+use graphql::{Query, TestSchema};
 use model::Storage;
 
 mod graphql;
@@ -12,7 +12,7 @@ mod numbers;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    let schema = Schema::build(QueryRoot, EmptyMutation, EmptySubscription)
+    let schema = Schema::build(Query, EmptyMutation, EmptySubscription)
         .data(Storage::new())
         .finish();
 

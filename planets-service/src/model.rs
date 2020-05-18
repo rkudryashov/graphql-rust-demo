@@ -8,9 +8,9 @@ use crate::numbers::{CustomBigInt, CustomDecimal};
 
 #[derive(Clone)]
 pub struct Planet {
-    id: ID,
+    pub id: ID,
     name: &'static str,
-    planet_type: Type,
+    planet_type: PlanetType,
     details: Details,
 }
 
@@ -25,7 +25,7 @@ impl Planet {
     }
 
     #[field(name = "type", desc = "From an astronomical point of view")]
-    async fn planet_type(&self) -> &Type {
+    async fn planet_type(&self) -> &PlanetType {
         &self.planet_type
     }
 
@@ -40,7 +40,7 @@ impl Planet {
 }
 
 #[Enum]
-enum Type {
+enum PlanetType {
     TerrestrialPlanet,
     GasGiant,
     IceGiant,
@@ -106,7 +106,7 @@ impl Storage {
         let earth = Planet {
             id: "1".into(),
             name: "Earth",
-            planet_type: Type::TerrestrialPlanet,
+            planet_type: PlanetType::TerrestrialPlanet,
             details: InhabitedPlanetDetails {
                 mean_radius: CustomDecimal(dec!(6371.0)),
                 mass: CustomBigInt(5.97e24_f64.to_bigint().expect("Can't get BigInt")),

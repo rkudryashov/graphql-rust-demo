@@ -2,12 +2,11 @@ use std::convert::Infallible;
 
 use async_graphql::{EmptyMutation, EmptySubscription, QueryBuilder, Schema};
 use async_graphql::http::{GQLResponse, playground_source};
-use warp::{Filter, http::Response, Rejection, Reply};
-
 use async_graphql_warp::BadRequest;
 use http::StatusCode;
+use warp::{Filter, http::Response, Rejection, Reply};
 
-use crate::graphql::QueryRoot;
+use crate::graphql::Query;
 use crate::model::Storage;
 
 mod graphql;
@@ -15,7 +14,7 @@ mod model;
 
 #[tokio::main]
 async fn main() {
-    let schema = Schema::build(QueryRoot, EmptyMutation, EmptySubscription)
+    let schema = Schema::build(Query, EmptyMutation, EmptySubscription)
         .data(Storage::new())
         .finish();
 
@@ -48,5 +47,5 @@ async fn main() {
             ))
         });
 
-    warp::serve(routes).run(([0, 0, 0, 0], 8082)).await;
+    warp::serve(routes).run(([0, 0, 0, 0], 8002)).await;
 }

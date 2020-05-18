@@ -4,17 +4,22 @@ use rust_decimal::prelude::ToPrimitive;
 use crate::model::{Planet, Storage};
 use crate::numbers::{CustomBigInt, CustomDecimal};
 
-pub struct QueryRoot;
+pub struct Query;
 
-pub type TestSchema = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
+pub type TestSchema = Schema<Query, EmptyMutation, EmptySubscription>;
 
 #[Object]
-impl QueryRoot {
-    async fn planets(
-        &self,
-        ctx: &Context<'_>,
-    ) -> Vec<Planet> {
+impl Query {
+    async fn planets(&self, ctx: &Context<'_>) -> Vec<Planet> {
         ctx.data::<Storage>().planets()
+    }
+
+    #[entity]
+    async fn find_planet_by_id(&self, ctx: &Context<'_>, id: ID) -> Option<Planet> {
+        ctx.data::<Storage>().planets().iter().cloned()
+            .find(|p| {
+                p.id == id
+            })
     }
 }
 
@@ -32,7 +37,6 @@ impl ScalarType for CustomBigInt {
         Ok(serde_json::to_value(&self.0.to_f64()).expect("Can't get json from BigInt"))
     }
 }
-
 
 #[Scalar]
 impl ScalarType for CustomDecimal {

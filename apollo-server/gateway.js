@@ -9,8 +9,8 @@ class AuthenticatedDataSource extends RemoteGraphQLDataSource {
 
 const gateway = new ApolloGateway({
     serviceList: [
-        {name: "planets-service", url: "http://localhost:8081"},
-        {name: "satellites-service", url: "http://localhost:8082"}
+        {name: "planets-service", url: "http://localhost:8001"},
+        {name: "satellites-service", url: "http://localhost:8002"}
     ],
     buildService({name, url}) {
         return new AuthenticatedDataSource({url});
