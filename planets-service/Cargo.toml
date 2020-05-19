@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-async-graphql = "1.12.14"
-async-graphql-actix-web = "1.4.13"
+async-graphql = "1.12.16"
+async-graphql-actix-web = "1.4.16"
 actix-web = "2.0.0"
 actix-rt = "1.1.1"
 rust_decimal = { version = "1.5.0", features = ["serde-float"] }

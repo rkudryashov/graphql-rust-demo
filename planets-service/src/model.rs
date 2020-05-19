@@ -2,9 +2,10 @@ use std::collections::HashMap;
 
 use async_graphql::*;
 use num_bigint::*;
+use rust_decimal::Decimal;
+use rust_decimal::prelude::ToPrimitive;
 use rust_decimal_macros::dec;
-
-use crate::numbers::{CustomBigInt, CustomDecimal};
+use serde::Serialize;
 
 #[derive(Clone)]
 pub struct Planet {
@@ -48,8 +49,8 @@ enum PlanetType {
 }
 
 #[Interface(
-field(name = "mean_radius", type = "&CustomDecimal", context),
-field(name = "mass", type = "&CustomBigInt", context),
+field(name = "mean_radius", type = "&BigDecimal", context),
+field(name = "mass", type = "&BigInt", context),
 )]
 #[derive(Clone)]
 enum Details {
@@ -59,41 +60,69 @@ enum Details {
 
 #[derive(Clone)]
 struct InhabitedPlanetDetails {
-    mean_radius: CustomDecimal,
-    mass: CustomBigInt,
-    population: CustomDecimal,
+    mean_radius: BigDecimal,
+    mass: BigInt,
+    population: BigDecimal,
 }
 
 #[Object]
 impl InhabitedPlanetDetails {
-    async fn mean_radius(&self) -> &CustomDecimal {
+    async fn mean_radius(&self) -> &BigDecimal {
         &self.mean_radius
     }
 
-    async fn mass(&self) -> &CustomBigInt {
+    async fn mass(&self) -> &BigInt {
         &self.mass
     }
 
     #[field(desc = "in billions")]
-    async fn population(&self) -> &CustomDecimal {
+    async fn population(&self) -> &BigDecimal {
         &self.population
     }
 }
 
 #[derive(Clone)]
 struct UninhabitedPlanetDetails {
-    mean_radius: CustomDecimal,
-    mass: CustomBigInt,
+    mean_radius: BigDecimal,
+    mass: BigInt,
 }
 
 #[Object]
 impl UninhabitedPlanetDetails {
-    async fn mean_radius(&self) -> &CustomDecimal {
+    async fn mean_radius(&self) -> &BigDecimal {
         &self.mean_radius
     }
 
-    async fn mass(&self) -> &CustomBigInt {
+    async fn mass(&self) -> &BigInt {
         &self.mass
+    }
+}
+
+#[derive(Clone, Serialize)]
+pub struct BigInt(pub num_bigint::BigInt);
+
+#[derive(Clone, Serialize)]
+pub struct BigDecimal(pub Decimal);
+
+#[Scalar]
+impl ScalarType for BigInt {
+    fn parse(value: Value) -> InputValueResult<Self> {
+        unimplemented!()
+    }
+
+    fn to_json(&self) -> Result<serde_json::Value> {
+        Ok(serde_json::to_value(&self.0.to_f64()).expect("Can't get json from BigInt"))
+    }
+}
+
+#[Scalar]
+impl ScalarType for BigDecimal {
+    fn parse(value: Value) -> InputValueResult<Self> {
+        unimplemented!()
+    }
+
+    fn to_json(&self) -> Result<serde_json::Value> {
+        Ok(serde_json::to_value(&self.0).expect("Can't get json from Decimal"))
     }
 }
 
@@ -108,9 +137,9 @@ impl Storage {
             name: "Earth",
             planet_type: PlanetType::TerrestrialPlanet,
             details: InhabitedPlanetDetails {
-                mean_radius: CustomDecimal(dec!(6371.0)),
-                mass: CustomBigInt(5.97e24_f64.to_bigint().expect("Can't get BigInt")),
-                population: CustomDecimal(dec!(7.53)),
+                mean_radius: BigDecimal(dec!(6371.0)),
+                mass: BigInt(5.97e24_f64.to_bigint().expect("Can't get BigInt")),
+                population: BigDecimal(dec!(7.53)),
             }.into(),
         };
 
