@@ -1,11 +1,15 @@
 use std::collections::HashMap;
 
 use async_graphql::*;
+use chrono::prelude::*;
+use serde::Serialize;
 
 #[derive(Clone)]
 pub struct Satellite {
     id: ID,
     name: &'static str,
+    life_exists: LifeExists,
+    first_spacecraft_landing_date: Date,
     planet_id: i32,
 }
 
@@ -17,6 +21,35 @@ impl Satellite {
 
     async fn name(&self) -> &str {
         self.name
+    }
+
+    async fn life_exists(&self) -> &LifeExists {
+        &self.life_exists
+    }
+
+    async fn first_spacecraft_landing_date(&self) -> &Date {
+        &self.first_spacecraft_landing_date
+    }
+}
+
+#[Enum]
+enum LifeExists {
+    Yes,
+    OpenQuestion,
+    NoData,
+}
+
+#[derive(Clone, Serialize)]
+struct Date(NaiveDate);
+
+#[Scalar]
+impl ScalarType for Date {
+    fn parse(value: Value) -> InputValueResult<Self> {
+        unimplemented!()
+    }
+
+    fn to_json(&self) -> Result<serde_json::Value> {
+        Ok(serde_json::to_value(&self.0).expect("Can't get json from Decimal"))
     }
 }
 
@@ -47,6 +80,8 @@ impl Storage {
         let moon = Satellite {
             id: "1".into(),
             name: "Moon",
+            life_exists: LifeExists::OpenQuestion,
+            first_spacecraft_landing_date: Date(NaiveDate::from_ymd(1959, 9, 13)),
             planet_id: 1,
         };
 

@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-async-graphql = "1.12.14"
-async-graphql-warp = "1.4.13"
+async-graphql = "1.12.16"
+async-graphql-warp = "1.4.16"
 warp = "0.2.2"
 tokio = { version = "0.2.21", features = ["macros"] }
 serde = { version = "1.0.110", features = ["derive"] }
 http = "0.2.1"
+chrono = { version = "0.4.11", features = ["serde"] }
