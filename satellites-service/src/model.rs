@@ -9,7 +9,7 @@ pub struct Satellite {
     id: ID,
     name: &'static str,
     life_exists: LifeExists,
-    first_spacecraft_landing_date: Date,
+    first_spacecraft_landing_date: NaiveDate,
     planet_id: i32,
 }
 
@@ -27,7 +27,7 @@ impl Satellite {
         &self.life_exists
     }
 
-    async fn first_spacecraft_landing_date(&self) -> &Date {
+    async fn first_spacecraft_landing_date(&self) -> &NaiveDate {
         &self.first_spacecraft_landing_date
     }
 }
@@ -41,17 +41,6 @@ enum LifeExists {
 
 #[derive(Clone, Serialize)]
 struct Date(NaiveDate);
-
-#[Scalar]
-impl ScalarType for Date {
-    fn parse(value: Value) -> InputValueResult<Self> {
-        unimplemented!()
-    }
-
-    fn to_json(&self) -> Result<serde_json::Value> {
-        Ok(serde_json::to_value(&self.0).expect("Can't get json from Decimal"))
-    }
-}
 
 #[derive(Clone)]
 pub struct Planet {
@@ -81,7 +70,7 @@ impl Storage {
             id: "1".into(),
             name: "Moon",
             life_exists: LifeExists::OpenQuestion,
-            first_spacecraft_landing_date: Date(NaiveDate::from_ymd(1959, 9, 13)),
+            first_spacecraft_landing_date: NaiveDate::from_ymd(1959, 9, 13),
             planet_id: 1,
         };
 
