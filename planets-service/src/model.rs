@@ -1,18 +1,14 @@
-use std::collections::HashMap;
-
 use async_graphql::*;
-use num_bigint::*;
 use rust_decimal::Decimal;
 use rust_decimal::prelude::ToPrimitive;
-use rust_decimal_macros::dec;
 use serde::Serialize;
 
 #[derive(Clone)]
 pub struct Planet {
     pub id: ID,
-    name: &'static str,
-    planet_type: PlanetType,
-    details: Details,
+    pub name: String,
+    pub planet_type: PlanetType,
+    pub details: Details,
 }
 
 #[Object]
@@ -21,8 +17,8 @@ impl Planet {
         &self.id
     }
 
-    async fn name(&self) -> &str {
-        self.name
+    async fn name(&self) -> &String {
+        &self.name
     }
 
     #[field(name = "type", desc = "From an astronomical point of view")]
@@ -41,7 +37,7 @@ impl Planet {
 }
 
 #[Enum]
-enum PlanetType {
+pub enum PlanetType {
     TerrestrialPlanet,
     GasGiant,
     IceGiant,
@@ -53,16 +49,16 @@ field(name = "mean_radius", type = "&BigDecimal", context),
 field(name = "mass", type = "&BigInt", context),
 )]
 #[derive(Clone)]
-enum Details {
+pub enum Details {
     InhabitedPlanetDetails(InhabitedPlanetDetails),
     UninhabitedPlanetDetails(UninhabitedPlanetDetails),
 }
 
 #[derive(Clone)]
-struct InhabitedPlanetDetails {
-    mean_radius: BigDecimal,
-    mass: BigInt,
-    population: BigDecimal,
+pub struct InhabitedPlanetDetails {
+    pub mean_radius: BigDecimal,
+    pub mass: BigInt,
+    pub population: BigDecimal,
 }
 
 #[Object]
@@ -82,9 +78,9 @@ impl InhabitedPlanetDetails {
 }
 
 #[derive(Clone)]
-struct UninhabitedPlanetDetails {
-    mean_radius: BigDecimal,
-    mass: BigInt,
+pub struct UninhabitedPlanetDetails {
+    pub mean_radius: BigDecimal,
+    pub mass: BigInt,
 }
 
 #[Object]
@@ -123,36 +119,5 @@ impl ScalarType for BigDecimal {
 
     fn to_json(&self) -> Result<serde_json::Value> {
         Ok(serde_json::to_value(&self.0).expect("Can't get json from Decimal"))
-    }
-}
-
-pub struct Storage {
-    planets: HashMap<&'static str, Planet>
-}
-
-impl Storage {
-    pub fn new() -> Self {
-        let earth = Planet {
-            id: "1".into(),
-            name: "Earth",
-            planet_type: PlanetType::TerrestrialPlanet,
-            details: InhabitedPlanetDetails {
-                mean_radius: BigDecimal(dec!(6371.0)),
-                mass: BigInt(5.97e24_f64.to_bigint().expect("Can't get BigInt")),
-                population: BigDecimal(dec!(7.53)),
-            }.into(),
-        };
-
-        let mut planets = HashMap::new();
-
-        planets.insert(earth.name, earth);
-
-        Storage {
-            planets
-        }
-    }
-
-    pub fn planets(&self) -> Vec<Planet> {
-        self.planets.values().cloned().collect()
     }
 }

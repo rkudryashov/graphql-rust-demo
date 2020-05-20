@@ -1,18 +1,36 @@
+#[macro_use]
+extern crate diesel;
+#[macro_use]
+extern crate diesel_migrations;
+
 use actix_web::{App, guard, HttpResponse, HttpServer, Result, web};
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use async_graphql::http::{GQLResponse, playground_source};
 use async_graphql_actix_web::GQLRequest;
 
+use dotenv::dotenv;
 use graphql::{Query, TestSchema};
-use model::Storage;
 
+mod db;
+mod db_connection;
+mod repository;
+mod schema;
 mod graphql;
 mod model;
 
+embed_migrations!();
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+    dotenv().ok();
+
+    let pool = db_connection::create_connection_pool();
+    let conn = pool.get().expect("Can't get DB connection");
+
+    embedded_migrations::run(&conn);
+
     let schema = Schema::build(Query, EmptyMutation, EmptySubscription)
-        .data(Storage::new())
+        .data(pool)
         .finish();
 
     HttpServer::new(move || {
