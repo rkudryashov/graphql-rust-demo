@@ -9,9 +9,11 @@ async-graphql-actix-web = "1.4.16"
 actix-web = "2.0.0"
 actix-rt = "1.1.1"
 rust_decimal = { version = "1.5.0", features = ["serde-float"] }
-rust_decimal_macros = "1.5.0"
 num-bigint = { version = "0.2.6", features = ["serde"] }
+bigdecimal = { version = "0.0.15", features = ["serde"] }
 serde = { version = "1.0.110", features = ["derive"] }
-diesel = { version = "1.4.4", features = ["postgres", "r2d2"] }
+diesel = { version = "1.4.4", features = ["postgres", "r2d2", "numeric"] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15.0"
+strum = "0.18.0"
+strum_macros = "0.18.0"

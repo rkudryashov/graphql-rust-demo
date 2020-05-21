@@ -2,14 +2,15 @@
 extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
+extern crate strum;
 
 use actix_web::{App, guard, HttpResponse, HttpServer, Result, web};
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{EmptySubscription, Schema};
 use async_graphql::http::{GQLResponse, playground_source};
 use async_graphql_actix_web::GQLRequest;
 
 use dotenv::dotenv;
-use graphql::{Query, TestSchema};
+use graphql::{Mutation, Query, TestSchema};
 
 mod db;
 mod db_connection;
@@ -29,7 +30,7 @@ async fn main() -> std::io::Result<()> {
 
     embedded_migrations::run(&conn);
 
-    let schema = Schema::build(Query, EmptyMutation, EmptySubscription)
+    let schema = Schema::build(Query, Mutation, EmptySubscription)
         .data(pool)
         .finish();
 
@@ -44,10 +45,7 @@ async fn main() -> std::io::Result<()> {
         .await
 }
 
-async fn index(
-    schema: web::Data<TestSchema>,
-    gql_request: GQLRequest,
-) -> web::Json<GQLResponse> {
+async fn index(schema: web::Data<TestSchema>, gql_request: GQLRequest) -> web::Json<GQLResponse> {
     web::Json(GQLResponse(gql_request.into_inner().execute(&schema).await))
 }
 

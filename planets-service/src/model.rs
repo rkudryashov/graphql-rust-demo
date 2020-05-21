@@ -1,7 +1,7 @@
 use async_graphql::*;
-use rust_decimal::Decimal;
 use rust_decimal::prelude::ToPrimitive;
 use serde::Serialize;
+use strum_macros::EnumString;
 
 #[derive(Clone)]
 pub struct Planet {
@@ -37,6 +37,7 @@ impl Planet {
 }
 
 #[Enum]
+#[derive(EnumString)]
 pub enum PlanetType {
     TerrestrialPlanet,
     GasGiant,
@@ -97,9 +98,6 @@ impl UninhabitedPlanetDetails {
 #[derive(Clone, Serialize)]
 pub struct BigInt(pub num_bigint::BigInt);
 
-#[derive(Clone, Serialize)]
-pub struct BigDecimal(pub Decimal);
-
 #[Scalar]
 impl ScalarType for BigInt {
     fn parse(value: Value) -> InputValueResult<Self> {
@@ -111,6 +109,9 @@ impl ScalarType for BigInt {
     }
 }
 
+#[derive(Clone, Serialize)]
+pub struct BigDecimal(pub bigdecimal::BigDecimal);
+
 #[Scalar]
 impl ScalarType for BigDecimal {
     fn parse(value: Value) -> InputValueResult<Self> {
@@ -120,4 +121,11 @@ impl ScalarType for BigDecimal {
     fn to_json(&self) -> Result<serde_json::Value> {
         Ok(serde_json::to_value(&self.0).expect("Can't get json from Decimal"))
     }
+}
+
+#[InputObject]
+struct DetailsInput {
+    mean_radius: BigDecimal,
+    mass: f32,
+    population: Option<BigDecimal>,
 }

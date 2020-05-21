@@ -1,0 +1,16 @@
+insert into planets(name, type) values ('Mercury', 'TerrestrialPlanet');
+insert into details(mean_radius, mass, population, planet_id) values (2439.7, 0.33 * power(10, 24), null, (select currval('planets_id_seq')));
+insert into planets(name, type) values ('Venus', 'TerrestrialPlanet');
+insert into details(mean_radius, mass, population, planet_id) values (6051.8, 4.87 * power(10, 24), null, (select currval('planets_id_seq')));
+insert into planets(name, type) values ('Earth', 'TerrestrialPlanet');
+insert into details(mean_radius, mass, population, planet_id) values (6371.0, 5.97 * power(10, 24), 7.53, (select currval('planets_id_seq')));
+insert into planets(name, type) values ('Mars', 'TerrestrialPlanet');
+insert into details(mean_radius, mass, population, planet_id) values (3389.5, 0.642 * power(10, 24), null, (select currval('planets_id_seq')));
+insert into planets(name, type) values ('Jupiter', 'GasGiant');
+insert into details(mean_radius, mass, population, planet_id) values (69911.0, 1898.0 * power(10, 24), null, (select currval('planets_id_seq')));
+insert into planets(name, type) values ('Saturn', 'GasGiant');
+insert into details(mean_radius, mass, population, planet_id) values (58232.0, 568.0 * power(10, 24), null, (select currval('planets_id_seq')));
+insert into planets(name, type) values ('Uranus', 'IceGiant');
+insert into details(mean_radius, mass, population, planet_id) values (25362.0, 86.8 * power(10, 24), null, (select currval('planets_id_seq')));
+insert into planets(name, type) values ('Neptune', 'IceGiant');
+insert into details(mean_radius, mass, population, planet_id) values (24622.0, 102.0 * power(10, 24), null, (select currval('planets_id_seq')));

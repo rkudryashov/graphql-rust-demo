@@ -1,1 +1,2 @@
-DROP TABLE planets
+drop table details;
+drop table planets;
