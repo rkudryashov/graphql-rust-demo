@@ -70,7 +70,8 @@ impl Mutation {
         let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
 
         let new_planet = NewPlanetEntity {
-            name
+            name,
+            planet_type: planet_type.to_string(),
         };
 
         let id = repository::create(new_planet, &conn).expect("Can't create new planet").id;

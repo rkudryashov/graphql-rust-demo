@@ -1,7 +1,7 @@
 use async_graphql::*;
 use rust_decimal::prelude::ToPrimitive;
 use serde::Serialize;
-use strum_macros::EnumString;
+use strum_macros::{Display, EnumString};
 
 #[derive(Clone)]
 pub struct Planet {
@@ -37,7 +37,7 @@ impl Planet {
 }
 
 #[Enum]
-#[derive(EnumString)]
+#[derive(Display, EnumString)]
 pub enum PlanetType {
     TerrestrialPlanet,
     GasGiant,

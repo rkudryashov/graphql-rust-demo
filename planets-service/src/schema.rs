@@ -12,8 +12,7 @@ table! {
     planets (id) {
         id -> Int4,
         name -> Varchar,
-        #[sql_name = "type"]
-        type_ -> Varchar,
+        planet_type -> Varchar,
     }
 }
 
