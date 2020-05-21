@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use async_graphql::*;
 use rust_decimal::prelude::ToPrimitive;
 use serde::Serialize;
@@ -115,7 +117,13 @@ pub struct BigDecimal(pub bigdecimal::BigDecimal);
 #[Scalar]
 impl ScalarType for BigDecimal {
     fn parse(value: Value) -> InputValueResult<Self> {
-        unimplemented!()
+        match value {
+            Value::String(s) => {
+                let parsed_value = bigdecimal::BigDecimal::from_str(s.as_str())?;
+                Ok(BigDecimal(parsed_value))
+            }
+            _ => Err(InputValueError::ExpectedType(value)),
+        }
     }
 
     fn to_json(&self) -> Result<serde_json::Value> {
@@ -124,8 +132,14 @@ impl ScalarType for BigDecimal {
 }
 
 #[InputObject]
-struct DetailsInput {
-    mean_radius: BigDecimal,
-    mass: f32,
-    population: Option<BigDecimal>,
+pub struct DetailsInput {
+    pub mean_radius: BigDecimal,
+    pub mass: MassInput,
+    pub population: Option<BigDecimal>,
+}
+
+#[InputObject]
+pub struct MassInput {
+    pub number: f32,
+    pub ten_power: i8,
 }

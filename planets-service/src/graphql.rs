@@ -1,11 +1,13 @@
+use std::ops::Mul;
 use std::str::FromStr;
 
 use async_graphql::*;
+use bigdecimal::FromPrimitive;
 use num_bigint::*;
 
-use crate::db::{DetailsEntity, NewPlanetEntity, PlanetEntity};
+use crate::db::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
 use crate::db_connection::PgPool;
-use crate::model::{BigDecimal, BigInt, Details, InhabitedPlanetDetails, Planet, PlanetType, UninhabitedPlanetDetails};
+use crate::model::{BigDecimal, BigInt, Details, DetailsInput, InhabitedPlanetDetails, Planet, PlanetType, UninhabitedPlanetDetails};
 use crate::repository;
 
 pub type TestSchema = Schema<Query, Mutation, EmptySubscription>;
@@ -66,7 +68,12 @@ pub struct Mutation;
 
 #[Object]
 impl Mutation {
-    async fn create_planet(&self, ctx: &Context<'_>, name: String, planet_type: PlanetType) -> ID {
+    async fn create_planet(&self, ctx: &Context<'_>, name: String, planet_type: PlanetType, details: DetailsInput) -> ID {
+        fn get_new_planet_mass(number: f32, ten_power: usize) -> bigdecimal::BigDecimal {
+            let some = bigdecimal::BigDecimal::from(number);
+            some.mul(num::pow(bigdecimal::BigDecimal::from(10), ten_power))
+        }
+
         let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
 
         let new_planet = NewPlanetEntity {
@@ -74,7 +81,15 @@ impl Mutation {
             planet_type: planet_type.to_string(),
         };
 
-        let id = repository::create(new_planet, &conn).expect("Can't create new planet").id;
-        id.into()
+        let new_planet_details = NewDetailsEntity {
+            mean_radius: details.mean_radius.0,
+            mass: get_new_planet_mass(details.mass.number, details.mass.ten_power as usize),
+            population: details.population.map(|v| { v.0 }),
+            planet_id: 0,
+        };
+
+        let create_planet_result = repository::create(new_planet, new_planet_details, &conn);
+
+        create_planet_result.expect("Can't create new planet").id.into()
     }
 }

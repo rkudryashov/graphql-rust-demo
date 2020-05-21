@@ -29,3 +29,12 @@ pub struct NewPlanetEntity {
     pub name: String,
     pub planet_type: String,
 }
+
+#[derive(Insertable)]
+#[table_name = "details"]
+pub struct NewDetailsEntity {
+    pub mean_radius: BigDecimal,
+    pub mass: BigDecimal,
+    pub population: Option<BigDecimal>,
+    pub planet_id: i32,
+}
