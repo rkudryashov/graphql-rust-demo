@@ -27,4 +27,5 @@ pub struct DetailsEntity {
 #[table_name = "planets"]
 pub struct NewPlanetEntity {
     pub name: String,
+    pub planet_type: String,
 }
