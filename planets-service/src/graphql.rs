@@ -19,9 +19,9 @@ impl Query {
     async fn planets(&self, ctx: &Context<'_>) -> Vec<Planet> {
         let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
 
-        let db_planets = repository::all(&conn).expect("Can't get planets");
+        let planet_entities = repository::all(&conn).expect("Can't get planets");
 
-        db_planets.iter()
+        planet_entities.iter()
             .map(|(p, d)| { convert(p, d) })
             .collect()
     }
@@ -30,37 +30,14 @@ impl Query {
     async fn find_planet_by_id(&self, ctx: &Context<'_>, id: ID) -> Option<Planet> {
         let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
 
-        let db_planets = repository::all(&conn).expect("Can't get planets");
+        let planet_entities = repository::all(&conn).expect("Can't get planets");
 
-        let found = db_planets.iter()
+        let found = planet_entities.iter()
             .find(|(p, _)| {
                 p.id == id.to_string().parse::<i32>().expect("Can't get ID from String")
             });
 
         found.map(|(p, d)| { convert(p, d) })
-    }
-}
-
-// todo from/into trait
-fn convert(db_planet: &PlanetEntity, db_details: &DetailsEntity) -> Planet {
-    let details: Details = if db_details.population.is_some() {
-        InhabitedPlanetDetails {
-            mean_radius: BigDecimal(db_details.mean_radius.clone()),
-            mass: BigInt(db_details.mass.to_bigint().clone().expect("Can't get mass")),
-            population: BigDecimal(db_details.population.as_ref().expect("Can't get population").clone()),
-        }.into()
-    } else {
-        UninhabitedPlanetDetails {
-            mean_radius: BigDecimal(db_details.mean_radius.clone()),
-            mass: BigInt(db_details.mass.to_bigint().clone().expect("Can't get mass")),
-        }.into()
-    };
-
-    Planet {
-        id: db_planet.id.into(),
-        name: db_planet.name.clone(),
-        planet_type: PlanetType::from_str(db_planet.planet_type.as_str()).expect("Can't convert string to enum"),
-        details,
     }
 }
 
@@ -91,5 +68,28 @@ impl Mutation {
         let create_planet_result = repository::create(new_planet, new_planet_details, &conn);
 
         create_planet_result.expect("Can't create new planet").id.into()
+    }
+}
+
+// todo from/into trait
+fn convert(planet_entity: &PlanetEntity, details_entity: &DetailsEntity) -> Planet {
+    let details: Details = if details_entity.population.is_some() {
+        InhabitedPlanetDetails {
+            mean_radius: BigDecimal(details_entity.mean_radius.clone()),
+            mass: BigInt(details_entity.mass.to_bigint().clone().expect("Can't get mass")),
+            population: BigDecimal(details_entity.population.as_ref().expect("Can't get population").clone()),
+        }.into()
+    } else {
+        UninhabitedPlanetDetails {
+            mean_radius: BigDecimal(details_entity.mean_radius.clone()),
+            mass: BigInt(details_entity.mass.to_bigint().clone().expect("Can't get mass")),
+        }.into()
+    };
+
+    Planet {
+        id: planet_entity.id.into(),
+        name: planet_entity.name.clone(),
+        planet_type: PlanetType::from_str(planet_entity.planet_type.as_str()).expect("Can't convert &str to PlanetType"),
+        details,
     }
 }

@@ -1,4 +1,3 @@
-use diesel;
 use diesel::prelude::*;
 
 use crate::db::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
