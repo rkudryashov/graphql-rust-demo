@@ -1,0 +1,14 @@
+insert into satellites(name, life_exists, first_spacecraft_landing_date, planet_id) values ('Moon', 'OpenQuestion', '1959-09-13', 3);
+insert into satellites(name, life_exists, planet_id) values ('Phobos', 'NoData', 4);
+insert into satellites(name, life_exists, planet_id) values ('Deimos', 'NoData', 4);
+insert into satellites(name, life_exists, planet_id) values ('Io', 'NoData', 5);
+insert into satellites(name, life_exists, planet_id) values ('Europa', 'NoData', 5);
+insert into satellites(name, life_exists, planet_id) values ('Ganymede', 'NoData', 5);
+insert into satellites(name, life_exists, planet_id) values ('Callisto', 'NoData', 5);
+insert into satellites(name, life_exists, planet_id) values ('Titan', 'NoData', 6);
+insert into satellites(name, life_exists, planet_id) values ('Ariel', 'NoData', 7);
+insert into satellites(name, life_exists, planet_id) values ('Umbriel', 'NoData', 7);
+insert into satellites(name, life_exists, planet_id) values ('Titania', 'NoData', 7);
+insert into satellites(name, life_exists, planet_id) values ('Oberon', 'NoData', 7);
+insert into satellites(name, life_exists, planet_id) values ('Miranda', 'NoData', 7);
+insert into satellites(name, life_exists, planet_id) values ('Triton', 'NoData', 8);
