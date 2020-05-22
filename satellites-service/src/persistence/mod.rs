@@ -1,2 +1,3 @@
 pub(crate) mod connection;
-mod model;
+pub(crate) mod model;
+pub(crate) mod repository;

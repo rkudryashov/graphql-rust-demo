@@ -2,6 +2,7 @@
 extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
+extern crate strum;
 
 use actix_web::{App, guard, HttpResponse, HttpServer, Result, web};
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
