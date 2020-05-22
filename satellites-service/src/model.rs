@@ -71,7 +71,7 @@ impl Storage {
             name: "Moon",
             life_exists: LifeExists::OpenQuestion,
             first_spacecraft_landing_date: NaiveDate::from_ymd(1959, 9, 13),
-            planet_id: 1,
+            planet_id: 3,
         };
 
         let mut satellites = HashMap::new();

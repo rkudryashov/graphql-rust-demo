@@ -2,6 +2,8 @@ use async_graphql::*;
 
 use crate::model::{Planet, Satellite, Storage};
 
+pub type TestSchema = Schema<Query, EmptyMutation, EmptySubscription>;
+
 pub struct Query;
 
 #[Object(extends)]

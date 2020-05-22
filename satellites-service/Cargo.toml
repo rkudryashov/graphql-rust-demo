@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-async-graphql = "1.12.16"
-async-graphql-warp = "1.4.16"
-warp = "0.2.2"
-tokio = { version = "0.2.21", features = ["macros"] }
+async-graphql = "=1.12.18"
+async-graphql-actix-web = "=1.4.18"
+actix-web = "2.0.0"
+actix-rt = "1.1.1"
 serde = { version = "1.0.110", features = ["derive"] }
-http = "0.2.1"
 chrono = { version = "0.4.11", features = ["serde"] }
+dotenv = "0.15.0"

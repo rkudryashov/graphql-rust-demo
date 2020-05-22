@@ -1,51 +1,42 @@
 use std::convert::Infallible;
 
-use async_graphql::{EmptyMutation, EmptySubscription, QueryBuilder, Schema};
+use actix_web::{App, guard, HttpResponse, HttpServer, Result, web};
+use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use async_graphql::http::{GQLResponse, playground_source};
-use async_graphql_warp::BadRequest;
-use http::StatusCode;
-use warp::{Filter, http::Response, Rejection, Reply};
+use async_graphql_actix_web::GQLRequest;
 
-use crate::graphql::Query;
-use crate::model::Storage;
+use dotenv::dotenv;
+use graphql::{Query, TestSchema};
+use model::Storage;
 
 mod graphql;
 mod model;
 
-#[tokio::main]
-async fn main() {
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
+    dotenv().ok();
+
     let schema = Schema::build(Query, EmptyMutation, EmptySubscription)
         .data(Storage::new())
         .finish();
 
-    let graphql_post = async_graphql_warp::graphql(schema).and_then(
-        |(schema, builder): (_, QueryBuilder)| async move {
-            let resp = builder.execute(&schema).await;
-            Ok::<_, Infallible>(warp::reply::json(&GQLResponse(resp)).into_response())
-        },
-    );
+    HttpServer::new(move || {
+        App::new()
+            .data(schema.clone())
+            .service(web::resource("/").guard(guard::Post()).to(index))
+            .service(web::resource("/").guard(guard::Get()).to(index_playground))
+    })
+        .bind("127.0.0.1:8002")?
+        .run()
+        .await
+}
 
-    let graphql_playground = warp::path::end().and(warp::get()).map(|| {
-        Response::builder()
-            .header("content-type", "text/html")
-            .body(playground_source("/", None))
-    });
+async fn index(schema: web::Data<TestSchema>, gql_request: GQLRequest) -> web::Json<GQLResponse> {
+    web::Json(GQLResponse(gql_request.into_inner().execute(&schema).await))
+}
 
-    let routes = graphql_post
-        .or(graphql_playground)
-        .recover(|err: Rejection| async move {
-            if let Some(BadRequest(err)) = err.find() {
-                return Ok::<_, Infallible>(warp::reply::with_status(
-                    err.to_string(),
-                    StatusCode::BAD_REQUEST,
-                ));
-            }
-
-            Ok(warp::reply::with_status(
-                "INTERNAL_SERVER_ERROR".to_string(),
-                StatusCode::INTERNAL_SERVER_ERROR,
-            ))
-        });
-
-    warp::serve(routes).run(([0, 0, 0, 0], 8002)).await;
+async fn index_playground() -> Result<HttpResponse> {
+    Ok(HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(playground_source("/", Some("/"))))
 }
