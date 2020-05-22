@@ -1,4 +1,7 @@
-use std::convert::Infallible;
+#[macro_use]
+extern crate diesel;
+#[macro_use]
+extern crate diesel_migrations;
 
 use actix_web::{App, guard, HttpResponse, HttpServer, Result, web};
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
@@ -7,17 +10,25 @@ use async_graphql_actix_web::GQLRequest;
 
 use dotenv::dotenv;
 use graphql::{Query, TestSchema};
-use model::Storage;
 
+mod persistence;
 mod graphql;
 mod model;
+mod schema;
+
+embed_migrations!();
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
+    let pool = persistence::connection::create_connection_pool();
+    let conn = pool.get().expect("Can't get DB connection");
+
+    embedded_migrations::run(&conn);
+
     let schema = Schema::build(Query, EmptyMutation, EmptySubscription)
-        .data(Storage::new())
+        .data(pool)
         .finish();
 
     HttpServer::new(move || {
