@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
 
-use crate::schema::satellites;
+use crate::persistence::schema::satellites;
 
 #[derive(Identifiable, Queryable)]
 #[table_name = "satellites"]

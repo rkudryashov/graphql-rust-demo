@@ -12,10 +12,8 @@ use async_graphql_actix_web::GQLRequest;
 use dotenv::dotenv;
 use graphql::{Query, TestSchema};
 
-mod persistence;
 mod graphql;
-mod model;
-mod schema;
+mod persistence;
 
 embed_migrations!();
 
