@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use async_graphql::*;
 use chrono::prelude::*;
-use serde::Serialize;
 use strum_macros::EnumString;
 
 use crate::persistence::connection::PgPool;
@@ -43,6 +42,7 @@ impl Query {
     }
 }
 
+#[SimpleObject]
 #[derive(Clone)]
 pub struct Satellite {
     pub id: ID,
@@ -50,25 +50,6 @@ pub struct Satellite {
     pub life_exists: LifeExists,
     pub first_spacecraft_landing_date: Option<NaiveDate>,
     pub planet_id: i32,
-}
-
-#[Object]
-impl Satellite {
-    async fn id(&self) -> &ID {
-        &self.id
-    }
-
-    async fn name(&self) -> &String {
-        &self.name
-    }
-
-    async fn life_exists(&self) -> &LifeExists {
-        &self.life_exists
-    }
-
-    async fn first_spacecraft_landing_date(&self) -> &Option<NaiveDate> {
-        &self.first_spacecraft_landing_date
-    }
 }
 
 #[Enum]
