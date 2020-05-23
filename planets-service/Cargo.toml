@@ -4,13 +4,13 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-async-graphql = "=1.12.18"
-async-graphql-actix-web = "=1.4.18"
+async-graphql = "1.13.5"
+async-graphql-actix-web = "1.13.5"
 actix-web = "2.0.0"
 actix-rt = "1.1.1"
 rust_decimal = { version = "1.5.0", features = ["serde-float"] }
 num-bigint = { version = "0.2.6", features = ["serde"] }
-bigdecimal = { version = "0.0.15", features = ["serde"] }
+bigdecimal = { version = "0.1.0", features = ["serde"] }
 num = "0.2.1"
 serde = { version = "1.0.110", features = ["derive"] }
 diesel = { version = "1.4.4", features = ["postgres", "r2d2", "numeric"] }

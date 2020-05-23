@@ -14,7 +14,7 @@ pub struct PlanetEntity {
 #[derive(Identifiable, Queryable, Associations)]
 #[table_name = "details"]
 #[belongs_to(PlanetEntity, foreign_key = "planet_id")]
-// todo store in 2 different tables
+// todo store in 2 different tables (impl inheritance)
 pub struct DetailsEntity {
     pub id: i32,
     pub mean_radius: BigDecimal,

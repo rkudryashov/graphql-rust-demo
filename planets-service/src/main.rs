@@ -17,7 +17,6 @@ mod db_connection;
 mod repository;
 mod schema;
 mod graphql;
-mod model;
 
 embed_migrations!();
 
