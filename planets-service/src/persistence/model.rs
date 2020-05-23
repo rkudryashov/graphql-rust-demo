@@ -1,6 +1,6 @@
 use bigdecimal::BigDecimal;
 
-use crate::schema::{details, planets};
+use crate::persistence::schema::{details, planets};
 
 #[derive(Identifiable, Queryable)]
 #[table_name = "planets"]

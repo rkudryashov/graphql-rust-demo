@@ -2,15 +2,14 @@ use std::ops::Mul;
 use std::str::FromStr;
 
 use async_graphql::*;
-use bigdecimal::FromPrimitive;
 use num_bigint::*;
 use rust_decimal::prelude::ToPrimitive;
 use serde::Serialize;
 use strum_macros::{Display, EnumString};
 
-use crate::db::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
-use crate::db_connection::PgPool;
-use crate::repository;
+use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
+use crate::persistence::connection::PgPool;
+use crate::persistence::repository;
 
 pub type TestSchema = Schema<Query, Mutation, EmptySubscription>;
 

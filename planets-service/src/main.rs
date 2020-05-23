@@ -12,11 +12,8 @@ use async_graphql_actix_web::GQLRequest;
 use dotenv::dotenv;
 use graphql::{Mutation, Query, TestSchema};
 
-mod db;
-mod db_connection;
-mod repository;
-mod schema;
 mod graphql;
+mod persistence;
 
 embed_migrations!();
 
@@ -24,7 +21,7 @@ embed_migrations!();
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
-    let pool = db_connection::create_connection_pool();
+    let pool = persistence::connection::create_connection_pool();
     let conn = pool.get().expect("Can't get DB connection");
 
     embedded_migrations::run(&conn);

@@ -1,8 +1,7 @@
 use diesel::prelude::*;
 
-use crate::db::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
-use crate::schema::details;
-use crate::schema::planets;
+use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
+use crate::persistence::schema::{details, planets};
 
 pub fn all(connection: &PgConnection) -> QueryResult<Vec<(PlanetEntity, DetailsEntity)>> {
     planets::table
