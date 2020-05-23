@@ -7,8 +7,8 @@ use rust_decimal::prelude::ToPrimitive;
 use serde::Serialize;
 use strum_macros::{Display, EnumString};
 
-use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
 use crate::persistence::connection::PgPool;
+use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
 use crate::persistence::repository;
 
 pub type TestSchema = Schema<Query, Mutation, EmptySubscription>;
@@ -27,18 +27,24 @@ impl Query {
             .collect()
     }
 
+    async fn planet(&self, ctx: &Context<'_>, id: ID) -> Option<Planet> {
+        self.find_planet_by_id_internal(ctx, id).await.unwrap()
+    }
+
     #[entity]
     async fn find_planet_by_id(&self, ctx: &Context<'_>, id: ID) -> Option<Planet> {
+        self.find_planet_by_id_internal(ctx, id).await.unwrap()
+    }
+
+    async fn find_planet_by_id_internal(&self, ctx: &Context<'_>, id: ID) -> Option<Planet> {
         let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
 
-        let planet_entities = repository::all(&conn).expect("Can't get planets");
+        let int_id = id.to_string().parse::<i32>().expect("Can't get id from String");
+        let maybe_planet_and_details = repository::get(int_id, &conn).ok();
 
-        let found = planet_entities.iter()
-            .find(|(p, _)| {
-                p.id == id.to_string().parse::<i32>().expect("Can't get ID from String")
-            });
-
-        found.map(|(p, d)| { convert(p, d) })
+        maybe_planet_and_details.map(|(planet_entity, details_entity)| {
+            convert(&planet_entity, &details_entity)
+        })
     }
 }
 

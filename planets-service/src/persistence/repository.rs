@@ -9,8 +9,10 @@ pub fn all(connection: &PgConnection) -> QueryResult<Vec<(PlanetEntity, DetailsE
         .load(connection)
 }
 
-pub fn get(id: i32, connection: &PgConnection) -> QueryResult<PlanetEntity> {
-    planets::table.find(id).get_result::<PlanetEntity>(connection)
+pub fn get(id: i32, connection: &PgConnection) -> QueryResult<(PlanetEntity, DetailsEntity)> {
+    planets::table.find(id)
+        .inner_join(details::table)
+        .get_result::<(PlanetEntity, DetailsEntity)>(connection)
 }
 
 pub fn create(new_planet: NewPlanetEntity, mut new_details_entity: NewDetailsEntity, connection: &PgConnection) -> QueryResult<PlanetEntity> {
