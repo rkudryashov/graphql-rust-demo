@@ -24,6 +24,14 @@ impl Query {
             .collect()
     }
 
+    async fn satellite(&self, ctx: &Context<'_>, id: ID) -> Option<Satellite> {
+        let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
+
+        let id = id.to_string().parse::<i32>().expect("Can't get id from String");
+        repository::get(id, &conn).ok()
+            .map(|e| { convert(&e) })
+    }
+
     #[entity]
     async fn find_planet_by_id(&self, ctx: &Context<'_>, id: ID) -> Planet {
         let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
@@ -76,8 +84,8 @@ impl Planet {
     async fn satellites(&self, ctx: &Context<'_>) -> Vec<Satellite> {
         let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
 
-        let int_id = self.id.to_string().parse::<i32>().expect("Can't get id from String");
-        let satellite_entities = repository::get_by_planet_id(int_id, &conn).expect("Can't get satellites of planet");
+        let id = self.id.to_string().parse::<i32>().expect("Can't get id from String");
+        let satellite_entities = repository::get_by_planet_id(id, &conn).expect("Can't get satellites of planet");
 
         let satellites = satellite_entities.iter()
             .map(|e| { convert(e) })

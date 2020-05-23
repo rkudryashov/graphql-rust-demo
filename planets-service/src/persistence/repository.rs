@@ -3,22 +3,22 @@ use diesel::prelude::*;
 use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
 use crate::persistence::schema::{details, planets};
 
-pub fn all(connection: &PgConnection) -> QueryResult<Vec<(PlanetEntity, DetailsEntity)>> {
+pub fn all(conn: &PgConnection) -> QueryResult<Vec<(PlanetEntity, DetailsEntity)>> {
     planets::table
         .inner_join(details::table)
-        .load(connection)
+        .load(conn)
 }
 
-pub fn get(id: i32, connection: &PgConnection) -> QueryResult<(PlanetEntity, DetailsEntity)> {
+pub fn get(id: i32, conn: &PgConnection) -> QueryResult<(PlanetEntity, DetailsEntity)> {
     planets::table.find(id)
         .inner_join(details::table)
-        .get_result::<(PlanetEntity, DetailsEntity)>(connection)
+        .get_result(conn)
 }
 
-pub fn create(new_planet: NewPlanetEntity, mut new_details_entity: NewDetailsEntity, connection: &PgConnection) -> QueryResult<PlanetEntity> {
+pub fn create(new_planet: NewPlanetEntity, mut new_details_entity: NewDetailsEntity, conn: &PgConnection) -> QueryResult<PlanetEntity> {
     let result: QueryResult<PlanetEntity> = diesel::insert_into(planets::table)
         .values(new_planet)
-        .get_result(connection);
+        .get_result(conn);
 
     let new_planet_id = result.as_ref().ok().expect("Can't get created planet").id;
 
@@ -26,7 +26,7 @@ pub fn create(new_planet: NewPlanetEntity, mut new_details_entity: NewDetailsEnt
 
     diesel::insert_into(details::table)
         .values(new_details_entity)
-        .execute(connection);
+        .execute(conn);
 
     result
 }
