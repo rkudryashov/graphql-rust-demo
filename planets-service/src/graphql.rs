@@ -2,8 +2,8 @@ use std::ops::Mul;
 use std::str::FromStr;
 
 use async_graphql::*;
+use bigdecimal::{ToPrimitive, Zero};
 use num_bigint::*;
-use rust_decimal::prelude::ToPrimitive;
 use serde::Serialize;
 use strum_macros::{Display, EnumString};
 
@@ -23,7 +23,7 @@ impl Query {
         let planet_entities = repository::all(&conn).expect("Can't get planets");
 
         planet_entities.iter()
-            .map(|(p, d)| { convert(p, d) })
+            .map(|p| { convert_planet(p) })
             .collect()
     }
 
@@ -41,10 +41,10 @@ fn find_planet_by_id_internal(ctx: &Context<'_>, id: ID) -> Option<Planet> {
     let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
 
     let id = id.to_string().parse::<i32>().expect("Can't get id from String");
-    let maybe_planet_and_details = repository::get(id, &conn).ok();
+    let maybe_planet = repository::get(id, &conn).ok();
 
-    maybe_planet_and_details.map(|(planet_entity, details_entity)| {
-        convert(&planet_entity, &details_entity)
+    maybe_planet.map(|p| {
+        convert_planet(&p)
     })
 }
 
@@ -106,8 +106,13 @@ impl Planet {
         true
     }
 
-    async fn details(&self) -> &Details {
-        &self.details
+    async fn details(&self, ctx: &Context<'_>) -> Details {
+        let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
+
+        let id = self.id.to_string().parse::<i32>().expect("Can't get id from String");
+        let details = repository::get_details(id, &conn).ok();
+
+        convert_details(&details.expect("Can't get details for a planet"))
     }
 }
 
@@ -221,7 +226,22 @@ pub struct MassInput {
 }
 
 // todo from/into trait
-fn convert(planet_entity: &PlanetEntity, details_entity: &DetailsEntity) -> Planet {
+fn convert_planet(planet_entity: &PlanetEntity) -> Planet {
+    let details_stub: Details = UninhabitedPlanetDetails {
+        // todo remove path
+        mean_radius: BigDecimal(bigdecimal::BigDecimal::zero()),
+        mass: BigInt(num_bigint::BigInt::zero()),
+    }.into();
+
+    Planet {
+        id: planet_entity.id.into(),
+        name: planet_entity.name.clone(),
+        planet_type: PlanetType::from_str(planet_entity.planet_type.as_str()).expect("Can't convert &str to PlanetType"),
+        details: details_stub,
+    }
+}
+
+fn convert_details(details_entity: &DetailsEntity) -> Details {
     let details: Details = if details_entity.population.is_some() {
         InhabitedPlanetDetails {
             mean_radius: BigDecimal(details_entity.mean_radius.clone()),
@@ -235,10 +255,5 @@ fn convert(planet_entity: &PlanetEntity, details_entity: &DetailsEntity) -> Plan
         }.into()
     };
 
-    Planet {
-        id: planet_entity.id.into(),
-        name: planet_entity.name.clone(),
-        planet_type: PlanetType::from_str(planet_entity.planet_type.as_str()).expect("Can't convert &str to PlanetType"),
-        details,
-    }
+    details
 }
