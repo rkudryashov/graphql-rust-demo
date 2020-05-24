@@ -79,11 +79,11 @@ impl Mutation {
 }
 
 #[derive(Clone)]
-pub struct Planet {
-    pub id: ID,
-    pub name: String,
-    pub planet_type: PlanetType,
-    pub details: Details,
+struct Planet {
+    id: ID,
+    name: String,
+    planet_type: PlanetType,
+    details: Details,
 }
 
 #[Object]
@@ -118,7 +118,7 @@ impl Planet {
 
 #[Enum]
 #[derive(Display, EnumString)]
-pub enum PlanetType {
+enum PlanetType {
     TerrestrialPlanet,
     GasGiant,
     IceGiant,
@@ -130,29 +130,29 @@ field(name = "mean_radius", type = "CustomBigDecimal", context),
 field(name = "mass", type = "CustomBigInt", context),
 )]
 #[derive(Clone)]
-pub enum Details {
+enum Details {
     InhabitedPlanetDetails(InhabitedPlanetDetails),
     UninhabitedPlanetDetails(UninhabitedPlanetDetails),
 }
 
 #[SimpleObject]
 #[derive(Clone)]
-pub struct InhabitedPlanetDetails {
-    pub mean_radius: CustomBigDecimal,
-    pub mass: CustomBigInt,
+struct InhabitedPlanetDetails {
+    mean_radius: CustomBigDecimal,
+    mass: CustomBigInt,
     #[field(desc = "in billions")]
-    pub population: CustomBigDecimal,
+    population: CustomBigDecimal,
 }
 
 #[SimpleObject]
 #[derive(Clone)]
-pub struct UninhabitedPlanetDetails {
-    pub mean_radius: CustomBigDecimal,
-    pub mass: CustomBigInt,
+struct UninhabitedPlanetDetails {
+    mean_radius: CustomBigDecimal,
+    mass: CustomBigInt,
 }
 
 #[derive(Clone, Serialize)]
-pub struct CustomBigInt(pub BigInt);
+struct CustomBigInt(BigInt);
 
 #[Scalar(name = "BigInt")]
 impl ScalarType for CustomBigInt {
@@ -168,7 +168,7 @@ impl ScalarType for CustomBigInt {
 }
 
 #[derive(Clone, Serialize)]
-pub struct CustomBigDecimal(pub BigDecimal);
+struct CustomBigDecimal(BigDecimal);
 
 #[Scalar(name = "BigDecimal")]
 impl ScalarType for CustomBigDecimal {
@@ -189,16 +189,16 @@ impl ScalarType for CustomBigDecimal {
 }
 
 #[InputObject]
-pub struct DetailsInput {
-    pub mean_radius: CustomBigDecimal,
-    pub mass: MassInput,
-    pub population: Option<CustomBigDecimal>,
+struct DetailsInput {
+    mean_radius: CustomBigDecimal,
+    mass: MassInput,
+    population: Option<CustomBigDecimal>,
 }
 
 #[InputObject]
-pub struct MassInput {
-    pub number: f32,
-    pub ten_power: i8,
+struct MassInput {
+    number: f32,
+    ten_power: i8,
 }
 
 // todo from/into trait

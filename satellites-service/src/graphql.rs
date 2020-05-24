@@ -52,26 +52,26 @@ impl Query {
 
 #[SimpleObject]
 #[derive(Clone)]
-pub struct Satellite {
-    pub id: ID,
-    pub name: String,
-    pub life_exists: LifeExists,
-    pub first_spacecraft_landing_date: Option<NaiveDate>,
-    pub planet_id: i32,
+struct Satellite {
+    id: ID,
+    name: String,
+    life_exists: LifeExists,
+    first_spacecraft_landing_date: Option<NaiveDate>,
+    planet_id: i32,
 }
 
 #[Enum]
 #[derive(EnumString)]
-pub enum LifeExists {
+enum LifeExists {
     Yes,
     OpenQuestion,
     NoData,
 }
 
 #[derive(Clone)]
-pub struct Planet {
-    pub id: ID,
-    pub satellites: Vec<Satellite>,
+struct Planet {
+    id: ID,
+    satellites: Vec<Satellite>,
 }
 
 #[Object(extends)]
