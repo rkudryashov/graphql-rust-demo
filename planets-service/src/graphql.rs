@@ -2,8 +2,8 @@ use std::ops::Mul;
 use std::str::FromStr;
 
 use async_graphql::*;
-use bigdecimal::{ToPrimitive, Zero};
-use num_bigint::*;
+use bigdecimal::{BigDecimal, ToPrimitive, Zero};
+use num_bigint::{BigInt, ToBigInt};
 use serde::Serialize;
 use strum_macros::{Display, EnumString};
 
@@ -126,8 +126,8 @@ pub enum PlanetType {
 }
 
 #[Interface(
-field(name = "mean_radius", type = "&BigDecimal", context),
-field(name = "mass", type = "&BigInt", context),
+field(name = "mean_radius", type = "CustomBigDecimal", context),
+field(name = "mass", type = "CustomBigInt", context),
 )]
 #[derive(Clone)]
 pub enum Details {
@@ -135,51 +135,27 @@ pub enum Details {
     UninhabitedPlanetDetails(UninhabitedPlanetDetails),
 }
 
+#[SimpleObject]
 #[derive(Clone)]
 pub struct InhabitedPlanetDetails {
-    pub mean_radius: BigDecimal,
-    pub mass: BigInt,
-    pub population: BigDecimal,
-}
-
-#[Object]
-impl InhabitedPlanetDetails {
-    async fn mean_radius(&self) -> &BigDecimal {
-        &self.mean_radius
-    }
-
-    async fn mass(&self) -> &BigInt {
-        &self.mass
-    }
-
+    pub mean_radius: CustomBigDecimal,
+    pub mass: CustomBigInt,
     #[field(desc = "in billions")]
-    async fn population(&self) -> &BigDecimal {
-        &self.population
-    }
+    pub population: CustomBigDecimal,
 }
 
+#[SimpleObject]
 #[derive(Clone)]
 pub struct UninhabitedPlanetDetails {
-    pub mean_radius: BigDecimal,
-    pub mass: BigInt,
-}
-
-#[Object]
-impl UninhabitedPlanetDetails {
-    async fn mean_radius(&self) -> &BigDecimal {
-        &self.mean_radius
-    }
-
-    async fn mass(&self) -> &BigInt {
-        &self.mass
-    }
+    pub mean_radius: CustomBigDecimal,
+    pub mass: CustomBigInt,
 }
 
 #[derive(Clone, Serialize)]
-pub struct BigInt(pub num_bigint::BigInt);
+pub struct CustomBigInt(pub BigInt);
 
-#[Scalar]
-impl ScalarType for BigInt {
+#[Scalar(name = "BigInt")]
+impl ScalarType for CustomBigInt {
     fn parse(value: Value) -> InputValueResult<Self> {
         unimplemented!()
     }
@@ -192,15 +168,15 @@ impl ScalarType for BigInt {
 }
 
 #[derive(Clone, Serialize)]
-pub struct BigDecimal(pub bigdecimal::BigDecimal);
+pub struct CustomBigDecimal(pub BigDecimal);
 
-#[Scalar]
-impl ScalarType for BigDecimal {
+#[Scalar(name = "BigDecimal")]
+impl ScalarType for CustomBigDecimal {
     fn parse(value: Value) -> InputValueResult<Self> {
         match value {
             Value::String(s) => {
                 let parsed_value = bigdecimal::BigDecimal::from_str(s.as_str())?;
-                Ok(BigDecimal(parsed_value))
+                Ok(CustomBigDecimal(parsed_value))
             }
             _ => Err(InputValueError::ExpectedType(value)),
         }
@@ -214,9 +190,9 @@ impl ScalarType for BigDecimal {
 
 #[InputObject]
 pub struct DetailsInput {
-    pub mean_radius: BigDecimal,
+    pub mean_radius: CustomBigDecimal,
     pub mass: MassInput,
-    pub population: Option<BigDecimal>,
+    pub population: Option<CustomBigDecimal>,
 }
 
 #[InputObject]
@@ -228,9 +204,8 @@ pub struct MassInput {
 // todo from/into trait
 fn convert_planet(planet_entity: &PlanetEntity) -> Planet {
     let details_stub: Details = UninhabitedPlanetDetails {
-        // todo remove path
-        mean_radius: BigDecimal(bigdecimal::BigDecimal::zero()),
-        mass: BigInt(num_bigint::BigInt::zero()),
+        mean_radius: CustomBigDecimal(BigDecimal::zero()),
+        mass: CustomBigInt(BigInt::zero()),
     }.into();
 
     Planet {
@@ -244,14 +219,14 @@ fn convert_planet(planet_entity: &PlanetEntity) -> Planet {
 fn convert_details(details_entity: &DetailsEntity) -> Details {
     let details: Details = if details_entity.population.is_some() {
         InhabitedPlanetDetails {
-            mean_radius: BigDecimal(details_entity.mean_radius.clone()),
-            mass: BigInt(details_entity.mass.to_bigint().clone().expect("Can't get mass")),
-            population: BigDecimal(details_entity.population.as_ref().expect("Can't get population").clone()),
+            mean_radius: CustomBigDecimal(details_entity.mean_radius.clone()),
+            mass: CustomBigInt(details_entity.mass.to_bigint().clone().expect("Can't get mass")),
+            population: CustomBigDecimal(details_entity.population.as_ref().expect("Can't get population").clone()),
         }.into()
     } else {
         UninhabitedPlanetDetails {
-            mean_radius: BigDecimal(details_entity.mean_radius.clone()),
-            mass: BigInt(details_entity.mass.to_bigint().clone().expect("Can't get mass")),
+            mean_radius: CustomBigDecimal(details_entity.mean_radius.clone()),
+            mass: CustomBigInt(details_entity.mass.to_bigint().clone().expect("Can't get mass")),
         }.into()
     };
 
