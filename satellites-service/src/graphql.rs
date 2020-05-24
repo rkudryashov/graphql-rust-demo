@@ -34,18 +34,10 @@ impl Query {
 
     #[entity]
     async fn find_planet_by_id(&self, ctx: &Context<'_>, id: ID) -> Planet {
-        let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
-
-        let int_id = id.to_string().parse::<i32>().expect("Can't get id from String");
-        let satellite_entities = repository::get_by_planet_id(int_id, &conn).expect("Can't get satellites of planet");
-
-        let satellites = satellite_entities.iter()
-            .map(|e| { convert(e) })
-            .collect();
-
+        let satellites_stub: Vec<Satellite> = vec![];
         Planet {
             id: id.clone(),
-            satellites,
+            satellites: satellites_stub,
         }
     }
 }
