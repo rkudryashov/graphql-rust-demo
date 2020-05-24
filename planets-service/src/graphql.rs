@@ -28,24 +28,24 @@ impl Query {
     }
 
     async fn planet(&self, ctx: &Context<'_>, id: ID) -> Option<Planet> {
-        self.find_planet_by_id_internal(ctx, id).await.unwrap()
+        find_planet_by_id_internal(ctx, id)
     }
 
     #[entity]
     async fn find_planet_by_id(&self, ctx: &Context<'_>, id: ID) -> Option<Planet> {
-        self.find_planet_by_id_internal(ctx, id).await.unwrap()
+        find_planet_by_id_internal(ctx, id)
     }
+}
 
-    async fn find_planet_by_id_internal(&self, ctx: &Context<'_>, id: ID) -> Option<Planet> {
-        let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
+fn find_planet_by_id_internal(ctx: &Context<'_>, id: ID) -> Option<Planet> {
+    let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
 
-        let id = id.to_string().parse::<i32>().expect("Can't get id from String");
-        let maybe_planet_and_details = repository::get(id, &conn).ok();
+    let id = id.to_string().parse::<i32>().expect("Can't get id from String");
+    let maybe_planet_and_details = repository::get(id, &conn).ok();
 
-        maybe_planet_and_details.map(|(planet_entity, details_entity)| {
-            convert(&planet_entity, &details_entity)
-        })
-    }
+    maybe_planet_and_details.map(|(planet_entity, details_entity)| {
+        convert(&planet_entity, &details_entity)
+    })
 }
 
 pub struct Mutation;
