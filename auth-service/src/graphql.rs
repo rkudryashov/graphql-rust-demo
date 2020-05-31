@@ -1,11 +1,9 @@
-use std::str::FromStr;
-
 use async_graphql::*;
 
 use crate::persistence::connection::PgPool;
-use crate::persistence::model::{NewUserEntity, UserEntity};
+use crate::persistence::model::NewUserEntity;
 use crate::persistence::repository;
-use crate::utils::hash_password;
+use crate::utils::{create_token, hash_password, verify};
 
 pub type AppSchema = Schema<Query, Mutation, EmptySubscription>;
 
@@ -32,6 +30,20 @@ impl Mutation {
 
         created_user_entity.id.into()
     }
+
+    async fn sign_in(&self, ctx: &Context<'_>, sign_in_data: SignInInput) -> String {
+        let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
+
+        let hash = repository::get_hash(&sign_in_data.username, &conn).expect("Can't get hash for a user");
+
+        if let Ok(matching) = verify(&hash, &sign_in_data.password) {
+            if matching {
+                return create_token(&sign_in_data.username);
+            }
+        }
+
+        panic!("Can't authenticate a user")
+    }
 }
 
 #[InputObject]
@@ -40,4 +52,10 @@ struct UserInput {
     password: String,
     first_name: String,
     last_name: String,
+}
+
+#[InputObject]
+struct SignInInput {
+    username: String,
+    password: String,
 }
