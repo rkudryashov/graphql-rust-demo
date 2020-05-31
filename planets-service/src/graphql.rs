@@ -30,7 +30,7 @@ impl Query {
         let planet_entities = repository::all(&conn).expect("Can't get planets");
 
         planet_entities.iter()
-            .map(|p| { convert_planet(p) })
+            .map(|p| { Planet::from(p) })
             .collect()
     }
 
@@ -50,9 +50,7 @@ fn find_planet_by_id_internal(ctx: &Context<'_>, id: ID) -> Option<Planet> {
     let id = id.to_string().parse::<i32>().expect("Can't get id from String");
     let maybe_planet = repository::get(id, &conn).ok();
 
-    maybe_planet.map(|p| {
-        convert_planet(&p)
-    })
+    maybe_planet.map(|p| { Planet::from(&p) })
 }
 
 pub struct Mutation;
@@ -60,9 +58,9 @@ pub struct Mutation;
 #[Object]
 impl Mutation {
     async fn create_planet(&self, ctx: &Context<'_>, name: String, planet_type: PlanetType, details: DetailsInput) -> ID {
-        fn get_new_planet_mass(number: f32, ten_power: usize) -> bigdecimal::BigDecimal {
-            let some = bigdecimal::BigDecimal::from(number);
-            some.mul(num::pow(bigdecimal::BigDecimal::from(10), ten_power))
+        fn get_new_planet_mass(number: f32, ten_power: i8) -> BigDecimal {
+            let some = BigDecimal::from(number);
+            some.mul(num::pow(BigDecimal::from(10), ten_power as usize))
         }
 
         let conn = ctx.data::<AppContext>().pool.get().expect("Can't get DB connection");
@@ -74,14 +72,14 @@ impl Mutation {
 
         let new_planet_details = NewDetailsEntity {
             mean_radius: details.mean_radius.0,
-            mass: get_new_planet_mass(details.mass.number, details.mass.ten_power as usize),
+            mass: get_new_planet_mass(details.mass.number, details.mass.ten_power),
             population: details.population.map(|v| { v.0 }),
             planet_id: 0,
         };
 
         let created_planet_entity = repository::create(new_planet, new_planet_details, &conn).expect("Can't create planet");
 
-        let created_planet = convert_planet(&created_planet_entity);
+        let created_planet = Planet::from(&created_planet_entity);
 
         let result = created_planet.id.clone();
 
@@ -95,7 +93,7 @@ pub struct Subscription;
 
 #[Subscription]
 impl Subscription {
-    async fn latest_planet(&self, ctx: &Context<'_>) -> impl Stream<Item=Planet> {
+    async fn latest_planet(&self) -> impl Stream<Item=Planet> {
         SimpleBroker::<Planet>::subscribe()
     }
 }
@@ -192,7 +190,7 @@ impl ScalarType for CustomBigDecimal {
     fn parse(value: Value) -> InputValueResult<Self> {
         match value {
             Value::String(s) => {
-                let parsed_value = bigdecimal::BigDecimal::from_str(s.as_str())?;
+                let parsed_value = BigDecimal::from_str(s.as_str())?;
                 Ok(CustomBigDecimal(parsed_value))
             }
             _ => Err(InputValueError::ExpectedType(value)),
@@ -218,30 +216,31 @@ struct MassInput {
     ten_power: i8,
 }
 
-// todo from/into trait
-fn convert_planet(planet_entity: &PlanetEntity) -> Planet {
-    Planet {
-        id: planet_entity.id.into(),
-        name: planet_entity.name.clone(),
-        planet_type: PlanetType::from_str(planet_entity.planet_type.as_str()).expect("Can't convert &str to PlanetType"),
+impl From<&PlanetEntity> for Planet {
+    fn from(entity: &PlanetEntity) -> Self {
+        Planet {
+            id: entity.id.into(),
+            name: entity.name.clone(),
+            planet_type: PlanetType::from_str(entity.planet_type.as_str()).expect("Can't convert &str to PlanetType"),
+        }
     }
 }
 
-fn convert_details(details_entity: &DetailsEntity) -> Details {
-    let details: Details = if details_entity.population.is_some() {
-        InhabitedPlanetDetails {
-            mean_radius: CustomBigDecimal(details_entity.mean_radius.clone()),
-            mass: CustomBigInt(details_entity.mass.to_bigint().clone().expect("Can't get mass")),
-            population: CustomBigDecimal(details_entity.population.as_ref().expect("Can't get population").clone()),
-        }.into()
-    } else {
-        UninhabitedPlanetDetails {
-            mean_radius: CustomBigDecimal(details_entity.mean_radius.clone()),
-            mass: CustomBigInt(details_entity.mass.to_bigint().clone().expect("Can't get mass")),
-        }.into()
-    };
-
-    details
+impl From<&DetailsEntity> for Details {
+    fn from(entity: &DetailsEntity) -> Self {
+        if entity.population.is_some() {
+            InhabitedPlanetDetails {
+                mean_radius: CustomBigDecimal(entity.mean_radius.clone()),
+                mass: CustomBigInt(entity.mass.to_bigint().clone().expect("Can't get mass")),
+                population: CustomBigDecimal(entity.population.as_ref().expect("Can't get population").clone()),
+            }.into()
+        } else {
+            UninhabitedPlanetDetails {
+                mean_radius: CustomBigDecimal(entity.mean_radius.clone()),
+                mass: CustomBigInt(entity.mass.to_bigint().clone().expect("Can't get mass")),
+            }.into()
+        }
+    }
 }
 
 pub(crate) struct DetailsBatchLoader {
@@ -257,7 +256,7 @@ impl BatchFn<ID, Details> for DetailsBatchLoader {
             let planet_id_int = planet_id.to_string().parse::<i32>().expect("Can't convert id");
             let details_entity = repository::get_details(planet_id_int, &conn).expect("Can't get details for a planet");
 
-            (planet_id.clone(), convert_details(&details_entity))
+            (planet_id.clone(), Details::from(&details_entity))
         }).collect::<HashMap<_, _>>()
     }
 }

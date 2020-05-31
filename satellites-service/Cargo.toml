@@ -9,9 +9,9 @@ async-graphql-actix-web = "1.14.7"
 actix-web = "2.0.0"
 actix-rt = "1.1.1"
 serde = { version = "1.0.110", features = ["derive"] }
-chrono = { version = "0.4.11", features = ["serde"] }
 diesel = { version = "1.4.4", features = ["postgres", "r2d2", "chrono"] }
 diesel_migrations = "1.4.0"
+chrono = { version = "0.4.11", features = ["serde"] }
 dotenv = "0.15.0"
 strum = "0.18.0"
 strum_macros = "0.18.0"
