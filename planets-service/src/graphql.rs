@@ -6,6 +6,7 @@ use std::sync::Arc;
 use async_graphql::*;
 use bigdecimal::{BigDecimal, ToPrimitive};
 use dataloader::BatchFn;
+use futures::Stream;
 use num_bigint::{BigInt, ToBigInt};
 use serde::Serialize;
 use strum_macros::{Display, EnumString};
@@ -17,7 +18,7 @@ use crate::persistence::connection::PgPool;
 use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
 use crate::persistence::repository;
 
-pub type TestSchema = Schema<Query, Mutation, EmptySubscription>;
+pub type AppSchema = Schema<Query, Mutation, Subscription>;
 
 pub struct Query;
 
@@ -78,9 +79,24 @@ impl Mutation {
             planet_id: 0,
         };
 
-        let create_planet_result = repository::create(new_planet, new_planet_details, &conn);
+        let created_planet_entity = repository::create(new_planet, new_planet_details, &conn).expect("Can't create new planet");
 
-        create_planet_result.expect("Can't create new planet").id.into()
+        let created_planet = convert_planet(&created_planet_entity);
+
+        let result = created_planet.id.clone();
+
+        SimpleBroker::publish(created_planet);
+
+        result
+    }
+}
+
+pub struct Subscription;
+
+#[Subscription]
+impl Subscription {
+    async fn latest_planet(&self, ctx: &Context<'_>) -> impl Stream<Item=Planet> {
+        SimpleBroker::<Planet>::subscribe()
     }
 }
 

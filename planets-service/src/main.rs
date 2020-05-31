@@ -6,14 +6,15 @@ extern crate strum;
 
 use std::sync::Arc;
 
-use actix_web::{App, guard, HttpResponse, HttpServer, Result, web};
-use async_graphql::{EmptySubscription, ID, Schema};
+use actix_web::{App, guard, HttpRequest, HttpResponse, HttpServer, Result, web};
+use actix_web_actors::ws;
+use async_graphql::{ID, Schema};
 use async_graphql::http::{GQLResponse, playground_source};
-use async_graphql_actix_web::GQLRequest;
+use async_graphql_actix_web::{GQLRequest, WSSubscription};
 use dataloader::non_cached::Loader;
 
 use dotenv::dotenv;
-use graphql::{Details, DetailsBatchLoader, Mutation, Query, TestSchema};
+use graphql::{AppSchema, Details, DetailsBatchLoader, Mutation, Query, Subscription};
 
 use crate::persistence::connection::PgPool;
 
@@ -33,7 +34,7 @@ async fn main() -> std::io::Result<()> {
 
     let ctx = AppContext::new(pool);
 
-    let schema = Schema::build(Query, Mutation, EmptySubscription)
+    let schema = Schema::build(Query, Mutation, Subscription)
         .data(ctx)
         .finish();
 
@@ -41,6 +42,10 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .data(schema.clone())
             .service(web::resource("/").guard(guard::Post()).to(index))
+            .service(web::resource("/").guard(guard::Get())
+                         .guard(guard::Header("upgrade", "websocket"))
+                         .to(index_ws),
+            )
             .service(web::resource("/").guard(guard::Get()).to(index_playground))
     })
         .bind("127.0.0.1:8001")?
@@ -48,8 +53,12 @@ async fn main() -> std::io::Result<()> {
         .await
 }
 
-async fn index(schema: web::Data<TestSchema>, gql_request: GQLRequest) -> web::Json<GQLResponse> {
+async fn index(schema: web::Data<AppSchema>, gql_request: GQLRequest) -> web::Json<GQLResponse> {
     web::Json(GQLResponse(gql_request.into_inner().execute(&schema).await))
+}
+
+async fn index_ws(schema: web::Data<AppSchema>, req: HttpRequest, payload: web::Payload) -> Result<HttpResponse> {
+    ws::start_with_protocols(WSSubscription::new(&schema), &["graphql-ws"], &req, payload)
 }
 
 async fn index_playground() -> Result<HttpResponse> {
