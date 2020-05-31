@@ -10,7 +10,7 @@ use async_graphql::http::{GQLResponse, playground_source};
 use async_graphql_actix_web::GQLRequest;
 
 use dotenv::dotenv;
-use graphql::{Query, TestSchema};
+use graphql::{Query, AppSchema};
 
 mod graphql;
 mod persistence;
@@ -41,7 +41,7 @@ async fn main() -> std::io::Result<()> {
         .await
 }
 
-async fn index(schema: web::Data<TestSchema>, gql_request: GQLRequest) -> web::Json<GQLResponse> {
+async fn index(schema: web::Data<AppSchema>, gql_request: GQLRequest) -> web::Json<GQLResponse> {
     web::Json(GQLResponse(gql_request.into_inner().execute(&schema).await))
 }
 

@@ -79,7 +79,7 @@ impl Mutation {
             planet_id: 0,
         };
 
-        let created_planet_entity = repository::create(new_planet, new_planet_details, &conn).expect("Can't create new planet");
+        let created_planet_entity = repository::create(new_planet, new_planet_details, &conn).expect("Can't create planet");
 
         let created_planet = convert_planet(&created_planet_entity);
 

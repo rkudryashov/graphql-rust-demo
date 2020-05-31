@@ -27,6 +27,7 @@ async fn main() -> std::io::Result<()> {
     embedded_migrations::run(&conn);
 
     let schema = Schema::build(Query, Mutation, EmptySubscription)
+        .enable_federation()
         .data(pool)
         .finish();
 

@@ -8,7 +8,7 @@ use crate::persistence::connection::PgPool;
 use crate::persistence::model::SatelliteEntity;
 use crate::persistence::repository;
 
-pub type TestSchema = Schema<Query, EmptyMutation, EmptySubscription>;
+pub type AppSchema = Schema<Query, EmptyMutation, EmptySubscription>;
 
 pub struct Query;
 
