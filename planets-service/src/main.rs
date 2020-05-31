@@ -4,13 +4,18 @@ extern crate diesel;
 extern crate diesel_migrations;
 extern crate strum;
 
+use std::sync::Arc;
+
 use actix_web::{App, guard, HttpResponse, HttpServer, Result, web};
-use async_graphql::{EmptySubscription, Schema};
+use async_graphql::{EmptySubscription, ID, Schema};
 use async_graphql::http::{GQLResponse, playground_source};
 use async_graphql_actix_web::GQLRequest;
+use dataloader::non_cached::Loader;
 
 use dotenv::dotenv;
-use graphql::{Mutation, Query, TestSchema};
+use graphql::{Details, DetailsBatchLoader, Mutation, Query, TestSchema};
+
+use crate::persistence::connection::PgPool;
 
 mod graphql;
 mod persistence;
@@ -26,8 +31,10 @@ async fn main() -> std::io::Result<()> {
 
     embedded_migrations::run(&conn);
 
+    let ctx = AppContext::new(pool);
+
     let schema = Schema::build(Query, Mutation, EmptySubscription)
-        .data(pool)
+        .data(ctx)
         .finish();
 
     HttpServer::new(move || {
@@ -49,4 +56,23 @@ async fn index_playground() -> Result<HttpResponse> {
     Ok(HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
         .body(playground_source("/", Some("/"))))
+}
+
+struct AppContext {
+    pool: Arc<PgPool>,
+    details_batch_loader: Loader<ID, Details, DetailsBatchLoader>,
+}
+
+// todo simplify
+impl AppContext {
+    fn new(pool: PgPool) -> Self {
+        let pool = Arc::new(pool);
+        let cloned_pool = Arc::clone(&pool);
+        AppContext {
+            pool,
+            details_batch_loader: Loader::new(DetailsBatchLoader {
+                pool: cloned_pool
+            }).with_max_batch_size(10),
+        }
+    }
 }

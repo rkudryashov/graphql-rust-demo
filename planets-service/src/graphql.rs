@@ -1,12 +1,18 @@
+use std::collections::HashMap;
 use std::ops::Mul;
 use std::str::FromStr;
+use std::sync::Arc;
 
 use async_graphql::*;
-use bigdecimal::{BigDecimal, ToPrimitive, Zero};
+use bigdecimal::{BigDecimal, ToPrimitive};
+use dataloader::BatchFn;
 use num_bigint::{BigInt, ToBigInt};
 use serde::Serialize;
 use strum_macros::{Display, EnumString};
 
+use async_trait::async_trait;
+
+use crate::AppContext;
 use crate::persistence::connection::PgPool;
 use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
 use crate::persistence::repository;
@@ -18,7 +24,7 @@ pub struct Query;
 #[Object]
 impl Query {
     async fn planets(&self, ctx: &Context<'_>) -> Vec<Planet> {
-        let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
+        let conn = ctx.data::<AppContext>().pool.get().expect("Can't get DB connection");
 
         let planet_entities = repository::all(&conn).expect("Can't get planets");
 
@@ -38,7 +44,7 @@ impl Query {
 }
 
 fn find_planet_by_id_internal(ctx: &Context<'_>, id: ID) -> Option<Planet> {
-    let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
+    let conn = ctx.data::<AppContext>().pool.get().expect("Can't get DB connection");
 
     let id = id.to_string().parse::<i32>().expect("Can't get id from String");
     let maybe_planet = repository::get(id, &conn).ok();
@@ -58,7 +64,7 @@ impl Mutation {
             some.mul(num::pow(bigdecimal::BigDecimal::from(10), ten_power))
         }
 
-        let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
+        let conn = ctx.data::<AppContext>().pool.get().expect("Can't get DB connection");
 
         let new_planet = NewPlanetEntity {
             name,
@@ -83,7 +89,6 @@ struct Planet {
     id: ID,
     name: String,
     planet_type: PlanetType,
-    details: Details,
 }
 
 #[Object]
@@ -107,12 +112,8 @@ impl Planet {
     }
 
     async fn details(&self, ctx: &Context<'_>) -> Details {
-        let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
-
-        let id = self.id.to_string().parse::<i32>().expect("Can't get id from String");
-        let details = repository::get_details(id, &conn).ok();
-
-        convert_details(&details.expect("Can't get details for a planet"))
+        let loader = &ctx.data::<AppContext>().details_batch_loader;
+        loader.load(self.id.clone()).await
     }
 }
 
@@ -130,14 +131,14 @@ field(name = "mean_radius", type = "CustomBigDecimal", context),
 field(name = "mass", type = "CustomBigInt", context),
 )]
 #[derive(Clone)]
-enum Details {
+pub(crate) enum Details {
     InhabitedPlanetDetails(InhabitedPlanetDetails),
     UninhabitedPlanetDetails(UninhabitedPlanetDetails),
 }
 
 #[SimpleObject]
 #[derive(Clone)]
-struct InhabitedPlanetDetails {
+pub struct InhabitedPlanetDetails {
     mean_radius: CustomBigDecimal,
     mass: CustomBigInt,
     #[field(desc = "in billions")]
@@ -146,7 +147,7 @@ struct InhabitedPlanetDetails {
 
 #[SimpleObject]
 #[derive(Clone)]
-struct UninhabitedPlanetDetails {
+pub struct UninhabitedPlanetDetails {
     mean_radius: CustomBigDecimal,
     mass: CustomBigInt,
 }
@@ -203,16 +204,10 @@ struct MassInput {
 
 // todo from/into trait
 fn convert_planet(planet_entity: &PlanetEntity) -> Planet {
-    let details_stub: Details = UninhabitedPlanetDetails {
-        mean_radius: CustomBigDecimal(BigDecimal::zero()),
-        mass: CustomBigInt(BigInt::zero()),
-    }.into();
-
     Planet {
         id: planet_entity.id.into(),
         name: planet_entity.name.clone(),
         planet_type: PlanetType::from_str(planet_entity.planet_type.as_str()).expect("Can't convert &str to PlanetType"),
-        details: details_stub,
     }
 }
 
@@ -231,4 +226,22 @@ fn convert_details(details_entity: &DetailsEntity) -> Details {
     };
 
     details
+}
+
+pub(crate) struct DetailsBatchLoader {
+    pub(crate) pool: Arc<PgPool>
+}
+
+#[async_trait]
+impl BatchFn<ID, Details> for DetailsBatchLoader {
+    async fn load(&self, keys: &[ID]) -> HashMap<ID, Details> {
+        keys.iter().map(|planet_id| {
+            let conn = self.pool.get().expect("Can't get DB connection");
+
+            let planet_id_int = planet_id.to_string().parse::<i32>().expect("Can't convert id");
+            let details_entity = repository::get_details(planet_id_int, &conn).expect("Can't get details for a planet");
+
+            (planet_id.clone(), convert_details(&details_entity))
+        }).collect::<HashMap<_, _>>()
+    }
 }
