@@ -1,0 +1,16 @@
+[package]
+name = "auth-service"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+async-graphql = "1.14.10"
+async-graphql-actix-web = "1.14.7"
+actix-web = "2.0.0"
+actix-rt = "1.1.1"
+serde = { version = "1.0.110", features = ["derive"] }
+diesel = { version = "1.4.4", features = ["postgres", "r2d2", "chrono"] }
+diesel_migrations = "1.4.0"
+dotenv = "0.15.0"
+argonautica = "0.2.0"
+lazy_static = "1.4.0"
