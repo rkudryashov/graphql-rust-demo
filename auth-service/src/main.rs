@@ -5,7 +5,7 @@ extern crate diesel_migrations;
 
 use actix_web::{App, guard, HttpResponse, HttpServer, Result, web};
 use async_graphql::{EmptySubscription, Schema};
-use async_graphql::http::{GQLResponse, playground_source};
+use async_graphql::http::{GQLResponse, GraphQLPlaygroundConfig, playground_source};
 use async_graphql_actix_web::GQLRequest;
 
 use dotenv::dotenv;
@@ -31,12 +31,11 @@ async fn main() -> std::io::Result<()> {
         .data(pool)
         .finish();
 
-    HttpServer::new(move || {
-        App::new()
-            .data(schema.clone())
-            .service(web::resource("/").guard(guard::Post()).to(index))
-            .service(web::resource("/").guard(guard::Get()).to(index_playground))
-    })
+    HttpServer::new(move || App::new()
+        .data(schema.clone())
+        .service(web::resource("/").guard(guard::Post()).to(index))
+        .service(web::resource("/").guard(guard::Get()).to(index_playground))
+    )
         .bind("127.0.0.1:8003")?
         .run()
         .await
@@ -49,5 +48,5 @@ async fn index(schema: web::Data<AppSchema>, gql_request: GQLRequest) -> web::Js
 async fn index_playground() -> Result<HttpResponse> {
     Ok(HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
-        .body(playground_source("/", Some("/"))))
+        .body(playground_source(GraphQLPlaygroundConfig::new("/"))))
 }

@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use async_graphql::*;
-use chrono::prelude::*;
+use chrono::prelude::NaiveDate;
 use strum_macros::EnumString;
 
 use crate::persistence::connection::PgPool;

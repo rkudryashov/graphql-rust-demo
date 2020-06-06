@@ -145,7 +145,7 @@ field(name = "mean_radius", type = "CustomBigDecimal", context),
 field(name = "mass", type = "CustomBigInt", context),
 )]
 #[derive(Clone)]
-pub(crate) enum Details {
+pub enum Details {
     InhabitedPlanetDetails(InhabitedPlanetDetails),
     UninhabitedPlanetDetails(UninhabitedPlanetDetails),
 }
@@ -243,8 +243,8 @@ impl From<&DetailsEntity> for Details {
     }
 }
 
-pub(crate) struct DetailsBatchLoader {
-    pub(crate) pool: Arc<PgPool>
+pub struct DetailsBatchLoader {
+     pub pool: Arc<PgPool>
 }
 
 #[async_trait]
