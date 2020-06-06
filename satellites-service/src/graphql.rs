@@ -46,7 +46,6 @@ struct Satellite {
     name: String,
     life_exists: LifeExists,
     first_spacecraft_landing_date: Option<NaiveDate>,
-    planet_id: i32,
 }
 
 #[Object]
@@ -117,7 +116,6 @@ impl From<&SatelliteEntity> for Satellite {
             name: entity.name.clone(),
             life_exists: LifeExists::from_str(entity.life_exists.as_str()).expect("Can't convert &str to LifeExists"),
             first_spacecraft_landing_date: entity.first_spacecraft_landing_date,
-            planet_id: entity.planet_id,
         }
     }
 }

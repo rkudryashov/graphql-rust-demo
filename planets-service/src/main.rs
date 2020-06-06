@@ -35,6 +35,8 @@ async fn main() -> std::io::Result<()> {
     let ctx = AppContext::new(pool);
 
     let schema = Schema::build(Query, Mutation, Subscription)
+        .limit_complexity(10)
+        .limit_depth(5)
         .data(ctx)
         .finish();
 
