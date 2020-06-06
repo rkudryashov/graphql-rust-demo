@@ -7,6 +7,8 @@ use strum_macros::EnumString;
 use crate::persistence::connection::PgPool;
 use crate::persistence::model::SatelliteEntity;
 use crate::persistence::repository;
+use crate::RequestContext;
+use crate::utils::decode_token;
 
 pub type AppSchema = Schema<Query, EmptyMutation, EmptySubscription>;
 
@@ -38,7 +40,6 @@ impl Query {
     }
 }
 
-#[SimpleObject]
 #[derive(Clone)]
 struct Satellite {
     id: ID,
@@ -46,6 +47,33 @@ struct Satellite {
     life_exists: LifeExists,
     first_spacecraft_landing_date: Option<NaiveDate>,
     planet_id: i32,
+}
+
+#[Object]
+impl Satellite {
+    async fn id(&self) -> &ID {
+        &self.id
+    }
+
+    async fn name(&self) -> &str {
+        &self.name
+    }
+
+    async fn life_exists(&self, ctx: &Context<'_>) -> &LifeExists {
+        let maybe_token = &ctx.data::<RequestContext>().token;
+        if let Some(token) = maybe_token {
+            let token_data = decode_token(token);
+            if token_data.claims.role == "admin" {
+                return &self.life_exists;
+            }
+        }
+
+        panic!("life_exists can only be accessed by authenticated user with `admin` role")
+    }
+
+    async fn first_spacecraft_landing_date(&self) -> &Option<NaiveDate> {
+        &self.first_spacecraft_landing_date
+    }
 }
 
 #[Enum]

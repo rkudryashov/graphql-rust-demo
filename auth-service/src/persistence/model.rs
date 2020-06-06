@@ -8,6 +8,7 @@ pub struct UserEntity {
     pub hash: String,
     pub first_name: String,
     pub last_name: String,
+    pub role: String,
 }
 
 #[derive(Insertable)]
@@ -17,4 +18,5 @@ pub struct NewUserEntity {
     pub hash: String,
     pub first_name: String,
     pub last_name: String,
+    pub role: String,
 }

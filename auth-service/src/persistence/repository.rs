@@ -11,9 +11,8 @@ pub fn create(new_user: NewUserEntity, conn: &PgConnection) -> QueryResult<UserE
         .get_result(conn)
 }
 
-pub fn get_hash(username: &str, conn: &PgConnection) -> QueryResult<String> {
+pub fn get_user(username: &str, conn: &PgConnection) -> QueryResult<UserEntity> {
     users::table
         .filter(users::username.eq(username))
-        .select(users::hash)
         .first(conn)
 }

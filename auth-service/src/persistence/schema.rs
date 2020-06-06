@@ -5,5 +5,6 @@ table! {
         hash -> Varchar,
         first_name -> Varchar,
         last_name -> Varchar,
+        role -> Varchar,
     }
 }

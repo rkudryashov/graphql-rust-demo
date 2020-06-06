@@ -4,16 +4,17 @@ extern crate diesel;
 extern crate diesel_migrations;
 extern crate strum;
 
-use actix_web::{App, guard, HttpResponse, HttpServer, Result, web};
+use actix_web::{App, guard, HttpRequest, HttpResponse, HttpServer, Result, web};
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use async_graphql::http::{GQLResponse, playground_source};
 use async_graphql_actix_web::GQLRequest;
 
 use dotenv::dotenv;
-use graphql::{Query, AppSchema};
+use graphql::{AppSchema, Query};
 
 mod graphql;
 mod persistence;
+mod utils;
 
 embed_migrations!();
 
@@ -41,12 +42,25 @@ async fn main() -> std::io::Result<()> {
         .await
 }
 
-async fn index(schema: web::Data<AppSchema>, gql_request: GQLRequest) -> web::Json<GQLResponse> {
-    web::Json(GQLResponse(gql_request.into_inner().execute(&schema).await))
+async fn index(schema: web::Data<AppSchema>, http_request: HttpRequest, gql_request: GQLRequest) -> web::Json<GQLResponse> {
+    let token = http_request
+        .headers()
+        .get("Authorization")
+        .and_then(|value| value.to_str().ok().map(|s| s.to_string()));
+
+    let request_context = RequestContext { token };
+
+    let query = gql_request.into_inner().data(request_context);
+
+    web::Json(GQLResponse(query.execute(&schema).await))
 }
 
 async fn index_playground() -> Result<HttpResponse> {
     Ok(HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
         .body(playground_source("/", Some("/"))))
+}
+
+struct RequestContext {
+    token: Option<String>
 }

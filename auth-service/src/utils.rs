@@ -9,6 +9,8 @@ use serde::Serialize;
 
 use lazy_static::lazy_static;
 
+use crate::persistence::model::UserEntity;
+
 lazy_static! {
     static ref SECRET_KEY: String = std::env::var("SECRET_KEY").expect("Can't read secret key");
 }
@@ -30,12 +32,13 @@ pub fn verify(hash: &str, password: &str) -> Result<bool, Error> {
 }
 
 // JWT stuff
-pub fn create_token(username: &str) -> String {
+pub fn create_token(user: UserEntity) -> String {
     let exp_time = Local::now() + Duration::minutes(60);
 
     let claims = Claims {
-        sub: username.into(),
+        sub: user.username,
         exp: exp_time.timestamp(),
+        role: user.role,
     };
 
     encode(&Header::default(), &claims, &EncodingKey::from_secret(SECRET_KEY.as_ref()))
@@ -46,4 +49,5 @@ pub fn create_token(username: &str) -> String {
 struct Claims {
     sub: String,
     exp: i64,
+    role: String,
 }

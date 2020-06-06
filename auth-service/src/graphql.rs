@@ -24,6 +24,7 @@ impl Mutation {
             hash: hash_password(user.password.as_str()).expect("Can't get hash for password"),
             first_name: user.first_name,
             last_name: user.last_name,
+            role: user.role,
         };
 
         let created_user_entity = repository::create(new_user, &conn).expect("Can't create user");
@@ -34,11 +35,11 @@ impl Mutation {
     async fn sign_in(&self, ctx: &Context<'_>, sign_in_data: SignInInput) -> String {
         let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
 
-        let hash = repository::get_hash(&sign_in_data.username, &conn).expect("Can't get hash for a user");
+        let user = repository::get_user(&sign_in_data.username, &conn).expect("Can't get hash for a user");
 
-        if let Ok(matching) = verify(&hash, &sign_in_data.password) {
+        if let Ok(matching) = verify(&user.hash, &sign_in_data.password) {
             if matching {
-                return create_token(&sign_in_data.username);
+                return create_token(user);
             }
         }
 
@@ -52,6 +53,7 @@ struct UserInput {
     password: String,
     first_name: String,
     last_name: String,
+    role: String,
 }
 
 #[InputObject]
