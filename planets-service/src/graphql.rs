@@ -73,7 +73,7 @@ impl Mutation {
         let new_planet_details = NewDetailsEntity {
             mean_radius: details.mean_radius.0,
             mass: get_new_planet_mass(details.mass.number, details.mass.ten_power),
-            population: details.population.map(|v| { v.0 }),
+            population: details.population.map(|wrapper| { wrapper.0 }),
             planet_id: 0,
         };
 
@@ -244,7 +244,7 @@ impl From<&DetailsEntity> for Details {
 }
 
 pub struct DetailsBatchLoader {
-     pub pool: Arc<PgPool>
+    pub pool: Arc<PgPool>
 }
 
 #[async_trait]
