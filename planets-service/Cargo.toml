@@ -22,4 +22,6 @@ diesel_migrations = "1.4.0"
 dotenv = "0.15.0"
 strum = "0.18.0"
 strum_macros = "0.18.0"
+
+[dev-dependencies]
 jsonpath_lib = "0.2.5"
