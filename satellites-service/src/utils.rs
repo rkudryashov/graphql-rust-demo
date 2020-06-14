@@ -1,5 +1,3 @@
-use std::error::Error;
-
 use jsonwebtoken::{decode, DecodingKey, TokenData, Validation};
 use serde::Deserialize;
 
