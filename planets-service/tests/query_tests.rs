@@ -50,7 +50,6 @@ async fn test_planets() {
     let request_body = GraphQLCustomRequest {
         query,
         variables: Map::new(),
-        operation_name: "query".to_string(),
     };
 
     let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
@@ -92,7 +91,6 @@ async fn test_planet_by_id() {
     let request_body = GraphQLCustomRequest {
         query,
         variables: Map::new(),
-        operation_name: "query".to_string(),
     };
 
     let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
@@ -127,7 +125,6 @@ async fn test_variable() {
     let request_body = GraphQLCustomRequest {
         query,
         variables,
-        operation_name: "query".to_string(),
     };
 
     let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
@@ -153,7 +150,6 @@ fn check_planet(planet_json: &serde_json::Value, id: i32, name: &str, planet_typ
 struct GraphQLCustomRequest {
     query: String,
     variables: Map<String, serde_json::Value>,
-    operation_name: String,
 }
 
 #[derive(Deserialize)]

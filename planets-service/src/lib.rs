@@ -21,8 +21,8 @@ use crate::persistence::connection::PgPool;
 
 embed_migrations!();
 
-pub mod graphql;
-pub mod persistence;
+mod graphql;
+mod persistence;
 
 pub async fn index(schema: web::Data<AppSchema>, gql_request: GQLRequest) -> web::Json<GQLResponse> {
     web::Json(GQLResponse(gql_request.into_inner().execute(&schema).await))

@@ -35,7 +35,6 @@ async fn test_satellites() {
     let request_body = GraphQLCustomRequest {
         query,
         variables: Map::new(),
-        operation_name: "query".to_string(),
     };
 
     let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
@@ -74,7 +73,6 @@ async fn test_satellite() {
     let request_body = GraphQLCustomRequest {
         query,
         variables: Map::new(),
-        operation_name: "query".to_string(),
     };
 
     let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
@@ -108,7 +106,6 @@ async fn test_satellite_should_panic() {
     let request_body = GraphQLCustomRequest {
         query,
         variables: Map::new(),
-        operation_name: "query".to_string(),
     };
 
     let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
@@ -121,7 +118,7 @@ fn check_satellite(satellite_json: &serde_json::Value, name: &str, first_spacecr
     match first_spacecraft_landing_date {
         Some(date) => {
             let date_string = jsonpath::select(&satellite_json, "$..firstSpacecraftLandingDate").expect("Can't get property")[0].as_str().expect("Can't get property as str");
-            assert_eq!(date, date_string.parse::<NaiveDate>().expect("Can't parse &str"));
+            assert_eq!(date, date_string.parse::<NaiveDate>().expect("Can't parse str"));
         }
         None => {
             assert!(jsonpath::select(&satellite_json, "$..firstSpacecraftLandingDate").expect("Can't get property")[0].is_null());
@@ -133,7 +130,6 @@ fn check_satellite(satellite_json: &serde_json::Value, name: &str, first_spacecr
 struct GraphQLCustomRequest {
     query: String,
     variables: Map<String, serde_json::Value>,
-    operation_name: String,
 }
 
 #[derive(Deserialize)]
