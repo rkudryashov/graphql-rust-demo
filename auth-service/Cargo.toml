@@ -16,3 +16,8 @@ dotenv = "0.15.0"
 argonautica = "0.2.0"
 jsonwebtoken = "7.1.0"
 lazy_static = "1.4.0"
+
+[dev-dependencies]
+serde_json = "1.0.55"
+jsonpath_lib = "0.2.5"
+base64 = "0.12.2"

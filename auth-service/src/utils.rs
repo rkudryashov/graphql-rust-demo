@@ -1,11 +1,9 @@
 // WARNING: THIS IS ONLY FOR DEMO! PLEASE DO MORE RESEARCH FOR PRODUCTION USE.
 
-use std::ops::Add;
-
 use argonautica::{Error, Hasher, Verifier};
 use chrono::{Duration, Local};
 use jsonwebtoken::{encode, EncodingKey, Header};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use lazy_static::lazy_static;
 
@@ -45,9 +43,9 @@ pub fn create_token(user: UserEntity) -> String {
         .expect("Can't create token")
 }
 
-#[derive(Serialize)]
-struct Claims {
-    sub: String,
-    exp: i64,
-    role: String,
+#[derive(Deserialize, Serialize)]
+pub struct Claims {
+    pub sub: String,
+    pub exp: i64,
+    pub role: String,
 }
