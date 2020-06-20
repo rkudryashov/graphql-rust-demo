@@ -15,7 +15,7 @@ async fn main() -> std::io::Result<()> {
         .service(web::resource("/").guard(guard::Get()).guard(guard::Header("upgrade", "websocket")).to(index_ws))
         .service(web::resource("/").guard(guard::Get()).to(index_playground))
     )
-        .bind("127.0.0.1:8001")?
+        .bind("0.0.0.0:8001")?
         .run()
         .await
 }

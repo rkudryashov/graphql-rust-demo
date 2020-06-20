@@ -1,0 +1,74 @@
+version: '3.8'
+services:
+
+  # Planets service
+  planets-service:
+    build: planets-service
+    depends_on:
+      - planets-db
+    ports:
+      - 8001:8001
+    expose:
+      - 8001
+    environment:
+      DATABASE_URL: postgres://postgres:$PLANETS_DB_PASSWORD@planets-db/planets
+    restart: always
+  planets-db:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_DB: planets
+      POSTGRES_PASSWORD: $PLANETS_DB_PASSWORD
+    restart: always
+
+  # Satellites service
+  satellites-service:
+    build: satellites-service
+    depends_on:
+      - satellites-db
+    ports:
+      - 8002:8002
+    expose:
+      - 8002
+    environment:
+      DATABASE_URL: postgres://postgres:$SATELLITES_DB_PASSWORD@satellites-db/satellites
+      SECRET_KEY: $SECRET_KEY
+    restart: always
+  satellites-db:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_DB: satellites
+      POSTGRES_PASSWORD: $SATELLITES_DB_PASSWORD
+    restart: always
+
+  # Auth service
+  auth-service:
+    build: auth-service
+    depends_on:
+      - auth-db
+    ports:
+      - 8003:8003
+    expose:
+      - 8003
+    environment:
+      DATABASE_URL: postgres://postgres:$AUTH_DB_PASSWORD@auth-db/auth
+      SECRET_KEY: $SECRET_KEY
+    restart: always
+  auth-db:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_PASSWORD: $AUTH_DB_PASSWORD
+    restart: always
+
+  # Apollo server
+  apollo-server:
+    build: apollo-server
+    depends_on:
+      - planets-service
+      - satellites-service
+      - auth-service
+    ports:
+      - 4000:4000
+    expose:
+      - 4000
+    restart: always

@@ -141,8 +141,8 @@ enum PlanetType {
 }
 
 #[Interface(
-field(name = "mean_radius", type = "CustomBigDecimal", context),
-field(name = "mass", type = "CustomBigInt", context),
+    field(name = "mean_radius", type = "&CustomBigDecimal"),
+    field(name = "mass", type = "&CustomBigInt"),
 )]
 #[derive(Clone)]
 pub enum Details {

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-async-graphql = "1.15.14"
+async-graphql = "1.16.0"
 async-graphql-actix-web = "1.14.14"
 actix-web = "2.0.0"
 actix-rt = "1.1.1"
@@ -13,10 +13,10 @@ dataloader = "0.12"
 futures = "0.3.5"
 async-trait = "0.1.31"
 num-bigint = { version = "0.2.6", features = ["serde"] }
-bigdecimal = { version = "0.0.15", features = ["serde"] }
+bigdecimal = { version = "0.1.2", features = ["serde"] }
 num = "0.2.1"
 serde = { version = "1.0.110", features = ["derive"] }
-diesel = { version = "1.4.4", features = ["postgres", "r2d2", "numeric"] }
+diesel = { version = "1.4.5", features = ["postgres", "r2d2", "numeric"] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15.0"
 strum = "0.18.0"

@@ -14,7 +14,7 @@ async fn main() -> std::io::Result<()> {
         .service(web::resource("/").guard(guard::Post()).to(index))
         .service(web::resource("/").guard(guard::Get()).to(index_playground))
     )
-        .bind("127.0.0.1:8002")?
+        .bind("0.0.0.0:8002")?
         .run()
         .await
 }
