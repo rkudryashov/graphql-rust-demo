@@ -3,7 +3,9 @@ const {ApolloGateway, RemoteGraphQLDataSource} = require("@apollo/gateway");
 
 class AuthenticatedDataSource extends RemoteGraphQLDataSource {
     willSendRequest({request, context}) {
-        request.http.headers.set('Authorization', context.authHeaderValue);
+        if (context.authHeaderValue) {
+            request.http.headers.set('Authorization', context.authHeaderValue);
+        }
     }
 }
 

@@ -4,10 +4,13 @@ extern crate diesel;
 extern crate diesel_migrations;
 extern crate strum;
 
+use std::str::FromStr;
+
 use actix_web::{HttpRequest, HttpResponse, Result, web};
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
 use async_graphql::http::{GQLResponse, GraphQLPlaygroundConfig, playground_source};
 use async_graphql_actix_web::GQLRequest;
+use strum_macros::EnumString;
 
 use dotenv::dotenv;
 
@@ -22,14 +25,12 @@ mod persistence;
 mod utils;
 
 pub async fn index(schema: web::Data<AppSchema>, http_request: HttpRequest, gql_request: GQLRequest) -> web::Json<GQLResponse> {
-    let token = http_request
-        .headers()
-        .get("Authorization")
-        .and_then(|value| value.to_str().ok().map(|s| s.to_string()));
+    let mut query = gql_request.into_inner();
 
-    let request_context = RequestContext { token };
-
-    let query = gql_request.into_inner().data(request_context);
+    let maybe_role = get_role(http_request);
+    if let Some(role) = maybe_role {
+        query = query.data(role);
+    }
 
     web::Json(GQLResponse(query.execute(&schema).await))
 }
@@ -54,6 +55,21 @@ pub fn prepare_env() -> PgPool {
     pool
 }
 
-struct RequestContext {
-    token: Option<String>
+fn get_role(http_request: HttpRequest) -> Option<Role> {
+    http_request
+        .headers()
+        .get("Authorization")
+        .and_then(|header_value| header_value.to_str().ok().map(|s| {
+            let jwt_start_index = "Bearer ".len();
+            let jwt = s[jwt_start_index..s.len()].to_string();
+            let token_data = utils::decode_token(&jwt);
+            Role::from_str(&token_data.claims.role).expect("Can't parse role")
+        }))
+}
+
+#[derive(EnumString)]
+#[derive(Eq, PartialEq)]
+enum Role {
+    Admin,
+    User,
 }

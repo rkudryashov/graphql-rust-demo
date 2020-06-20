@@ -1,14 +1,14 @@
 use std::str::FromStr;
 
 use async_graphql::*;
+use async_graphql::guard::Guard;
 use chrono::prelude::NaiveDate;
 use strum_macros::EnumString;
 
 use crate::persistence::connection::PgPool;
 use crate::persistence::model::SatelliteEntity;
 use crate::persistence::repository;
-use crate::RequestContext;
-use crate::utils::decode_token;
+use crate::Role;
 
 pub type AppSchema = Schema<Query, EmptyMutation, EmptySubscription>;
 
@@ -40,39 +40,13 @@ impl Query {
     }
 }
 
-#[derive(Clone)]
+#[SimpleObject]
 struct Satellite {
     id: ID,
     name: String,
+    #[field(guard(RoleGuard(role = "Role::User")))]
     life_exists: LifeExists,
     first_spacecraft_landing_date: Option<NaiveDate>,
-}
-
-#[Object]
-impl Satellite {
-    async fn id(&self) -> &ID {
-        &self.id
-    }
-
-    async fn name(&self) -> &str {
-        &self.name
-    }
-
-    async fn life_exists(&self, ctx: &Context<'_>) -> &LifeExists {
-        let maybe_token = &ctx.data::<RequestContext>().token;
-        if let Some(token) = maybe_token {
-            let token_data = decode_token(token);
-            if token_data.claims.role == "admin" {
-                return &self.life_exists;
-            }
-        }
-
-        panic!("life_exists can only be accessed by authenticated user with `admin` role")
-    }
-
-    async fn first_spacecraft_landing_date(&self) -> &Option<NaiveDate> {
-        &self.first_spacecraft_landing_date
-    }
 }
 
 #[Enum]
@@ -116,6 +90,21 @@ impl From<&SatelliteEntity> for Satellite {
             name: entity.name.clone(),
             life_exists: LifeExists::from_str(entity.life_exists.as_str()).expect("Can't convert &str to LifeExists"),
             first_spacecraft_landing_date: entity.first_spacecraft_landing_date,
+        }
+    }
+}
+
+struct RoleGuard {
+    role: Role,
+}
+
+#[async_trait::async_trait]
+impl Guard for RoleGuard {
+    async fn check(&self, ctx: &Context<'_>) -> FieldResult<()> {
+        if ctx.data_opt::<Role>() == Some(&self.role) {
+            Ok(())
+        } else {
+            Err("Forbidden".into())
         }
     }
 }

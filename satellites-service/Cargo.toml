@@ -17,6 +17,7 @@ jsonwebtoken = "7.1.0"
 lazy_static = "1.4.0"
 strum = "0.18.0"
 strum_macros = "0.18.0"
+async-trait = "0.1.36"
 
 [dev-dependencies]
 serde_json = "1.0.55"
