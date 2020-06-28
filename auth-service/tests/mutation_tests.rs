@@ -29,9 +29,9 @@ async fn test_sign_in() {
 
     let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
 
-    let result: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
+    let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
-    let jwt = jsonpath::select(&result.data, "$..signIn").expect("Can't get JWT")[0].as_str().expect("Can't get JWT string");
+    let jwt = jsonpath::select(&response.data, "$..signIn").expect("Can't get JWT")[0].as_str().expect("Can't get JWT string");
 
     let first_dot_index = jwt.find('.').expect("Incorrect JWT");
     let last_dot_index = jwt.rfind('.').expect("Incorrect JWT");

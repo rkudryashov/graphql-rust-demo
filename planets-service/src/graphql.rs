@@ -8,7 +8,6 @@ use bigdecimal::{BigDecimal, ToPrimitive};
 use dataloader::BatchFn;
 use futures::Stream;
 use num_bigint::{BigInt, ToBigInt};
-use serde::Serialize;
 use strum_macros::{Display, EnumString};
 
 use async_trait::async_trait;
@@ -166,7 +165,7 @@ pub struct UninhabitedPlanetDetails {
     mass: CustomBigInt,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone)]
 struct CustomBigInt(BigInt);
 
 #[Scalar(name = "BigInt")]
@@ -182,7 +181,7 @@ impl ScalarType for CustomBigInt {
     }
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone)]
 struct CustomBigDecimal(BigDecimal);
 
 #[Scalar(name = "BigDecimal")]

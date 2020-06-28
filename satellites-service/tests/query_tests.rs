@@ -39,16 +39,18 @@ async fn test_satellites() {
 
     let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
 
-    let result: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
+    let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
+
+    let response_data = response.data.expect("Response doesn't contain data");
 
     fn get_satellite_as_json(all_satellites: &serde_json::Value, index: i32) -> &serde_json::Value {
         jsonpath::select(all_satellites, &format!("$..satellites[{}]", index)).expect("Can't get satellite by JSON path")[0]
     }
 
-    let moon_json = get_satellite_as_json(&result.data, 0);
+    let moon_json = get_satellite_as_json(&response_data, 0);
     check_satellite(moon_json, "Moon", Some(NaiveDate::from_ymd(1959, 9, 13)));
 
-    let titan_json = get_satellite_as_json(&result.data, 7);
+    let titan_json = get_satellite_as_json(&response_data, 7);
     check_satellite(titan_json, "Titan", None);
 }
 
@@ -77,15 +79,16 @@ async fn test_satellite() {
 
     let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
 
-    let result: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
+    let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
-    let moon_json = jsonpath::select(&result.data, "$..satellite").expect("Can't get satellite by JSON path")[0];
+    let response_data = response.data.expect("Response doesn't contain data");
+
+    let moon_json = jsonpath::select(&response_data, "$..satellite").expect("Can't get satellite by JSON path")[0];
     check_satellite(moon_json, "Moon", Some(NaiveDate::from_ymd(1959, 9, 13)));
 }
 
 #[actix_rt::test]
-#[should_panic(expected = "life_exists can only be accessed by authenticated user with `admin` role")]
-async fn test_satellite_should_panic() {
+async fn test_satellite_should_return_forbidden() {
     let pool = prepare_env();
     let schema = create_schema(pool);
 
@@ -110,7 +113,11 @@ async fn test_satellite_should_panic() {
 
     let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
 
-    test::call_service(&mut service, request).await;
+    let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
+
+    let errors = &response.errors.expect("Response doesn't contain errors");
+    let error_message = jsonpath::select(errors, "$..[0].message").expect("Can't get error by JSON path")[0];
+    assert_eq!("Forbidden", error_message);
 }
 
 fn check_satellite(satellite_json: &serde_json::Value, name: &str, first_spacecraft_landing_date: Option<NaiveDate>) {
@@ -134,5 +141,6 @@ struct GraphQLCustomRequest {
 
 #[derive(Deserialize)]
 struct GraphQLCustomResponse {
-    data: serde_json::Value,
+    data: Option<serde_json::Value>,
+    errors: Option<serde_json::Value>,
 }
