@@ -78,13 +78,9 @@ impl Mutation {
 
         let created_planet_entity = repository::create(new_planet, new_planet_details, &conn).expect("Can't create planet");
 
-        let created_planet = Planet::from(&created_planet_entity);
+        SimpleBroker::publish(Planet::from(&created_planet_entity));
 
-        let result = created_planet.id.clone();
-
-        SimpleBroker::publish(created_planet);
-
-        result
+        created_planet_entity.id.into()
     }
 }
 

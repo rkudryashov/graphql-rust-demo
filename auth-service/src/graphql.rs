@@ -35,11 +35,13 @@ impl Mutation {
     async fn sign_in(&self, ctx: &Context<'_>, sign_in_data: SignInInput) -> String {
         let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
 
-        let user = repository::get_user(&sign_in_data.username, &conn).expect("Can't get hash for a user");
+        let maybe_user = repository::get_user(&sign_in_data.username, &conn).ok();
 
-        if let Ok(matching) = verify(&user.hash, &sign_in_data.password) {
-            if matching {
-                return create_token(user);
+        if let Some(user) = maybe_user {
+            if let Ok(matching) = verify(&user.hash, &sign_in_data.password) {
+                if matching {
+                    return create_token(user);
+                }
             }
         }
 

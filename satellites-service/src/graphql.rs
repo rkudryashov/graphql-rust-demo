@@ -44,7 +44,7 @@ impl Query {
 struct Satellite {
     id: ID,
     name: String,
-    #[field(guard(RoleGuard(role = "Role::User")))]
+    #[field(guard(RoleGuard(role = "Role::Admin")))]
     life_exists: LifeExists,
     first_spacecraft_landing_date: Option<NaiveDate>,
 }
@@ -75,11 +75,9 @@ impl Planet {
         let id = self.id.to_string().parse::<i32>().expect("Can't get id from String");
         let satellite_entities = repository::get_by_planet_id(id, &conn).expect("Can't get satellites of planet");
 
-        let satellites = satellite_entities.iter()
+        satellite_entities.iter()
             .map(|e| { Satellite::from(e) })
-            .collect();
-
-        satellites
+            .collect()
     }
 }
 
