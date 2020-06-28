@@ -71,4 +71,6 @@ services:
       - 4000:4000
     expose:
       - 4000
+    environment:
+      NODE_ENV: docker
     restart: always

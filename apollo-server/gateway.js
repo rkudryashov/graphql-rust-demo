@@ -9,11 +9,28 @@ class AuthenticatedDataSource extends RemoteGraphQLDataSource {
     }
 }
 
+let node_env = process.env.NODE_ENV;
+
+function get_service_url(service_name, port) {
+    let host;
+    switch (node_env) {
+        case 'docker':
+            host = service_name;
+            break;
+        case 'local': {
+            host = 'localhost';
+            break
+        }
+    }
+
+    return "http://" + host + ":" + port;
+}
+
 const gateway = new ApolloGateway({
     serviceList: [
-        {name: "planets-service", url: "http://planets-service:8001"},
-        {name: "satellites-service", url: "http://satellites-service:8002"},
-        {name: "auth-service", url: "http://auth-service:8003"},
+        {name: "planets-service", url: get_service_url("planets-service", 8001)},
+        {name: "satellites-service", url: get_service_url("satellites-service", 8002)},
+        {name: "auth-service", url: get_service_url("auth-service", 8003)},
     ],
     buildService({name, url}) {
         return new AuthenticatedDataSource({url});
