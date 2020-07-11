@@ -6,13 +6,14 @@ use std::sync::Arc;
 use async_graphql::*;
 use bigdecimal::{BigDecimal, ToPrimitive};
 use dataloader::BatchFn;
+use dataloader::non_cached::Loader;
 use futures::Stream;
 use num_bigint::{BigInt, ToBigInt};
 use strum_macros::{Display, EnumString};
 
 use async_trait::async_trait;
 
-use crate::AppContext;
+use crate::get_conn_from_ctx;
 use crate::persistence::connection::PgPool;
 use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
 use crate::persistence::repository;
@@ -24,9 +25,7 @@ pub struct Query;
 #[Object]
 impl Query {
     async fn planets(&self, ctx: &Context<'_>) -> Vec<Planet> {
-        let conn = ctx.data::<AppContext>().pool.get().expect("Can't get DB connection");
-
-        let planet_entities = repository::all(&conn).expect("Can't get planets");
+        let planet_entities = repository::all(&get_conn_from_ctx(ctx)).expect("Can't get planets");
 
         planet_entities.iter()
             .map(|p| { Planet::from(p) })
@@ -44,10 +43,8 @@ impl Query {
 }
 
 fn find_planet_by_id_internal(ctx: &Context<'_>, id: ID) -> Option<Planet> {
-    let conn = ctx.data::<AppContext>().pool.get().expect("Can't get DB connection");
-
     let id = id.to_string().parse::<i32>().expect("Can't get id from String");
-    let maybe_planet = repository::get(id, &conn).ok();
+    let maybe_planet = repository::get(id, &get_conn_from_ctx(ctx)).ok();
 
     maybe_planet.map(|p| { Planet::from(&p) })
 }
@@ -62,8 +59,6 @@ impl Mutation {
             some.mul(num::pow(BigDecimal::from(10), ten_power as usize))
         }
 
-        let conn = ctx.data::<AppContext>().pool.get().expect("Can't get DB connection");
-
         let new_planet = NewPlanetEntity {
             name,
             planet_type: planet_type.to_string(),
@@ -76,7 +71,7 @@ impl Mutation {
             planet_id: 0,
         };
 
-        let created_planet_entity = repository::create(new_planet, new_planet_details, &conn).expect("Can't create planet");
+        let created_planet_entity = repository::create(new_planet, new_planet_details, &get_conn_from_ctx(ctx)).expect("Can't create planet");
 
         SimpleBroker::publish(Planet::from(&created_planet_entity));
 
@@ -121,7 +116,7 @@ impl Planet {
     }
 
     async fn details(&self, ctx: &Context<'_>) -> Details {
-        let loader = &ctx.data::<AppContext>().details_batch_loader;
+        let loader = ctx.data::<Loader<ID, Details, DetailsBatchLoader>>().expect("Can't get loader");
         loader.load(self.id.clone()).await
     }
 }

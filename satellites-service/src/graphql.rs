@@ -5,10 +5,9 @@ use async_graphql::guard::Guard;
 use chrono::prelude::NaiveDate;
 use strum_macros::EnumString;
 
-use crate::persistence::connection::PgPool;
+use crate::{get_conn_from_ctx, Role};
 use crate::persistence::model::SatelliteEntity;
 use crate::persistence::repository;
-use crate::Role;
 
 pub type AppSchema = Schema<Query, EmptyMutation, EmptySubscription>;
 
@@ -17,9 +16,7 @@ pub struct Query;
 #[Object(extends)]
 impl Query {
     async fn satellites(&self, ctx: &Context<'_>) -> Vec<Satellite> {
-        let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
-
-        let satellite_entities = repository::all(&conn).expect("Can't get satellites");
+        let satellite_entities = repository::all(&get_conn_from_ctx(ctx)).expect("Can't get satellites");
 
         satellite_entities.iter()
             .map(|e| { Satellite::from(e) })
@@ -27,10 +24,8 @@ impl Query {
     }
 
     async fn satellite(&self, ctx: &Context<'_>, id: ID) -> Option<Satellite> {
-        let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
-
         let id = id.to_string().parse::<i32>().expect("Can't get id from String");
-        repository::get(id, &conn).ok()
+        repository::get(id, &get_conn_from_ctx(ctx)).ok()
             .map(|e| { Satellite::from(&e) })
     }
 
@@ -70,10 +65,8 @@ impl Planet {
     }
 
     async fn satellites(&self, ctx: &Context<'_>) -> Vec<Satellite> {
-        let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
-
         let id = self.id.to_string().parse::<i32>().expect("Can't get id from String");
-        let satellite_entities = repository::get_by_planet_id(id, &conn).expect("Can't get satellites of planet");
+        let satellite_entities = repository::get_by_planet_id(id, &get_conn_from_ctx(ctx)).expect("Can't get satellites of planet");
 
         satellite_entities.iter()
             .map(|e| { Satellite::from(e) })

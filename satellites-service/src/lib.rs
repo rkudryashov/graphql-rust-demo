@@ -7,9 +7,11 @@ extern crate strum;
 use std::str::FromStr;
 
 use actix_web::{HttpRequest, HttpResponse, Result, web};
-use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use async_graphql::{Context, EmptyMutation, EmptySubscription, Schema};
 use async_graphql::http::{GQLResponse, GraphQLPlaygroundConfig, playground_source};
 use async_graphql_actix_web::GQLRequest;
+use diesel::PgConnection;
+use diesel::r2d2::{ConnectionManager, PooledConnection};
 use strum_macros::EnumString;
 
 use dotenv::dotenv;
@@ -72,4 +74,10 @@ fn get_role(http_request: HttpRequest) -> Option<Role> {
 enum Role {
     Admin,
     User,
+}
+
+type Conn = PooledConnection<ConnectionManager<PgConnection>>;
+
+pub fn get_conn_from_ctx(ctx: &Context<'_>) -> Conn {
+    ctx.data::<PgPool>().expect("Can't get pool").get().expect("Can't get DB connection")
 }

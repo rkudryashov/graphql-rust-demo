@@ -4,9 +4,11 @@ extern crate diesel;
 extern crate diesel_migrations;
 
 use actix_web::{HttpResponse, Result, web};
-use async_graphql::{EmptySubscription, Schema};
+use async_graphql::{Context, EmptySubscription, Schema};
 use async_graphql::http::{GQLResponse, GraphQLPlaygroundConfig, playground_source};
 use async_graphql_actix_web::GQLRequest;
+use diesel::PgConnection;
+use diesel::r2d2::{ConnectionManager, PooledConnection};
 
 use dotenv::dotenv;
 
@@ -43,4 +45,10 @@ pub fn prepare_env() -> PgPool {
     let conn = pool.get().expect("Can't get DB connection");
     embedded_migrations::run(&conn);
     pool
+}
+
+type Conn = PooledConnection<ConnectionManager<PgConnection>>;
+
+pub fn get_conn_from_ctx(ctx: &Context<'_>) -> Conn {
+    ctx.data::<PgPool>().expect("Can't get pool").get().expect("Can't get DB connection")
 }

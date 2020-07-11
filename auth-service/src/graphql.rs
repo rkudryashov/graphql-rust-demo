@@ -1,6 +1,6 @@
 use async_graphql::*;
 
-use crate::persistence::connection::PgPool;
+use crate::get_conn_from_ctx;
 use crate::persistence::model::NewUserEntity;
 use crate::persistence::repository;
 use crate::utils::{create_token, hash_password, verify};
@@ -17,8 +17,6 @@ pub struct Mutation;
 #[Object(extends)]
 impl Mutation {
     async fn create_user(&self, ctx: &Context<'_>, user: UserInput) -> ID {
-        let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
-
         let new_user = NewUserEntity {
             username: user.username,
             hash: hash_password(user.password.as_str()).expect("Can't get hash for password"),
@@ -27,15 +25,13 @@ impl Mutation {
             role: user.role,
         };
 
-        let created_user_entity = repository::create(new_user, &conn).expect("Can't create user");
+        let created_user_entity = repository::create(new_user, &get_conn_from_ctx(ctx)).expect("Can't create user");
 
         created_user_entity.id.into()
     }
 
     async fn sign_in(&self, ctx: &Context<'_>, sign_in_data: SignInInput) -> String {
-        let conn = ctx.data::<PgPool>().get().expect("Can't get DB connection");
-
-        let maybe_user = repository::get_user(&sign_in_data.username, &conn).ok();
+        let maybe_user = repository::get_user(&sign_in_data.username, &get_conn_from_ctx(ctx)).ok();
 
         if let Some(user) = maybe_user {
             if let Ok(matching) = verify(&user.hash, &sign_in_data.password) {

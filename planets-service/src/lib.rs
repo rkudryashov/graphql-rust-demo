@@ -8,14 +8,16 @@ use std::sync::Arc;
 
 use actix_web::{HttpRequest, HttpResponse, Result, web};
 use actix_web_actors::ws;
-use async_graphql::{ID, Schema};
+use async_graphql::{Context, Schema};
 use async_graphql::http::{GQLResponse, GraphQLPlaygroundConfig, playground_source};
 use async_graphql_actix_web::{GQLRequest, WSSubscription};
 use dataloader::non_cached::Loader;
+use diesel::PgConnection;
+use diesel::r2d2::{ConnectionManager, PooledConnection};
 
 use dotenv::dotenv;
 
-use crate::graphql::{AppSchema, Details, DetailsBatchLoader, Mutation, Query, Subscription};
+use crate::graphql::{AppSchema, DetailsBatchLoader, Mutation, Query, Subscription};
 use crate::persistence::connection::create_connection_pool;
 use crate::persistence::connection::PgPool;
 
@@ -39,11 +41,17 @@ pub async fn index_playground() -> Result<HttpResponse> {
 }
 
 pub fn create_schema(pool: PgPool) -> Schema<Query, Mutation, Subscription> {
-    let ctx = AppContext::new(pool);
+    let pool = Arc::new(pool);
+    let cloned_pool = Arc::clone(&pool);
+    let details_batch_loader = Loader::new(DetailsBatchLoader {
+        pool: cloned_pool
+    }).with_max_batch_size(10);
+
     Schema::build(Query, Mutation, Subscription)
-        .limit_complexity(10)
-        .limit_depth(5)
-        .data(ctx)
+        .limit_depth(3)
+        .limit_complexity(15)
+        .data(pool)
+        .data(details_batch_loader)
         .finish()
 }
 
@@ -55,20 +63,8 @@ pub fn prepare_env() -> PgPool {
     pool
 }
 
-pub struct AppContext {
-    pool: Arc<PgPool>,
-    details_batch_loader: Loader<ID, Details, DetailsBatchLoader>,
-}
+type Conn = PooledConnection<ConnectionManager<PgConnection>>;
 
-impl AppContext {
-    pub fn new(pool: PgPool) -> Self {
-        let pool = Arc::new(pool);
-        let cloned_pool = Arc::clone(&pool);
-        AppContext {
-            pool,
-            details_batch_loader: Loader::new(DetailsBatchLoader {
-                pool: cloned_pool
-            }).with_max_batch_size(10),
-        }
-    }
+pub fn get_conn_from_ctx(ctx: &Context<'_>) -> Conn {
+    ctx.data::<Arc<PgPool>>().expect("Can't get pool").get().expect("Can't get DB connection")
 }
