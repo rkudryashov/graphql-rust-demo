@@ -25,9 +25,8 @@ pub struct Query;
 #[Object]
 impl Query {
     async fn planets(&self, ctx: &Context<'_>) -> Vec<Planet> {
-        let planet_entities = repository::all(&get_conn_from_ctx(ctx)).expect("Can't get planets");
-
-        planet_entities.iter()
+        repository::all(&get_conn_from_ctx(ctx)).expect("Can't get planets")
+            .iter()
             .map(|p| { Planet::from(p) })
             .collect()
     }
@@ -166,8 +165,7 @@ impl ScalarType for CustomBigInt {
     }
 
     fn to_value(&self) -> Value {
-        // convert to float to represent as number with mantissa and exponent
-        // todo test other options
+        // convert to float to represent a value as number with mantissa and exponent
         Value::Float(self.0.to_f64().expect("Can't get f64"))
     }
 }
@@ -188,7 +186,6 @@ impl ScalarType for CustomBigDecimal {
     }
 
     fn to_value(&self) -> Value {
-        // todo test other options to get rid of quotes
         Value::String(self.0.to_string())
     }
 }

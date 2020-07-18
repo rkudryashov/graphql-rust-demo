@@ -48,8 +48,9 @@ pub fn create_schema(pool: PgPool) -> Schema<Query, Mutation, Subscription> {
     }).with_max_batch_size(10);
 
     Schema::build(Query, Mutation, Subscription)
-        .limit_depth(3)
-        .limit_complexity(15)
+        // limits are commented out, because otherwise introspection query won't work
+        // .limit_depth(3)
+        // .limit_complexity(15)
         .data(pool)
         .data(details_batch_loader)
         .finish()

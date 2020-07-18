@@ -102,7 +102,7 @@ async fn test_planet_by_id() {
 }
 
 #[actix_rt::test]
-async fn test_variable() {
+async fn test_planet_by_id_with_variable() {
     let pool = prepare_env();
     let schema = create_schema(pool);
 

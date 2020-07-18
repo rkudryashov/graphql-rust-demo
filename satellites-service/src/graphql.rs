@@ -16,9 +16,8 @@ pub struct Query;
 #[Object(extends)]
 impl Query {
     async fn satellites(&self, ctx: &Context<'_>) -> Vec<Satellite> {
-        let satellite_entities = repository::all(&get_conn_from_ctx(ctx)).expect("Can't get satellites");
-
-        satellite_entities.iter()
+        repository::all(&get_conn_from_ctx(ctx)).expect("Can't get satellites")
+            .iter()
             .map(|e| { Satellite::from(e) })
             .collect()
     }
@@ -66,9 +65,8 @@ impl Planet {
 
     async fn satellites(&self, ctx: &Context<'_>) -> Vec<Satellite> {
         let id = self.id.to_string().parse::<i32>().expect("Can't get id from String");
-        let satellite_entities = repository::get_by_planet_id(id, &get_conn_from_ctx(ctx)).expect("Can't get satellites of planet");
-
-        satellite_entities.iter()
+        repository::get_by_planet_id(id, &get_conn_from_ctx(ctx)).expect("Can't get satellites of planet")
+            .iter()
             .map(|e| { Satellite::from(e) })
             .collect()
     }
