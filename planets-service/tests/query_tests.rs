@@ -57,7 +57,7 @@ async fn test_planets() {
     let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
     fn get_planet_as_json(all_planets: &serde_json::Value, index: i32) -> &serde_json::Value {
-        jsonpath::select(all_planets, &format!("$..planets[{}]", index)).expect("Can't get planet by JSON path")[0]
+        jsonpath::select(all_planets, &format!("$.planets[{}]", index)).expect("Can't get planet by JSON path")[0]
     }
 
     let mercury_json = get_planet_as_json(&response.data, 0);
@@ -97,7 +97,7 @@ async fn test_planet_by_id() {
 
     let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
-    let earth_json = jsonpath::select(&response.data, "$..planet").expect("Can't get planet by JSON path")[0];
+    let earth_json = jsonpath::select(&response.data, "$.planet").expect("Can't get planet by JSON path")[0];
     check_planet(earth_json, 3, "Earth", "TERRESTRIAL_PLANET", "6371.0");
 }
 
@@ -131,13 +131,13 @@ async fn test_planet_by_id_with_variable() {
 
     let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
-    let jupiter_json = jsonpath::select(&response.data, "$..planet").expect("Can't get planet by JSON path")[0];
+    let jupiter_json = jsonpath::select(&response.data, "$.planet").expect("Can't get planet by JSON path")[0];
     check_planet(jupiter_json, 5, "Jupiter", "GAS_GIANT", "69911.0");
 }
 
 fn check_planet(planet_json: &serde_json::Value, id: i32, name: &str, planet_type: &str, mean_radius: &str) {
     fn check_property(planet_json: &serde_json::Value, property_name: &str, property_expected_value: &str) {
-        let json_path = format!("$..{}", property_name);
+        let json_path = format!("$.{}", property_name);
         assert_eq!(property_expected_value, jsonpath::select(&planet_json, &json_path).expect("Can't get property")[0].as_str().expect("Can't get property as str"));
     }
     check_property(planet_json, "id", &id.to_string());

@@ -23,15 +23,13 @@ async fn test_sign_in() {
         }
         "#.to_string();
 
-    let request_body = GraphQLCustomRequest {
-        query: mutation,
-    };
+    let request_body = GraphQLCustomRequest { query: mutation };
 
     let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
 
     let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
-    let jwt = jsonpath::select(&response.data, "$..signIn").expect("Can't get JWT")[0].as_str().expect("Can't get JWT string");
+    let jwt = jsonpath::select(&response.data, "$.signIn").expect("Can't get JWT")[0].as_str().expect("Can't get JWT string");
 
     let first_dot_index = jwt.find('.').expect("Incorrect JWT");
     let last_dot_index = jwt.rfind('.').expect("Incorrect JWT");
@@ -47,7 +45,7 @@ async fn test_sign_in() {
     let decoded_payload_string = str::from_utf8(&decoded_payload).expect("Can't convert to str");
     let claims: Claims = serde_json::from_str(decoded_payload_string).expect("Can't deserialize claims");
     assert_eq!("john_doe", &claims.sub);
-    assert_eq!("user", &claims.role);
+    assert_eq!("Admin", &claims.role);
 }
 
 #[actix_rt::test]
@@ -67,9 +65,7 @@ async fn test_sign_in_fails() {
         }
         "#.to_string();
 
-    let request_body = GraphQLCustomRequest {
-        query: mutation,
-    };
+    let request_body = GraphQLCustomRequest { query: mutation };
 
     let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
 
