@@ -52,10 +52,12 @@ pub struct Mutation;
 
 #[Object]
 impl Mutation {
+    #[field(desc = "A planet's mass is a large number, so to pass it enter mantissa and exponent (the base will be 10)")]
     async fn create_planet(&self, ctx: &Context<'_>, name: String, planet_type: PlanetType, details: DetailsInput) -> ID {
-        fn get_new_planet_mass(number: f32, ten_power: i8) -> BigDecimal {
-            let some = BigDecimal::from(number);
-            some.mul(num::pow(BigDecimal::from(10), ten_power as usize))
+        fn get_new_planet_mass(mantissa: f32, exponent: u8) -> BigDecimal {
+            let mantissa = BigDecimal::from(mantissa);
+            let power = num::pow(BigDecimal::from(10), exponent as usize);
+            mantissa.mul(power)
         }
 
         let new_planet = NewPlanetEntity {
@@ -65,7 +67,7 @@ impl Mutation {
 
         let new_planet_details = NewDetailsEntity {
             mean_radius: details.mean_radius.0,
-            mass: get_new_planet_mass(details.mass.number, details.mass.ten_power),
+            mass: get_new_planet_mass(details.mass.mantissa, details.mass.exponent),
             population: details.population.map(|wrapper| { wrapper.0 }),
             planet_id: 0,
         };
@@ -144,7 +146,7 @@ pub enum Details {
 pub struct InhabitedPlanetDetails {
     mean_radius: CustomBigDecimal,
     mass: CustomBigInt,
-    #[field(desc = "in billions")]
+    #[field(desc = "In billions")]
     population: CustomBigDecimal,
 }
 
@@ -160,7 +162,7 @@ struct CustomBigInt(BigInt);
 
 #[Scalar(name = "BigInt")]
 impl ScalarType for CustomBigInt {
-    fn parse(value: Value) -> InputValueResult<Self> {
+    fn parse(_value: Value) -> InputValueResult<Self> {
         unimplemented!()
     }
 
@@ -197,10 +199,10 @@ struct DetailsInput {
     population: Option<CustomBigDecimal>,
 }
 
-#[InputObject]
+#[InputObject(desc = "Here is supposed that the number should be represented as, for example, `6.42e+23`")]
 struct MassInput {
-    number: f32,
-    ten_power: i8,
+    mantissa: f32,
+    exponent: u8,
 }
 
 impl From<&PlanetEntity> for Planet {
