@@ -2,12 +2,13 @@ extern crate auth_service;
 
 use actix_web::{App, guard, HttpServer, web};
 
-use auth_service::{create_schema, index, index_playground, prepare_env};
+use auth_service::{index, index_playground, setup};
+use dotenv::dotenv;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    let pool = prepare_env();
-    let schema = create_schema(pool);
+    dotenv().ok();
+    let schema = setup();
 
     HttpServer::new(move || App::new()
         .data(schema.clone())

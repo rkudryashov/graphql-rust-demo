@@ -2,12 +2,13 @@ extern crate planets_service;
 
 use actix_web::{App, guard, HttpServer, web};
 
-use planets_service::{create_schema, index, index_playground, index_ws, prepare_env};
+use dotenv::dotenv;
+use planets_service::{index, index_playground, index_ws, setup};
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    let pool = prepare_env();
-    let schema = create_schema(pool);
+    dotenv().ok();
+    let schema = setup();
 
     HttpServer::new(move || App::new()
         .data(schema.clone())

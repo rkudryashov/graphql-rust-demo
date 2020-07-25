@@ -15,15 +15,13 @@ use dataloader::non_cached::Loader;
 use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
 
-use dotenv::dotenv;
-
 use crate::graphql::{AppSchema, DetailsBatchLoader, Mutation, Query, Subscription};
 use crate::persistence::connection::create_connection_pool;
 use crate::persistence::connection::PgPool;
 
 embed_migrations!();
 
-mod graphql;
+pub mod graphql;
 mod persistence;
 
 pub async fn index(schema: web::Data<AppSchema>, gql_request: GQLRequest) -> web::Json<GQLResponse> {
@@ -40,7 +38,12 @@ pub async fn index_playground() -> Result<HttpResponse> {
         .body(playground_source(GraphQLPlaygroundConfig::new("/").subscription_endpoint("/"))))
 }
 
-pub fn create_schema(pool: PgPool) -> Schema<Query, Mutation, Subscription> {
+pub fn setup() -> Schema<Query, Mutation, Subscription> {
+    let pg_pool = prepare_env();
+    create_schema(pg_pool)
+}
+
+fn create_schema(pool: PgPool) -> Schema<Query, Mutation, Subscription> {
     let pool = Arc::new(pool);
     let cloned_pool = Arc::clone(&pool);
     let details_batch_loader = Loader::new(DetailsBatchLoader {
@@ -56,8 +59,7 @@ pub fn create_schema(pool: PgPool) -> Schema<Query, Mutation, Subscription> {
         .finish()
 }
 
-pub fn prepare_env() -> PgPool {
-    dotenv().ok();
+fn prepare_env() -> PgPool {
     let pool = create_connection_pool();
     let conn = pool.get().expect("Can't get DB connection");
     embedded_migrations::run(&conn);

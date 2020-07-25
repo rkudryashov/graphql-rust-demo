@@ -2,12 +2,13 @@ extern crate satellites_service;
 
 use actix_web::{App, guard, HttpServer, web};
 
-use satellites_service::{create_schema, index, index_playground, prepare_env};
+use dotenv::dotenv;
+use satellites_service::{index, index_playground, setup};
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
-    let pool = prepare_env();
-    let schema = create_schema(pool);
+    dotenv().ok();
+    let schema = setup();
 
     HttpServer::new(move || App::new()
         .data(schema.clone())

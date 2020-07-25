@@ -2,13 +2,16 @@ use actix_web::{App, guard, test, web};
 use jsonpath_lib as jsonpath;
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
+use testcontainers::clients::Cli;
 
-use planets_service::{create_schema, index, prepare_env};
+use planets_service::index;
+
+mod common;
 
 #[actix_rt::test]
 async fn test_create_planet() {
-    let pool = prepare_env();
-    let schema = create_schema(pool);
+    let docker = Cli::default();
+    let (schema, _pg_container) = common::setup(&docker);
 
     let mut service = test::init_service(App::new()
         .data(schema.clone())
@@ -52,7 +55,7 @@ async fn test_create_planet() {
                 planetType: TERRESTRIAL_PLANET
                 details: {
                     meanRadius: "10.7"
-                    mass: { mantissa: 15, exponent: 24 }
+                    mass: { mantissa: 1.5, exponent: 25 }
                     population: "0.5"
                 }
             )

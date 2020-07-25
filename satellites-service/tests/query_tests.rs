@@ -3,8 +3,11 @@ use chrono::NaiveDate;
 use jsonpath_lib as jsonpath;
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
+use testcontainers::clients::Cli;
 
-use satellites_service::{create_schema, index, prepare_env};
+use satellites_service::index;
+
+mod common;
 
 const TEST_FIELDS_FRAGMENT: &str = "
     fragment testFields on Satellite {
@@ -16,8 +19,8 @@ const TEST_FIELDS_FRAGMENT: &str = "
 
 #[actix_rt::test]
 async fn test_satellites() {
-    let pool = prepare_env();
-    let schema = create_schema(pool);
+    let docker = Cli::default();
+    let (schema, _pg_container) = common::setup(&docker);
 
     let mut service = test::init_service(App::new()
         .data(schema.clone())
@@ -56,8 +59,8 @@ async fn test_satellites() {
 
 #[actix_rt::test]
 async fn test_satellite() {
-    let pool = prepare_env();
-    let schema = create_schema(pool);
+    let docker = Cli::default();
+    let (schema, _pg_container) = common::setup(&docker);
 
     let mut service = test::init_service(App::new()
         .data(schema.clone())
@@ -89,8 +92,8 @@ async fn test_satellite() {
 
 #[actix_rt::test]
 async fn test_satellite_should_return_forbidden() {
-    let pool = prepare_env();
-    let schema = create_schema(pool);
+    let docker = Cli::default();
+    let (schema, _pg_container) = common::setup(&docker);
 
     let mut service = test::init_service(App::new()
         .data(schema.clone())

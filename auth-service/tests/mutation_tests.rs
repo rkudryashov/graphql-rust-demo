@@ -3,14 +3,17 @@ use std::str;
 use actix_web::{App, guard, test, web};
 use jsonpath_lib as jsonpath;
 use serde::{Deserialize, Serialize};
+use testcontainers::clients::Cli;
 
-use auth_service::{create_schema, index, prepare_env};
+use auth_service::index;
 use auth_service::utils::Claims;
+
+mod common;
 
 #[actix_rt::test]
 async fn test_sign_in() {
-    let pool = prepare_env();
-    let schema = create_schema(pool);
+    let docker = Cli::default();
+    let (schema, _pg_container) = common::setup(&docker);
 
     let mut service = test::init_service(App::new()
         .data(schema.clone())
@@ -51,8 +54,8 @@ async fn test_sign_in() {
 #[actix_rt::test]
 #[should_panic(expected = "Can't authenticate a user")]
 async fn test_sign_in_fails() {
-    let pool = prepare_env();
-    let schema = create_schema(pool);
+    let docker = Cli::default();
+    let (schema, _pg_container) = common::setup(&docker);
 
     let mut service = test::init_service(App::new()
         .data(schema.clone())

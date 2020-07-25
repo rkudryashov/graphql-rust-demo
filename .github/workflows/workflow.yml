@@ -1,12 +1,16 @@
-name: GraphQL Federation Rust build
+name: GraphQL Federation build
 
 on:
-#  push:
-#    branches: [ master ]
+  push:
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
+
   apollo-server:
     runs-on: ubuntu-latest
     steps:
@@ -19,7 +23,24 @@ jobs:
           path: ./apollo-server
           tags: apollo-server
           push: ${{ github.event_name == 'push' }}
-  auth-service:
+
+  # todo maybe run tests inside docker container (change Dockerfile for that). Now it is not supported by testcontainers (https://github.com/testcontainers/testcontainers-rs/issues/129)
+  test-rust-services:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+
+  auth-service-image:
+    needs: test-rust-services
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -31,7 +52,9 @@ jobs:
           path: ./auth-service
           tags: auth-service
           push: ${{ github.event_name == 'push' }}
-  planets-service:
+
+  planets-service-image:
+    needs: test-rust-services
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -43,7 +66,9 @@ jobs:
           path: ./planets-service
           tags: planets-service
           push: ${{ github.event_name == 'push' }}
-  satellites-service:
+
+  satellites-service-image:
+    needs: test-rust-services
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

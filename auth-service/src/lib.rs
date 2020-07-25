@@ -10,17 +10,15 @@ use async_graphql_actix_web::GQLRequest;
 use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
 
-use dotenv::dotenv;
-
 use crate::graphql::{AppSchema, Mutation, Query};
 use crate::persistence::connection::create_connection_pool;
 use crate::persistence::connection::PgPool;
 
 embed_migrations!();
 
-mod graphql;
-mod persistence;
+pub mod graphql;
 pub mod utils;
+mod persistence;
 
 pub async fn index(schema: web::Data<AppSchema>, gql_request: GQLRequest) -> web::Json<GQLResponse> {
     web::Json(GQLResponse(gql_request.into_inner().execute(&schema).await))
@@ -32,15 +30,19 @@ pub async fn index_playground() -> Result<HttpResponse> {
         .body(playground_source(GraphQLPlaygroundConfig::new("/"))))
 }
 
-pub fn create_schema(pool: PgPool) -> Schema<Query, Mutation, EmptySubscription> {
+pub fn setup() -> Schema<Query, Mutation, EmptySubscription> {
+    let pg_pool = prepare_env();
+    create_schema(pg_pool)
+}
+
+fn create_schema(pool: PgPool) -> Schema<Query, Mutation, EmptySubscription> {
     Schema::build(Query, Mutation, EmptySubscription)
         .enable_federation()
         .data(pool)
         .finish()
 }
 
-pub fn prepare_env() -> PgPool {
-    dotenv().ok();
+fn prepare_env() -> PgPool {
     let pool = create_connection_pool();
     let conn = pool.get().expect("Can't get DB connection");
     embedded_migrations::run(&conn);

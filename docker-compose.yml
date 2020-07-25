@@ -50,14 +50,14 @@ services:
     expose:
       - 8003
     environment:
-      DATABASE_URL: postgres://postgres:$AUTH_DB_PASSWORD@auth-db/auth
+      DATABASE_URL: postgres://postgres:USERS_DB_PASSWORD@users-db/users
       SECRET_KEY: $SECRET_KEY
     restart: always
-  auth-db:
+  users-db:
     image: postgres:12-alpine
     environment:
-      POSTGRES_DB: auth
-      POSTGRES_PASSWORD: $AUTH_DB_PASSWORD
+      POSTGRES_DB: users
+      POSTGRES_PASSWORD: USERS_DB_PASSWORD
     restart: always
 
   # Apollo server

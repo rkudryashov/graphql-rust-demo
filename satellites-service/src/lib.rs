@@ -22,7 +22,7 @@ use crate::persistence::connection::PgPool;
 
 embed_migrations!();
 
-mod graphql;
+pub mod graphql;
 mod persistence;
 mod utils;
 
@@ -43,13 +43,18 @@ pub async fn index_playground() -> Result<HttpResponse> {
         .body(playground_source(GraphQLPlaygroundConfig::new("/"))))
 }
 
-pub fn create_schema(pool: PgPool) -> Schema<Query, EmptyMutation, EmptySubscription> {
+pub fn setup() -> Schema<Query, EmptyMutation, EmptySubscription> {
+    let pg_pool = prepare_env();
+    create_schema(pg_pool)
+}
+
+fn create_schema(pool: PgPool) -> Schema<Query, EmptyMutation, EmptySubscription> {
     Schema::build(Query, EmptyMutation, EmptySubscription)
         .data(pool)
         .finish()
 }
 
-pub fn prepare_env() -> PgPool {
+fn prepare_env() -> PgPool {
     dotenv().ok();
     let pool = create_connection_pool();
     let conn = pool.get().expect("Can't get DB connection");
