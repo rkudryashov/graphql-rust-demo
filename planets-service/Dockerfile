@@ -17,3 +17,4 @@ FROM debian:buster-slim
 RUN apt-get update && apt-get install -y libpq-dev
 COPY --from=0 /usr/local/cargo/bin/planets-service /usr/local/bin/planets-service
 CMD ["planets-service"]
+EXPOSE 8001

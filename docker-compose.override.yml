@@ -1,0 +1,25 @@
+# development configuration
+version: '3.8'
+services:
+
+  # Planets service
+  planets-service:
+    build: planets-service
+    ports:
+      - 8001:8001
+
+  # Satellites service
+  satellites-service:
+    build: satellites-service
+    ports:
+      - 8002:8002
+
+  # Auth service
+  auth-service:
+    build: auth-service
+    ports:
+      - 8003:8003
+
+  # Apollo server
+  apollo-server:
+    build: apollo-server

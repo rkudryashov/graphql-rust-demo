@@ -3,13 +3,9 @@ services:
 
   # Planets service
   planets-service:
-    build: planets-service
+    image: kudryashovroman/graphql-federation-rust:planets-service
     depends_on:
       - planets-db
-    ports:
-      - 8001:8001
-    expose:
-      - 8001
     environment:
       DATABASE_URL: postgres://postgres:$PLANETS_DB_PASSWORD@planets-db/planets
     restart: always
@@ -22,13 +18,9 @@ services:
 
   # Satellites service
   satellites-service:
-    build: satellites-service
+    image: kudryashovroman/graphql-federation-rust:satellites-service
     depends_on:
       - satellites-db
-    ports:
-      - 8002:8002
-    expose:
-      - 8002
     environment:
       DATABASE_URL: postgres://postgres:$SATELLITES_DB_PASSWORD@satellites-db/satellites
       SECRET_KEY: $SECRET_KEY
@@ -42,13 +34,9 @@ services:
 
   # Auth service
   auth-service:
-    build: auth-service
+    image: kudryashovroman/graphql-federation-rust:auth-service
     depends_on:
-      - auth-db
-    ports:
-      - 8003:8003
-    expose:
-      - 8003
+      - users-db
     environment:
       DATABASE_URL: postgres://postgres:USERS_DB_PASSWORD@users-db/users
       SECRET_KEY: $SECRET_KEY
@@ -62,15 +50,13 @@ services:
 
   # Apollo server
   apollo-server:
-    build: apollo-server
+    image: kudryashovroman/graphql-federation-rust:apollo-server
     depends_on:
       - planets-service
       - satellites-service
       - auth-service
     ports:
       - 4000:4000
-    expose:
-      - 4000
     environment:
       NODE_ENV: docker
     restart: always
