@@ -43,9 +43,8 @@ impl Query {
 
 fn find_planet_by_id_internal(ctx: &Context<'_>, id: ID) -> Option<Planet> {
     let id = id.to_string().parse::<i32>().expect("Can't get id from String");
-    let maybe_planet = repository::get(id, &get_conn_from_ctx(ctx)).ok();
-
-    maybe_planet.map(|p| { Planet::from(&p) })
+    repository::get(id, &get_conn_from_ctx(ctx)).ok()
+        .map(|p| { Planet::from(&p) })
 }
 
 pub struct Mutation;

@@ -78,6 +78,8 @@ async fn test_create_planet() {
     let _new_planet_id: i32 = jsonpath::select(&response.data, "$.createPlanet").expect("Can't get satellite by JSON path")[0]
         .as_str().expect("Can't get new planet id")
         .parse().expect("Can't get new planet id");
+
+    // todo get last created planet and check its fields' values
 }
 
 #[derive(Serialize)]
