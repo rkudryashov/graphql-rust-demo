@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-async-graphql = "1.16.13"
-async-graphql-actix-web = "1.16.10"
+async-graphql = "1.17.0"
+async-graphql-actix-web = "1.17.0"
 actix-web = "2.0.0"
 actix-rt = "1.1.1"
 actix-web-actors = "2.0.0"

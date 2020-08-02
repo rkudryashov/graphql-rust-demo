@@ -167,7 +167,10 @@ impl ScalarType for CustomBigInt {
 
     fn to_value(&self) -> Value {
         // convert to float to represent a value as number with mantissa and exponent
-        Value::Float(self.0.to_f64().expect("Can't get f64"))
+        self.0.to_f64()
+            .and_then(|value| async_graphql::Number::from_f64(value))
+            .map(|value| Value::Number(value))
+            .expect("Can't convert BigInt")
     }
 }
 
