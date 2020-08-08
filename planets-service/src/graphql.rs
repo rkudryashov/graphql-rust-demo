@@ -53,7 +53,6 @@ pub struct Mutation;
 
 #[Object]
 impl Mutation {
-    #[field(desc = "A planet's mass is a large number, so to pass it enter mantissa and exponent (the base will be 10)")]
     async fn create_planet(&self, ctx: &Context<'_>, name: String, planet_type: PlanetType, details: DetailsInput) -> ID {
         let new_planet = NewPlanetEntity {
             name,
@@ -188,7 +187,7 @@ impl ScalarType for CustomBigDecimal {
     fn parse(value: Value) -> InputValueResult<Self> {
         match value {
             Value::String(s) => {
-                let parsed_value = BigDecimal::from_str(s.as_str())?;
+                let parsed_value = BigDecimal::from_str(&s)?;
                 Ok(CustomBigDecimal(parsed_value))
             }
             _ => Err(InputValueError::ExpectedType(value)),
@@ -202,9 +201,11 @@ impl ScalarType for CustomBigDecimal {
 
 #[InputObject]
 struct DetailsInput {
+    #[field(desc = "In kilometers")]
     mean_radius: CustomBigDecimal,
-    #[field(desc = "A number should be represented as, for example, `6.42e+23`")]
+    #[field(desc = "In kilograms. A number should be represented as, for example, `6.42e+23`")]
     mass: CustomBigInt,
+    #[field(desc = "In billions")]
     population: Option<CustomBigDecimal>,
 }
 
