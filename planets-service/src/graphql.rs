@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::fmt;
+use std::fmt::LowerExp;
 use std::ops::Mul;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -9,6 +11,7 @@ use dataloader::BatchFn;
 use dataloader::non_cached::Loader;
 use futures::Stream;
 use num_bigint::{BigInt, ToBigInt};
+use serde::export::Formatter;
 use strum_macros::{Display, EnumString};
 
 use async_trait::async_trait;
@@ -166,11 +169,14 @@ impl ScalarType for CustomBigInt {
     }
 
     fn to_value(&self) -> Value {
-        // convert to float to represent a value as number with mantissa and exponent
-        self.0.to_f64()
-            .and_then(|value| async_graphql::Number::from_f64(value))
-            .map(|value| Value::Number(value))
-            .expect("Can't convert BigInt")
+        Value::String(format!("{:e}", &self))
+    }
+}
+
+impl LowerExp for CustomBigInt {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let val = &self.0.to_i128().expect("Can't convert BigInt to an integer");
+        LowerExp::fmt(val, f)
     }
 }
 
