@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::LowerExp;
-use std::ops::Mul;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -56,12 +55,6 @@ pub struct Mutation;
 impl Mutation {
     #[field(desc = "A planet's mass is a large number, so to pass it enter mantissa and exponent (the base will be 10)")]
     async fn create_planet(&self, ctx: &Context<'_>, name: String, planet_type: PlanetType, details: DetailsInput) -> ID {
-        fn get_new_planet_mass(mantissa: f32, exponent: u8) -> BigDecimal {
-            let mantissa = BigDecimal::from(mantissa);
-            let power = num::pow(BigDecimal::from(10), exponent as usize);
-            mantissa.mul(power)
-        }
-
         let new_planet = NewPlanetEntity {
             name,
             planet_type: planet_type.to_string(),
@@ -69,7 +62,7 @@ impl Mutation {
 
         let new_planet_details = NewDetailsEntity {
             mean_radius: details.mean_radius.0,
-            mass: get_new_planet_mass(details.mass.mantissa, details.mass.exponent),
+            mass: BigDecimal::from_str(&details.mass.0.to_string()).expect("Can't get BigDecimal from string"),
             population: details.population.map(|wrapper| { wrapper.0 }),
             planet_id: 0,
         };
@@ -164,8 +157,15 @@ struct CustomBigInt(BigInt);
 
 #[Scalar(name = "BigInt")]
 impl ScalarType for CustomBigInt {
-    fn parse(_value: Value) -> InputValueResult<Self> {
-        unimplemented!()
+    fn parse(value: Value) -> InputValueResult<Self> {
+        match value {
+            Value::String(s) => {
+                let number = BigDecimal::from_str(&s)?;
+                let number = number.to_bigint().expect("Can't convert to BigInt");
+                Ok(CustomBigInt(number))
+            }
+            _ => Err(InputValueError::ExpectedType(value)),
+        }
     }
 
     fn to_value(&self) -> Value {
@@ -203,14 +203,9 @@ impl ScalarType for CustomBigDecimal {
 #[InputObject]
 struct DetailsInput {
     mean_radius: CustomBigDecimal,
-    mass: MassInput,
+    #[field(desc = "A number should be represented as, for example, `6.42e+23`")]
+    mass: CustomBigInt,
     population: Option<CustomBigDecimal>,
-}
-
-#[InputObject(desc = "Here is supposed that the number should be represented as, for example, `6.42e+23`")]
-struct MassInput {
-    mantissa: f32,
-    exponent: u8,
 }
 
 impl From<&PlanetEntity> for Planet {
