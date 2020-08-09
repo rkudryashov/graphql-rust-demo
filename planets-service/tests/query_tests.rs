@@ -35,7 +35,7 @@ async fn test_planets() {
 
     let query = "
         {
-            planets {
+            getPlanets {
                 id
                 name
                 type
@@ -85,7 +85,7 @@ async fn test_planet_by_id() {
 
     let query = "
         {
-            planet(id: 3) {
+            getPlanet(id: 3) {
                 ... planetFragment
             }
         }
@@ -116,7 +116,7 @@ async fn test_planet_by_id_with_variable() {
 
     let query = "
         query testPlanetById($planetId: String!) {
-            planet(id: $planetId) {
+            getPlanet(id: $planetId) {
                 ... planetFragment
             }
         }".to_string() + PLANET_FRAGMENT;

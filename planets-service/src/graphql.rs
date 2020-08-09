@@ -26,14 +26,14 @@ pub struct Query;
 
 #[Object]
 impl Query {
-    async fn planets(&self, ctx: &Context<'_>) -> Vec<Planet> {
+    async fn get_planets(&self, ctx: &Context<'_>) -> Vec<Planet> {
         repository::all(&get_conn_from_ctx(ctx)).expect("Can't get planets")
             .iter()
             .map(|p| { Planet::from(p) })
             .collect()
     }
 
-    async fn planet(&self, ctx: &Context<'_>, id: ID) -> Option<Planet> {
+    async fn get_planet(&self, ctx: &Context<'_>, id: ID) -> Option<Planet> {
         find_planet_by_id_internal(ctx, id)
     }
 

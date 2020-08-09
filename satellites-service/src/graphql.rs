@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use async_graphql::*;
 use async_graphql::guard::Guard;
-use chrono::prelude::NaiveDate;
+use chrono::NaiveDate;
 use strum_macros::EnumString;
 
 use crate::{get_conn_from_ctx, Role};
@@ -15,14 +15,14 @@ pub struct Query;
 
 #[Object(extends)]
 impl Query {
-    async fn satellites(&self, ctx: &Context<'_>) -> Vec<Satellite> {
+    async fn get_satellites(&self, ctx: &Context<'_>) -> Vec<Satellite> {
         repository::all(&get_conn_from_ctx(ctx)).expect("Can't get satellites")
             .iter()
             .map(|e| { Satellite::from(e) })
             .collect()
     }
 
-    async fn satellite(&self, ctx: &Context<'_>, id: ID) -> Option<Satellite> {
+    async fn get_satellite(&self, ctx: &Context<'_>, id: ID) -> Option<Satellite> {
         let id = id.to_string().parse::<i32>().expect("Can't get id from String");
         repository::get(id, &get_conn_from_ctx(ctx)).ok()
             .map(|e| { Satellite::from(&e) })
@@ -30,7 +30,7 @@ impl Query {
 
     #[entity]
     async fn get_planet_by_id(&self, id: ID) -> Planet {
-        Planet { id: id.clone() }
+        Planet { id }
     }
 }
 

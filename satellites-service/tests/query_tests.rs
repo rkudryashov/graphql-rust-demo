@@ -29,7 +29,7 @@ async fn test_satellites() {
 
     let query = "
         {
-            satellites {
+            getSatellites {
                 ... testFields
             }
         }
@@ -69,7 +69,7 @@ async fn test_satellite() {
 
     let query = "
         {
-            satellite(id: 1) {
+            getSatellite(id: 1) {
                 ... testFields
             }
         }
@@ -102,7 +102,7 @@ async fn test_satellite_should_return_forbidden() {
 
     let query = "
         {
-            satellite(id: 7) {
+            getSatellite(id: 7) {
                 ... testFields
                 lifeExists
             }
