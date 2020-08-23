@@ -9,7 +9,6 @@ use bigdecimal::{BigDecimal, ToPrimitive};
 use dataloader::BatchFn;
 use dataloader::non_cached::Loader;
 use futures::Stream;
-use num_bigint::{BigInt, ToBigInt};
 use serde::export::Formatter;
 use strum_macros::{Display, EnumString};
 
@@ -152,7 +151,7 @@ pub struct UninhabitedPlanetDetails {
 }
 
 #[derive(Clone)]
-struct CustomBigInt(BigInt);
+struct CustomBigInt(BigDecimal);
 
 #[Scalar(name = "BigInt")]
 impl ScalarType for CustomBigInt {
@@ -160,7 +159,6 @@ impl ScalarType for CustomBigInt {
         match value {
             Value::String(s) => {
                 let number = BigDecimal::from_str(&s)?;
-                let number = number.to_bigint().expect("Can't convert to BigInt");
                 Ok(CustomBigInt(number))
             }
             _ => Err(InputValueError::ExpectedType(value)),
@@ -174,7 +172,7 @@ impl ScalarType for CustomBigInt {
 
 impl LowerExp for CustomBigInt {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let val = &self.0.to_i128().expect("Can't convert BigInt to an integer");
+        let val = &self.0.to_f64().expect("Can't convert BigDecimal");
         LowerExp::fmt(val, f)
     }
 }
@@ -224,13 +222,13 @@ impl From<&DetailsEntity> for Details {
         if entity.population.is_some() {
             InhabitedPlanetDetails {
                 mean_radius: CustomBigDecimal(entity.mean_radius.clone()),
-                mass: CustomBigInt(entity.mass.to_bigint().clone().expect("Can't get mass")),
+                mass: CustomBigInt(entity.mass.clone()),
                 population: CustomBigDecimal(entity.population.as_ref().expect("Can't get population").clone()),
             }.into()
         } else {
             UninhabitedPlanetDetails {
                 mean_radius: CustomBigDecimal(entity.mean_radius.clone()),
-                mass: CustomBigInt(entity.mass.to_bigint().clone().expect("Can't get mass")),
+                mass: CustomBigInt(entity.mass.clone()),
             }.into()
         }
     }

@@ -12,9 +12,7 @@ actix-web-actors = "2.0.0"
 dataloader = "0.12"
 futures = "0.3.5"
 async-trait = "0.1.36"
-num-bigint = { version = "0.2.6", features = ["serde"] }
 bigdecimal = { version = "0.1.2", features = ["serde"] }
-num = "0.3.0"
 serde = { version = "1.0.114", features = ["derive"] }
 diesel = { version = "1.4.5", features = ["postgres", "r2d2", "numeric"] }
 diesel_migrations = "1.4.0"
