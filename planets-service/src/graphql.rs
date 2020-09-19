@@ -5,14 +5,13 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use async_graphql::*;
+use async_trait::async_trait;
 use bigdecimal::{BigDecimal, ToPrimitive};
 use dataloader::BatchFn;
 use dataloader::non_cached::Loader;
 use futures::Stream;
 use serde::export::Formatter;
 use strum_macros::{Display, EnumString};
-
-use async_trait::async_trait;
 
 use crate::get_conn_from_ctx;
 use crate::persistence::connection::PgPool;

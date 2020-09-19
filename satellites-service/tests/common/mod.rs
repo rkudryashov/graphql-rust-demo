@@ -2,11 +2,11 @@ use std::collections::HashMap;
 use std::env;
 
 use async_graphql::{EmptyMutation, EmptySubscription, Schema};
+use dotenv::dotenv;
 use testcontainers::{Container, Docker};
 use testcontainers::clients::Cli;
 use testcontainers::images::postgres::Postgres;
 
-use dotenv::dotenv;
 use satellites_service::graphql::Query;
 
 pub fn setup(docker: &Cli) -> (Schema<Query, EmptyMutation, EmptySubscription>, Container<Cli, Postgres>) {

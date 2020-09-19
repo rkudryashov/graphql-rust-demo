@@ -1,8 +1,8 @@
 extern crate satellites_service;
 
 use actix_web::{App, guard, HttpServer, web};
-
 use dotenv::dotenv;
+
 use satellites_service::{index, index_playground, setup};
 
 #[actix_rt::main]

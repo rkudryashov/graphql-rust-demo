@@ -1,8 +1,8 @@
 extern crate planets_service;
 
 use actix_web::{App, guard, HttpServer, web};
-
 use dotenv::dotenv;
+
 use planets_service::{index, index_playground, index_ws, setup};
 
 #[actix_rt::main]

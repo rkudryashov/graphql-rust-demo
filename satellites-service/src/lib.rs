@@ -12,9 +12,8 @@ use async_graphql::http::{GQLResponse, GraphQLPlaygroundConfig, playground_sourc
 use async_graphql_actix_web::GQLRequest;
 use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
-use strum_macros::EnumString;
-
 use dotenv::dotenv;
+use strum_macros::EnumString;
 
 use crate::graphql::{AppSchema, Query};
 use crate::persistence::connection::create_connection_pool;

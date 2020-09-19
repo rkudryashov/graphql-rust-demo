@@ -1,9 +1,9 @@
 extern crate auth_service;
 
 use actix_web::{App, guard, HttpServer, web};
+use dotenv::dotenv;
 
 use auth_service::{index, index_playground, setup};
-use dotenv::dotenv;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {

@@ -3,9 +3,8 @@
 use argonautica::{Error, Hasher, Verifier};
 use chrono::{Duration, Local};
 use jsonwebtoken::{encode, EncodingKey, Header};
-use serde::{Deserialize, Serialize};
-
 use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
 
 use crate::persistence::model::UserEntity;
 

@@ -1,7 +1,6 @@
 use jsonwebtoken::{decode, DecodingKey, TokenData, Validation};
-use serde::Deserialize;
-
 use lazy_static::lazy_static;
+use serde::Deserialize;
 
 lazy_static! {
     static ref SECRET_KEY: String = std::env::var("SECRET_KEY").expect("Can't read secret key");
