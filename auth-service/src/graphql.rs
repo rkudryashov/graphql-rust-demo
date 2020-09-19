@@ -9,12 +9,12 @@ pub type AppSchema = Schema<Query, Mutation, EmptySubscription>;
 
 pub struct Query;
 
-#[Object(extends)]
+#[Object]
 impl Query {}
 
 pub struct Mutation;
 
-#[Object(extends)]
+#[Object]
 impl Mutation {
     async fn create_user(&self, ctx: &Context<'_>, user: UserInput) -> ID {
         let new_user = NewUserEntity {
@@ -45,7 +45,7 @@ impl Mutation {
     }
 }
 
-#[InputObject]
+#[derive(InputObject)]
 struct UserInput {
     username: String,
     password: String,
@@ -54,7 +54,7 @@ struct UserInput {
     role: String,
 }
 
-#[InputObject]
+#[derive(InputObject)]
 struct SignInInput {
     username: String,
     password: String,

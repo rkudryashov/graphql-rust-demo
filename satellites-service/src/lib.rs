@@ -8,8 +8,8 @@ use std::str::FromStr;
 
 use actix_web::{HttpRequest, HttpResponse, Result, web};
 use async_graphql::{Context, EmptyMutation, EmptySubscription, Schema};
-use async_graphql::http::{GQLResponse, GraphQLPlaygroundConfig, playground_source};
-use async_graphql_actix_web::GQLRequest;
+use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
+use async_graphql_actix_web::{GQLRequest, GQLResponse};
 use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
 use dotenv::dotenv;
@@ -25,21 +25,22 @@ pub mod graphql;
 mod persistence;
 mod utils;
 
-pub async fn index(schema: web::Data<AppSchema>, http_request: HttpRequest, gql_request: GQLRequest) -> web::Json<GQLResponse> {
-    let mut query = gql_request.into_inner();
+pub async fn index(schema: web::Data<AppSchema>, http_req: HttpRequest, req: GQLRequest) -> GQLResponse {
+    let mut query = req.into_inner();
 
-    let maybe_role = get_role(http_request);
+    let maybe_role = get_role(http_req);
     if let Some(role) = maybe_role {
         query = query.data(role);
     }
 
-    web::Json(GQLResponse(query.execute(&schema).await))
+    schema.execute(query).await.into()
 }
 
 pub async fn index_playground() -> Result<HttpResponse> {
     Ok(HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
-        .body(playground_source(GraphQLPlaygroundConfig::new("/"))))
+        .body(playground_source(GraphQLPlaygroundConfig::new("/")))
+    )
 }
 
 pub fn setup() -> Schema<Query, EmptyMutation, EmptySubscription> {

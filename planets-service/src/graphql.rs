@@ -9,7 +9,6 @@ use async_trait::async_trait;
 use bigdecimal::{BigDecimal, ToPrimitive};
 use dataloader::BatchFn;
 use dataloader::non_cached::Loader;
-use futures::Stream;
 use serde::export::Formatter;
 use strum_macros::{Display, EnumString};
 
@@ -18,7 +17,7 @@ use crate::persistence::connection::PgPool;
 use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
 use crate::persistence::repository;
 
-pub type AppSchema = Schema<Query, Mutation, Subscription>;
+pub type AppSchema = Schema<Query, Mutation, EmptySubscription>;
 
 pub struct Query;
 
@@ -66,7 +65,7 @@ impl Mutation {
 
         let created_planet_entity = repository::create(new_planet, new_planet_details, &get_conn_from_ctx(ctx)).expect("Can't create planet");
 
-        SimpleBroker::publish(Planet::from(&created_planet_entity));
+        // todo publish to kafka
 
         created_planet_entity.id.into()
     }
@@ -74,14 +73,15 @@ impl Mutation {
 
 pub struct Subscription;
 
-#[Subscription]
-impl Subscription {
-    async fn latest_planet(&self) -> impl Stream<Item=Planet> {
-        SimpleBroker::<Planet>::subscribe()
-    }
-}
+// todo create subscription based on Kafka
+// #[Subscription]
+// impl Subscription {
+//     async fn latest_planet(&self) -> impl Stream<Item=Planet> {
+//         futures::Stream::poll_next()
+//         // todo listen to kafka
+//     }
+// }
 
-#[derive(Clone)]
 struct Planet {
     id: ID,
     name: String,
@@ -114,8 +114,7 @@ impl Planet {
     }
 }
 
-#[Enum]
-#[derive(Display, EnumString)]
+#[derive(Enum, Display, EnumString, Copy, Clone, Eq, PartialEq)]
 enum PlanetType {
     TerrestrialPlanet,
     GasGiant,
@@ -123,18 +122,17 @@ enum PlanetType {
     DwarfPlanet,
 }
 
-#[Interface(
+#[derive(Interface, Clone)]
+#[graphql(
     field(name = "mean_radius", type = "&CustomBigDecimal"),
     field(name = "mass", type = "&CustomBigInt"),
 )]
-#[derive(Clone)]
 pub enum Details {
     InhabitedPlanetDetails(InhabitedPlanetDetails),
     UninhabitedPlanetDetails(UninhabitedPlanetDetails),
 }
 
-#[SimpleObject]
-#[derive(Clone)]
+#[derive(SimpleObject, Clone)]
 pub struct InhabitedPlanetDetails {
     mean_radius: CustomBigDecimal,
     mass: CustomBigInt,
@@ -142,8 +140,7 @@ pub struct InhabitedPlanetDetails {
     population: CustomBigDecimal,
 }
 
-#[SimpleObject]
-#[derive(Clone)]
+#[derive(SimpleObject, Clone)]
 pub struct UninhabitedPlanetDetails {
     mean_radius: CustomBigDecimal,
     mass: CustomBigInt,
@@ -196,7 +193,7 @@ impl ScalarType for CustomBigDecimal {
     }
 }
 
-#[InputObject]
+#[derive(InputObject)]
 struct DetailsInput {
     #[field(desc = "In kilometers")]
     mean_radius: CustomBigDecimal,

@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-async-graphql = "1.17.0"
-async-graphql-actix-web = "1.17.0"
-actix-web = "2.0.0"
+async-graphql = "2.0.0-alpha.14"
+async-graphql-actix-web = "2.0.0-alpha.14"
+actix-web = "3.0.2"
 actix-rt = "1.1.1"
 serde = { version = "1.0.114", features = ["derive"] }
 diesel = { version = "1.4.5", features = ["postgres", "r2d2", "chrono"] }

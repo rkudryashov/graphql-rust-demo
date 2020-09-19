@@ -13,7 +13,7 @@ pub type AppSchema = Schema<Query, EmptyMutation, EmptySubscription>;
 
 pub struct Query;
 
-#[Object(extends)]
+#[Object]
 impl Query {
     async fn get_satellites(&self, ctx: &Context<'_>) -> Vec<Satellite> {
         repository::all(&get_conn_from_ctx(ctx)).expect("Can't get satellites")
@@ -34,7 +34,7 @@ impl Query {
     }
 }
 
-#[SimpleObject]
+#[derive(SimpleObject)]
 struct Satellite {
     id: ID,
     name: String,
@@ -43,15 +43,13 @@ struct Satellite {
     first_spacecraft_landing_date: Option<NaiveDate>,
 }
 
-#[Enum]
-#[derive(EnumString)]
+#[derive(Enum, EnumString, Copy, Clone, Eq, PartialEq)]
 enum LifeExists {
     Yes,
     OpenQuestion,
     NoData,
 }
 
-#[derive(Clone)]
 struct Planet {
     id: ID
 }
