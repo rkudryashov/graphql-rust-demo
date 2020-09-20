@@ -1,7 +1,0 @@
-= Apollo Server
-
-Launch:
-
-* `npm install`
-* make sure you've launched 3 GraphQL Rust services
-* `npm run start-gateway`
