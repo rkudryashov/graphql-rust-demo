@@ -47,7 +47,7 @@ async fn test_satellites() {
     let response_data = response.data.expect("Response doesn't contain data");
 
     fn get_satellite_as_json(all_satellites: &serde_json::Value, index: i32) -> &serde_json::Value {
-        jsonpath::select(all_satellites, &format!("$.satellites[{}]", index)).expect("Can't get satellite by JSON path")[0]
+        jsonpath::select(all_satellites, &format!("$.getSatellites[{}]", index)).expect("Can't get satellite by JSON path")[0]
     }
 
     let moon_json = get_satellite_as_json(&response_data, 0);
@@ -86,7 +86,7 @@ async fn test_satellite() {
 
     let response_data = response.data.expect("Response doesn't contain data");
 
-    let moon_json = jsonpath::select(&response_data, "$.satellite").expect("Can't get satellite by JSON path")[0];
+    let moon_json = jsonpath::select(&response_data, "$.getSatellite").expect("Can't get satellite by JSON path")[0];
     check_satellite(moon_json, "Moon", Some(NaiveDate::from_ymd(1959, 9, 13)));
 }
 

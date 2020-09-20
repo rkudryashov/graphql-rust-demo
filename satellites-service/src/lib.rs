@@ -12,7 +12,6 @@ use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
 use async_graphql_actix_web::{GQLRequest, GQLResponse};
 use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
-use dotenv::dotenv;
 use strum_macros::EnumString;
 
 use crate::graphql::{AppSchema, Query};
@@ -55,7 +54,6 @@ fn create_schema(pool: PgPool) -> Schema<Query, EmptyMutation, EmptySubscription
 }
 
 fn prepare_env() -> PgPool {
-    dotenv().ok();
     let pool = create_connection_pool();
     let conn = pool.get().expect("Can't get DB connection");
     embedded_migrations::run(&conn);

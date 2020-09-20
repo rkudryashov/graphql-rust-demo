@@ -18,53 +18,25 @@ async fn test_create_planet() {
         .service(web::resource("/").guard(guard::Post()).to(index)))
         .await;
 
-    // get max id of any of the existing planets
-
-    let query = "
-        {
-            planets {
-                id
-            }
-        }
-        ".to_string();
-
-    let request_body = GraphQLCustomRequest {
-        query,
-        variables: Map::new(),
-    };
-
-    let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
-
-    let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
-
-    let max_planet_id: i32 = jsonpath::select(&response.data, "$.planets[*].id").expect("Can't get ids")
-        .iter()
-        .map(|value| value
-            .as_str().expect("Can't convert id")
-            .parse().expect("Can't convert id")
-        )
-        .max()
-        .expect("Can't get max id");
-
-    // create new planet
-
     let mutation = r#"
-        mutation ($planetName: String!) {
+        mutation ($name: String!, $meanRadius: BigDecimal!, $mass: BigInt!, $population: BigDecimal) {
             createPlanet(
-                name: $planetName
+                name: $name
                 planetType: TERRESTRIAL_PLANET
                 details: {
-                    meanRadius: "10.7"
-                    mass: { mantissa: 1.5, exponent: 25 }
-                    population: "0.5"
+                    meanRadius: $meanRadius
+                    mass: $mass
+                    population: $population
                 }
             )
         }
         "#.to_string();
 
-    let planet_name = format!("test_planet_{}", max_planet_id + 1);
     let mut variables = Map::new();
-    variables.insert("planetName".to_string(), planet_name.into());
+    variables.insert("name".to_string(), "Test planet".into());
+    variables.insert("meanRadius".to_string(), "10.7".into());
+    variables.insert("mass".to_string(), "6.42e+23".into());
+    variables.insert("population".to_string(), "0.5".into());
 
     let request_body = GraphQLCustomRequest {
         query: mutation,

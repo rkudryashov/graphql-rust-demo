@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::env;
 
-use async_graphql::Schema;
+use async_graphql::{EmptySubscription, Schema};
 use dotenv::dotenv;
 use testcontainers::{Container, Docker};
 use testcontainers::clients::Cli;
@@ -9,7 +9,7 @@ use testcontainers::images::postgres::Postgres;
 
 use planets_service::graphql::{Mutation, Query, Subscription};
 
-pub fn setup(docker: &Cli) -> (Schema<Query, Mutation, Subscription>, Container<Cli, Postgres>) {
+pub fn setup(docker: &Cli) -> (Schema<Query, Mutation, EmptySubscription>, Container<Cli, Postgres>) {
     dotenv().ok();
 
     let pg_container = docker.run(get_pg_image());
