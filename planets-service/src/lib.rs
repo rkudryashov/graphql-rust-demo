@@ -10,7 +10,7 @@ use actix_web::{HttpRequest, HttpResponse, Result, web};
 use actix_web_actors::ws;
 use async_graphql::{Context, EmptySubscription, Schema};
 use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
-use async_graphql_actix_web::{GQLRequest, GQLResponse, WSSubscription};
+use async_graphql_actix_web::{Request, Response, WSSubscription};
 use dataloader::non_cached::Loader;
 use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
@@ -24,7 +24,7 @@ embed_migrations!();
 pub mod graphql;
 mod persistence;
 
-pub async fn index(schema: web::Data<AppSchema>, req: GQLRequest) -> GQLResponse {
+pub async fn index(schema: web::Data<AppSchema>, req: Request) -> Response {
     schema.execute(req.into_inner()).await.into()
 }
 

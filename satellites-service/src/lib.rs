@@ -9,7 +9,7 @@ use std::str::FromStr;
 use actix_web::{HttpRequest, HttpResponse, Result, web};
 use async_graphql::{Context, EmptyMutation, EmptySubscription, Schema};
 use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
-use async_graphql_actix_web::{GQLRequest, GQLResponse};
+use async_graphql_actix_web::{Request, Response};
 use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
 use strum_macros::EnumString;
@@ -24,7 +24,7 @@ pub mod graphql;
 mod persistence;
 mod utils;
 
-pub async fn index(schema: web::Data<AppSchema>, http_req: HttpRequest, req: GQLRequest) -> GQLResponse {
+pub async fn index(schema: web::Data<AppSchema>, http_req: HttpRequest, req: Request) -> Response {
     let mut query = req.into_inner();
 
     let maybe_role = get_role(http_req);

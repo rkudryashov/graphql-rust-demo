@@ -6,7 +6,7 @@ extern crate diesel_migrations;
 use actix_web::{HttpResponse, Result, web};
 use async_graphql::{Context, EmptySubscription, Schema};
 use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
-use async_graphql_actix_web::{GQLRequest, GQLResponse};
+use async_graphql_actix_web::{Request, Response};
 use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
 
@@ -20,7 +20,7 @@ pub mod graphql;
 pub mod utils;
 mod persistence;
 
-pub async fn index(schema: web::Data<AppSchema>, req: GQLRequest) -> GQLResponse {
+pub async fn index(schema: web::Data<AppSchema>, req: Request) -> Response {
     schema.execute(req.into_inner()).await.into()
 }
 
