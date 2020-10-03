@@ -28,7 +28,7 @@ impl Query {
             .map(|e| { Satellite::from(&e) })
     }
 
-    #[entity]
+    #[graphql(entity)]
     async fn get_planet_by_id(&self, id: ID) -> Planet {
         Planet { id }
     }
@@ -56,7 +56,7 @@ struct Planet {
 
 #[Object(extends)]
 impl Planet {
-    #[field(external)]
+    #[graphql(external)]
     async fn id(&self) -> &ID {
         &self.id
     }
@@ -87,7 +87,7 @@ struct RoleGuard {
 
 #[async_trait::async_trait]
 impl Guard for RoleGuard {
-    async fn check(&self, ctx: &Context<'_>) -> FieldResult<()> {
+    async fn check(&self, ctx: &Context<'_>) -> Result<()> {
         if ctx.data_opt::<Role>() == Some(&self.role) {
             Ok(())
         } else {

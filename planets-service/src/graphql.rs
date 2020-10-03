@@ -34,7 +34,7 @@ impl Query {
         find_planet_by_id_internal(ctx, id)
     }
 
-    #[entity]
+    #[graphql(entity)]
     async fn find_planet_by_id(&self, ctx: &Context<'_>, id: ID) -> Option<Planet> {
         find_planet_by_id_internal(ctx, id)
     }
@@ -98,12 +98,13 @@ impl Planet {
         &self.name
     }
 
-    #[field(name = "type", desc = "From an astronomical point of view")]
+    /// From an astronomical point of view
+    #[graphql(name = "type")]
     async fn planet_type(&self) -> &PlanetType {
         &self.planet_type
     }
 
-    #[field(deprecation = "Now it is not in doubt. Do not use this field")]
+    #[graphql(deprecation = "Now it is not in doubt. Do not use this field")]
     async fn is_rotating_around_sun(&self) -> bool {
         true
     }
@@ -157,7 +158,7 @@ impl ScalarType for CustomBigInt {
                 let number = BigDecimal::from_str(&s)?;
                 Ok(CustomBigInt(number))
             }
-            _ => Err(InputValueError::ExpectedType(value)),
+            _ => Err(InputValueError::expected_type(value)),
         }
     }
 
@@ -184,7 +185,7 @@ impl ScalarType for CustomBigDecimal {
                 let parsed_value = BigDecimal::from_str(&s)?;
                 Ok(CustomBigDecimal(parsed_value))
             }
-            _ => Err(InputValueError::ExpectedType(value)),
+            _ => Err(InputValueError::expected_type(value)),
         }
     }
 
