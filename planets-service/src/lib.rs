@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 use actix_web::{HttpRequest, HttpResponse, Result, web};
 use actix_web_actors::ws;
-use async_graphql::{Context, EmptySubscription, Schema};
+use async_graphql::{Context, Schema};
 use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
 use async_graphql_actix_web::{Request, Response, WSSubscription};
 use dataloader::non_cached::Loader;
@@ -22,6 +22,7 @@ use crate::persistence::connection::PgPool;
 embed_migrations!();
 
 pub mod graphql;
+pub mod kafka;
 mod persistence;
 
 pub async fn index(schema: web::Data<AppSchema>, req: Request) -> Response {
@@ -39,24 +40,25 @@ pub async fn index_playground() -> Result<HttpResponse> {
     )
 }
 
-pub fn setup() -> Schema<Query, Mutation, EmptySubscription> {
+pub fn setup() -> Schema<Query, Mutation, Subscription> {
     let pg_pool = prepare_env();
     create_schema(pg_pool)
 }
 
-fn create_schema(pool: PgPool) -> Schema<Query, Mutation, EmptySubscription> {
+fn create_schema(pool: PgPool) -> Schema<Query, Mutation, Subscription> {
     let pool = Arc::new(pool);
     let cloned_pool = Arc::clone(&pool);
     let details_batch_loader = Loader::new(DetailsBatchLoader {
         pool: cloned_pool
     }).with_max_batch_size(10);
 
-    Schema::build(Query, Mutation, EmptySubscription)
+    Schema::build(Query, Mutation, Subscription)
         // limits are commented out, because otherwise introspection query won't work
         // .limit_depth(3)
         // .limit_complexity(15)
         .data(pool)
         .data(details_batch_loader)
+        .data(kafka::create_producer())
         .finish()
 }
 

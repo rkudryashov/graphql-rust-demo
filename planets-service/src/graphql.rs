@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::LowerExp;
+use std::iter::Iterator;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -9,15 +10,19 @@ use async_trait::async_trait;
 use bigdecimal::{BigDecimal, ToPrimitive};
 use dataloader::BatchFn;
 use dataloader::non_cached::Loader;
+use futures::{Stream, StreamExt};
+use rdkafka::{Message, producer::FutureProducer};
+use serde::{Deserialize, Serialize};
 use serde::export::Formatter;
 use strum_macros::{Display, EnumString};
 
 use crate::get_conn_from_ctx;
+use crate::kafka;
 use crate::persistence::connection::PgPool;
 use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
 use crate::persistence::repository;
 
-pub type AppSchema = Schema<Query, Mutation, EmptySubscription>;
+pub type AppSchema = Schema<Query, Mutation, Subscription>;
 
 pub struct Query;
 
@@ -65,7 +70,9 @@ impl Mutation {
 
         let created_planet_entity = repository::create(new_planet, new_planet_details, &get_conn_from_ctx(ctx)).expect("Can't create planet");
 
-        // todo publish to kafka
+        let producer = ctx.data::<FutureProducer>().expect("Can't get Kafka producer");
+        let message = serde_json::to_string(&Planet::from(&created_planet_entity)).unwrap();
+        kafka::send_message(producer, message).await;
 
         created_planet_entity.id.into()
     }
@@ -73,15 +80,28 @@ impl Mutation {
 
 pub struct Subscription;
 
-// todo create subscription based on Kafka
-// #[Subscription]
-// impl Subscription {
-//     async fn latest_planet(&self) -> impl Stream<Item=Planet> {
-//         futures::Stream::poll_next()
-//         // todo listen to kafka
-//     }
-// }
+#[Subscription]
+impl Subscription {
+    async fn latest_planet(&self) -> impl Stream<Item=Planet> {
+        async_stream::stream! {
+            let consumer = kafka::create_consumer();
+            let mut stream = consumer.start();
 
+            while let Some(value) = stream.next().await {
+                yield match value {
+                    Ok(message) => {
+                        let payload = message.payload().expect("Kafka message should contain payload");
+                        let message = String::from_utf8_lossy(payload).to_string();
+                        serde_json::from_str(&message).unwrap()
+                    }
+                    Err(e) => panic!("Error while Kafka message processing: {}", e)
+                };
+            }
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 struct Planet {
     id: ID,
     name: String,
@@ -115,7 +135,7 @@ impl Planet {
     }
 }
 
-#[derive(Enum, Display, EnumString, Copy, Clone, Eq, PartialEq)]
+#[derive(Enum, Display, EnumString, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
 enum PlanetType {
     TerrestrialPlanet,
     GasGiant,
