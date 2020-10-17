@@ -4,13 +4,13 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-async-graphql = "2.0.0-alpha.23"
-async-graphql-actix-web = "2.0.0-alpha.23"
-actix-web = "3.0.2"
+async-graphql = "2.0.4"
+async-graphql-actix-web = "2.0.4"
+actix-web = "3.1.0"
 actix-rt = "1.1.1"
 actix-web-actors = "3.0.0"
 dataloader = "0.12.0"
-futures = "0.3.5"
+futures = "0.3.6"
 async-trait = "0.1.40"
 bigdecimal = { version = "0.1.2", features = ["serde"] }
 serde = { version = "1.0.114", features = ["derive"] }
