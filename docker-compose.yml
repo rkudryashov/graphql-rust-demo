@@ -8,6 +8,8 @@ services:
       - planets-db
     environment:
       DATABASE_URL: postgres://postgres:$PLANETS_DB_PASSWORD@planets-db/planets
+      KAFKA_BROKER: kafka:9092
+      KAFKA_TOPIC: $KAFKA_TOPIC
     restart: always
   planets-db:
     image: postgres:12-alpine
@@ -60,3 +62,17 @@ services:
     environment:
       NODE_ENV: docker
     restart: always
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - 2181:2181
+
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "$KAFKA_TOPIC:1:1"

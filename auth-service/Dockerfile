@@ -1,7 +1,7 @@
-FROM rust:1.46.0
+FROM rust:1.47.0
 
 ENV CARGO_TERM_COLOR always
-RUN apt-get update && apt-get install -y clang libpq-dev
+RUN apt-get update && apt-get install -y libpq-dev clang
 
 # create empty project for caching dependencies
 RUN USER=root cargo new --bin auth-service
