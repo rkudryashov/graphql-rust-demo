@@ -3,7 +3,7 @@ use diesel::prelude::*;
 use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
 use crate::persistence::schema::{details, planets};
 
-pub fn all(conn: &PgConnection) -> QueryResult<Vec<PlanetEntity>> {
+pub fn get_all(conn: &PgConnection) -> QueryResult<Vec<PlanetEntity>> {
     use crate::persistence::schema::planets::dsl::*;
 
     planets.load(conn)

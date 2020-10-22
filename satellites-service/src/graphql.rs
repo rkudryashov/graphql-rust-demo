@@ -16,7 +16,7 @@ pub struct Query;
 #[Object]
 impl Query {
     async fn get_satellites(&self, ctx: &Context<'_>) -> Vec<Satellite> {
-        repository::all(&get_conn_from_ctx(ctx)).expect("Can't get satellites")
+        repository::get_all(&get_conn_from_ctx(ctx)).expect("Can't get satellites")
             .iter()
             .map(|e| { Satellite::from(e) })
             .collect()

@@ -3,7 +3,7 @@ use diesel::prelude::*;
 use crate::persistence::model::SatelliteEntity;
 use crate::persistence::schema::satellites;
 
-pub fn all(conn: &PgConnection) -> QueryResult<Vec<SatelliteEntity>> {
+pub fn get_all(conn: &PgConnection) -> QueryResult<Vec<SatelliteEntity>> {
     use crate::persistence::schema::satellites::dsl::*;
 
     satellites.load(conn)

@@ -29,7 +29,7 @@ pub struct Query;
 #[Object]
 impl Query {
     async fn get_planets(&self, ctx: &Context<'_>) -> Vec<Planet> {
-        repository::all(&get_conn_from_ctx(ctx)).expect("Can't get planets")
+        repository::get_all(&get_conn_from_ctx(ctx)).expect("Can't get planets")
             .iter()
             .map(|p| { Planet::from(p) })
             .collect()
