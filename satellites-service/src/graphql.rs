@@ -38,7 +38,7 @@ impl Query {
 struct Satellite {
     id: ID,
     name: String,
-    #[field(guard(RoleGuard(role = "Role::Admin")))]
+    #[graphql(guard(RoleGuard(role = "Role::Admin")))]
     life_exists: LifeExists,
     first_spacecraft_landing_date: Option<NaiveDate>,
 }

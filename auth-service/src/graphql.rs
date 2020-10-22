@@ -1,7 +1,7 @@
 use async_graphql::*;
 
 use crate::get_conn_from_ctx;
-use crate::persistence::model::NewUserEntity;
+use crate::persistence::model::{NewUserEntity, UserEntity};
 use crate::persistence::repository;
 use crate::utils::{create_token, hash_password, verify};
 
@@ -10,7 +10,14 @@ pub type AppSchema = Schema<Query, Mutation, EmptySubscription>;
 pub struct Query;
 
 #[Object]
-impl Query {}
+impl Query {
+    async fn get_users(&self, ctx: &Context<'_>) -> Vec<User> {
+        repository::get_all(&get_conn_from_ctx(ctx)).expect("Can't get planets")
+            .iter()
+            .map(|p| { User::from(p) })
+            .collect()
+    }
+}
 
 pub struct Mutation;
 
@@ -45,6 +52,14 @@ impl Mutation {
     }
 }
 
+#[derive(SimpleObject)]
+struct User {
+    username: String,
+    first_name: String,
+    last_name: String,
+    role: String,
+}
+
 #[derive(InputObject)]
 struct UserInput {
     username: String,
@@ -58,4 +73,15 @@ struct UserInput {
 struct SignInInput {
     username: String,
     password: String,
+}
+
+impl From<&UserEntity> for User {
+    fn from(entity: &UserEntity) -> Self {
+        User {
+            username: entity.username.clone(),
+            first_name: entity.first_name.clone(),
+            last_name: entity.last_name.clone(),
+            role: entity.role.clone(),
+        }
+    }
 }

@@ -157,7 +157,7 @@ pub enum Details {
 pub struct InhabitedPlanetDetails {
     mean_radius: CustomBigDecimal,
     mass: CustomBigInt,
-    #[field(desc = "In billions")]
+    /// In billions
     population: CustomBigDecimal,
 }
 
@@ -216,11 +216,11 @@ impl ScalarType for CustomBigDecimal {
 
 #[derive(InputObject)]
 struct DetailsInput {
-    #[field(desc = "In kilometers")]
+    /// In kilometers
     mean_radius: CustomBigDecimal,
-    #[field(desc = "In kilograms. A number should be represented as, for example, `6.42e+23`")]
+    /// In kilograms. A number should be represented as, for example, `6.42e+23`
     mass: CustomBigInt,
-    #[field(desc = "In billions")]
+    /// In billions
     population: Option<CustomBigDecimal>,
 }
 
