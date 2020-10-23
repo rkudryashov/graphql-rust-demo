@@ -4,55 +4,92 @@ services:
   # Planets service
   planets-service:
     image: kudryashovroman/graphql-federation-rust:planets-service
+    container_name: planets-service
     depends_on:
       - planets-db
     environment:
       DATABASE_URL: postgres://postgres:$PLANETS_DB_PASSWORD@planets-db/planets
       KAFKA_BROKER: kafka:9092
       KAFKA_TOPIC: $KAFKA_TOPIC
-    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8001/" ]
+      interval: 1m
+      timeout: 3s
+      start_period: 10s
+      retries: 3
   planets-db:
-    image: postgres:12-alpine
+    image: postgres:13-alpine
+    container_name: planets-db
     environment:
       POSTGRES_DB: planets
       POSTGRES_PASSWORD: $PLANETS_DB_PASSWORD
-    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 1m
+      timeout: 5s
+      start_period: 10s
+      retries: 3
 
   # Satellites service
   satellites-service:
     image: kudryashovroman/graphql-federation-rust:satellites-service
+    container_name: satellites-service
     depends_on:
       - satellites-db
     environment:
       DATABASE_URL: postgres://postgres:$SATELLITES_DB_PASSWORD@satellites-db/satellites
       SECRET_KEY: $SECRET_KEY
-    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8002/" ]
+      interval: 1m
+      timeout: 3s
+      start_period: 10s
+      retries: 3
   satellites-db:
-    image: postgres:12-alpine
+    image: postgres:13-alpine
+    container_name: satellites-db
     environment:
       POSTGRES_DB: satellites
       POSTGRES_PASSWORD: $SATELLITES_DB_PASSWORD
-    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 1m
+      timeout: 5s
+      start_period: 10s
+      retries: 3
 
   # Auth service
   auth-service:
     image: kudryashovroman/graphql-federation-rust:auth-service
+    container_name: auth-service
     depends_on:
       - users-db
     environment:
       DATABASE_URL: postgres://postgres:USERS_DB_PASSWORD@users-db/users
       SECRET_KEY: $SECRET_KEY
-    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8003/" ]
+      interval: 1m
+      timeout: 3s
+      start_period: 10s
+      retries: 3
   users-db:
-    image: postgres:12-alpine
+    image: postgres:13-alpine
+    container_name: auth-db
     environment:
       POSTGRES_DB: users
       POSTGRES_PASSWORD: USERS_DB_PASSWORD
-    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 1m
+      timeout: 5s
+      start_period: 10s
+      retries: 3
 
   # Apollo server
   apollo-server:
     image: kudryashovroman/graphql-federation-rust:apollo-server
+    container_name: apollo-server
     depends_on:
       - planets-service
       - satellites-service
@@ -61,18 +98,27 @@ services:
       - 4000:4000
     environment:
       NODE_ENV: docker
-    restart: always
 
   zookeeper:
     image: wurstmeister/zookeeper
+    container_name: zookeeper
     ports:
       - 2181:2181
+    healthcheck:
+      test: [ "CMD", "nc", "-vz", "localhost", "2181" ]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   kafka:
     image: wurstmeister/kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
     ports:
       - 9092:9092
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_CREATE_TOPICS: "$KAFKA_TOPIC:1:1"

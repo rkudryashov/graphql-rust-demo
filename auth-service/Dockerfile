@@ -14,7 +14,7 @@ COPY . .
 RUN cargo install --path .
 
 FROM debian:buster-slim
-RUN apt-get update && apt-get install -y libpq-dev
+RUN apt-get update && apt-get install -y libpq-dev curl
 COPY --from=0 /usr/local/cargo/bin/auth-service /usr/local/bin/auth-service
 CMD ["auth-service"]
 EXPOSE 8003

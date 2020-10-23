@@ -14,7 +14,7 @@ COPY . .
 RUN cargo install --path .
 
 FROM debian:buster-slim
-RUN apt-get update && apt-get install -y libpq-dev
+RUN apt-get update && apt-get install -y libpq-dev curl
 COPY --from=0 /usr/local/cargo/bin/satellites-service /usr/local/bin/satellites-service
 CMD ["satellites-service"]
 EXPOSE 8002

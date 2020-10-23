@@ -43,7 +43,7 @@ pub(crate) async fn send_message(producer: &FutureProducer, message: String) {
     let send_to_kafka_result = producer.send(
         FutureRecord::to(&KAFKA_TOPIC)
             .payload(&message)
-            .key("and this is a key"),
+            .key("new_planet"),
         Timeout::After(Duration::from_secs(0)),
     ).await;
 
