@@ -71,7 +71,7 @@ impl Mutation {
         let created_planet_entity = repository::create(new_planet, new_planet_details, &get_conn_from_ctx(ctx)).expect("Can't create planet");
 
         let producer = ctx.data::<FutureProducer>().expect("Can't get Kafka producer");
-        let message = serde_json::to_string(&Planet::from(&created_planet_entity)).unwrap();
+        let message = serde_json::to_string(&Planet::from(&created_planet_entity)).expect("Can't serialize a planet");
         kafka::send_message(producer, message).await;
 
         created_planet_entity.id.into()
@@ -92,7 +92,7 @@ impl Subscription {
                     Ok(message) => {
                         let payload = message.payload().expect("Kafka message should contain payload");
                         let message = String::from_utf8_lossy(payload).to_string();
-                        serde_json::from_str(&message).unwrap()
+                        serde_json::from_str(&message).expect("Can't deserialize a planet")
                     }
                     Err(e) => panic!("Error while Kafka message processing: {}", e)
                 };
