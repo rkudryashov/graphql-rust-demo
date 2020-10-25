@@ -1,4 +1,4 @@
-name: GraphQL Federation build
+name: GraphQL Rust CI/CD pipeline
 
 on:
   push:
@@ -10,20 +10,6 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-
-  apollo-server:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: docker/build-push-action@v1.1.0
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: kudryashovroman/graphql-federation-rust
-          path: ./apollo-server
-          tags: apollo-server
-          push: ${{ github.event_name == 'push' }}
-
   # todo maybe run tests inside docker container (change Dockerfile for that). Now it is not supported by testcontainers (https://github.com/testcontainers/testcontainers-rs/issues/129)
   test-rust-services:
     runs-on: ubuntu-latest
@@ -80,3 +66,38 @@ jobs:
           path: ./satellites-service
           tags: satellites-service
           push: ${{ github.event_name == 'push' }}
+
+  apollo-server-image:
+    needs: test-rust-services
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: docker/build-push-action@v1.1.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: kudryashovroman/graphql-federation-rust
+          path: ./apollo-server
+          tags: apollo-server
+          push: ${{ github.event_name == 'push' }}
+
+  deploy:
+    if: ${{ github.event_name == 'push' }}
+    needs: [ auth-service-image, planets-service-image, satellites-service-image, apollo-server-image ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup gcloud CLI
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '316.0.0'
+          service_account_key: ${{ secrets.GCE_SA_KEY }}
+          project_id: ${{ secrets.GCE_PROJECT }}
+
+      - run: |-
+          gcloud compute scp --quiet --zone ${{ secrets.GCE_INSTANCE_ZONE }} --project ${{ secrets.GCE_PROJECT }} ./docker-compose.yml ./.env ${{ secrets.GCE_INSTANCE }}:~
+
+      - run: |-
+          gcloud compute ssh --quiet --zone ${{ secrets.GCE_INSTANCE_ZONE }} ${{ secrets.GCE_INSTANCE }} --project ${{ secrets.GCE_PROJECT }} --command 'docker-compose down && docker-compose pull && docker-compose up -d'
