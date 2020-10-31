@@ -168,7 +168,7 @@ pub struct UninhabitedPlanetDetails {
 }
 
 #[derive(Clone)]
-struct CustomBigInt(BigDecimal);
+pub struct CustomBigInt(BigDecimal);
 
 #[Scalar(name = "BigInt")]
 impl ScalarType for CustomBigInt {
@@ -195,7 +195,7 @@ impl LowerExp for CustomBigInt {
 }
 
 #[derive(Clone)]
-struct CustomBigDecimal(BigDecimal);
+pub struct CustomBigDecimal(BigDecimal);
 
 #[Scalar(name = "BigDecimal")]
 impl ScalarType for CustomBigDecimal {
