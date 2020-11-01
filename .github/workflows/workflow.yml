@@ -100,4 +100,4 @@ jobs:
           gcloud compute scp --quiet --zone ${{ secrets.GCE_INSTANCE_ZONE }} --project ${{ secrets.GCE_PROJECT }} ./docker-compose.yml ./.env ${{ secrets.GCE_INSTANCE }}:~
 
       - run: |-
-          gcloud compute ssh --quiet --zone ${{ secrets.GCE_INSTANCE_ZONE }} ${{ secrets.GCE_INSTANCE }} --project ${{ secrets.GCE_PROJECT }} --command 'docker-compose down && docker-compose pull && docker-compose up -d'
+          gcloud compute ssh --quiet --zone ${{ secrets.GCE_INSTANCE_ZONE }} --project ${{ secrets.GCE_PROJECT }} ${{ secrets.GCE_INSTANCE }}  --command 'docker-compose down && docker-compose pull && docker-compose up -d'
