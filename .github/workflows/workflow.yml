@@ -34,7 +34,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: kudryashovroman/graphql-federation-rust
+          repository: kudryashovroman/graphql-rust
           path: ./auth-service
           tags: auth-service
           push: ${{ github.event_name == 'push' }}
@@ -48,7 +48,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: kudryashovroman/graphql-federation-rust
+          repository: kudryashovroman/graphql-rust
           path: ./planets-service
           tags: planets-service
           push: ${{ github.event_name == 'push' }}
@@ -62,7 +62,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: kudryashovroman/graphql-federation-rust
+          repository: kudryashovroman/graphql-rust
           path: ./satellites-service
           tags: satellites-service
           push: ${{ github.event_name == 'push' }}
@@ -76,7 +76,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: kudryashovroman/graphql-federation-rust
+          repository: kudryashovroman/graphql-rust
           path: ./apollo-server
           tags: apollo-server
           push: ${{ github.event_name == 'push' }}

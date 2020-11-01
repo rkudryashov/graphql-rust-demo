@@ -3,7 +3,7 @@ services:
 
   # Planets service
   planets-service:
-    image: kudryashovroman/graphql-federation-rust:planets-service
+    image: kudryashovroman/graphql-rust:planets-service
     container_name: planets-service
     depends_on:
       - planets-db
@@ -32,7 +32,7 @@ services:
 
   # Satellites service
   satellites-service:
-    image: kudryashovroman/graphql-federation-rust:satellites-service
+    image: kudryashovroman/graphql-rust:satellites-service
     container_name: satellites-service
     depends_on:
       - satellites-db
@@ -60,7 +60,7 @@ services:
 
   # Auth service
   auth-service:
-    image: kudryashovroman/graphql-federation-rust:auth-service
+    image: kudryashovroman/graphql-rust:auth-service
     container_name: auth-service
     depends_on:
       - users-db
@@ -88,7 +88,7 @@ services:
 
   # Apollo server
   apollo-server:
-    image: kudryashovroman/graphql-federation-rust:apollo-server
+    image: kudryashovroman/graphql-rust:apollo-server
     container_name: apollo-server
     depends_on:
       - planets-service
