@@ -4,14 +4,15 @@ ENV CARGO_TERM_COLOR always
 RUN apt-get update && apt-get install -y libpq-dev cmake
 
 # create empty project for caching dependencies
-RUN USER=root cargo new --bin planets-service
-WORKDIR ./planets-service
-COPY ./Cargo.toml ./Cargo.toml
+RUN USER=root cargo new --bin /planets-service/docker-build
+WORKDIR /planets-service/docker-build
+COPY /Cargo.lock ./
+COPY /planets-service/Cargo.toml ./
 # cache dependencies
-RUN cargo install --path .
+RUN cargo install --path . --locked
 
-COPY . .
-RUN cargo install --path .
+COPY /planets-service/ ./
+RUN cargo install --path . --locked
 
 FROM debian:buster-slim
 RUN apt-get update && apt-get install -y libpq-dev curl

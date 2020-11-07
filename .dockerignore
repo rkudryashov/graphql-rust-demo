@@ -1,0 +1,7 @@
+*
+
+!/Cargo.lock
+!/*/src/
+!/*/migrations/
+!/*/Cargo.toml
+!/*/diesel.toml
