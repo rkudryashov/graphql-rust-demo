@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-async-graphql = "2.0.10"
-async-graphql-actix-web = "2.0.10"
+async-graphql = "2.0.11"
+async-graphql-actix-web = "2.0.11"
 actix-web = "3.2.0"
 actix-rt = "1.1.1"
 serde = { version = "1.0.114", features = ["derive"] }
