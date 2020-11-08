@@ -257,7 +257,7 @@ pub struct DetailsBatchLoader {
 
 #[async_trait]
 impl BatchFn<ID, Details> for DetailsBatchLoader {
-    async fn load(&self, keys: &[ID]) -> HashMap<ID, Details> {
+    async fn load(&mut self, keys: &[ID]) -> HashMap<ID, Details> {
         keys.iter().map(|planet_id| {
             let conn = self.pool.get().expect("Can't get DB connection");
 
