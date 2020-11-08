@@ -1,23 +1,27 @@
 use std::collections::HashMap;
 use std::env;
 
-use async_graphql::Schema;
 use dotenv::dotenv;
 use testcontainers::{Container, Docker};
 use testcontainers::clients::Cli;
 use testcontainers::images::postgres::Postgres;
 
-use planets_service::graphql::{Mutation, Query, Subscription};
+use planets_service::persistence::connection::{create_connection_pool, PgPool};
+use planets_service::run_migrations;
 
-pub fn setup(docker: &Cli) -> (Schema<Query, Mutation, Subscription>, Container<Cli, Postgres>) {
+pub fn setup(docker: &Cli) -> (Container<Cli, Postgres>, PgPool) {
     dotenv().ok();
+    let pg_container = setup_database(docker);
+    let pool = create_connection_pool();
+    run_migrations(&pool);
+    (pg_container, pool)
+}
 
+fn setup_database(docker: &Cli) -> Container<Cli, Postgres> {
     let pg_container = docker.run(get_pg_image());
     let pg_port = pg_container.get_host_port(5432).expect("Can't get port for connection to Postgres");
-    // this env var is used by Diesel
     env::set_var("DATABASE_URL", format!("postgres://postgres:password@localhost:{}/planets-db", pg_port));
-
-    (planets_service::setup(), pg_container)
+    pg_container
 }
 
 fn get_pg_image() -> Postgres {

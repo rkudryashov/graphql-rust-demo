@@ -1,11 +1,11 @@
-use actix_web::{App, guard, test, web};
+use actix_web::{App, test};
 use chrono::NaiveDate;
 use jsonpath_lib as jsonpath;
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
 use testcontainers::clients::Cli;
 
-use satellites_service::index;
+use satellites_service::{configure_service, create_schema_with_context};
 
 mod common;
 
@@ -20,12 +20,12 @@ const TEST_FIELDS_FRAGMENT: &str = "
 #[actix_rt::test]
 async fn test_satellites() {
     let docker = Cli::default();
-    let (schema, _pg_container) = common::setup(&docker);
+    let (_pg_container, pool) = common::setup(&docker);
 
     let mut service = test::init_service(App::new()
-        .data(schema.clone())
-        .service(web::resource("/").guard(guard::Post()).to(index)))
-        .await;
+        .configure(configure_service)
+        .data(create_schema_with_context(pool))
+    ).await;
 
     let query = "
         {
@@ -60,12 +60,12 @@ async fn test_satellites() {
 #[actix_rt::test]
 async fn test_satellite() {
     let docker = Cli::default();
-    let (schema, _pg_container) = common::setup(&docker);
+    let (_pg_container, pool) = common::setup(&docker);
 
     let mut service = test::init_service(App::new()
-        .data(schema.clone())
-        .service(web::resource("/").guard(guard::Post()).to(index)))
-        .await;
+        .configure(configure_service)
+        .data(create_schema_with_context(pool))
+    ).await;
 
     let query = "
         {
@@ -93,12 +93,12 @@ async fn test_satellite() {
 #[actix_rt::test]
 async fn test_satellite_should_return_forbidden() {
     let docker = Cli::default();
-    let (schema, _pg_container) = common::setup(&docker);
+    let (_pg_container, pool) = common::setup(&docker);
 
     let mut service = test::init_service(App::new()
-        .data(schema.clone())
-        .service(web::resource("/").guard(guard::Post()).to(index)))
-        .await;
+        .configure(configure_service)
+        .data(create_schema_with_context(pool))
+    ).await;
 
     let query = "
         {

@@ -1,10 +1,10 @@
-use actix_web::{App, guard, test, web};
+use actix_web::{App, test};
 use jsonpath_lib as jsonpath;
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
 use testcontainers::clients::Cli;
 
-use planets_service::index;
+use planets_service::{configure_service, create_schema_with_context};
 
 mod common;
 
@@ -26,12 +26,12 @@ const PLANET_FRAGMENT: &str = "
 #[actix_rt::test]
 async fn test_planets() {
     let docker = Cli::default();
-    let (schema, _pg_container) = common::setup(&docker);
+    let (_pg_container, pool) = common::setup(&docker);
 
     let mut service = test::init_service(App::new()
-        .data(schema.clone())
-        .service(web::resource("/").guard(guard::Post()).to(index)))
-        .await;
+        .configure(configure_service)
+        .data(create_schema_with_context(pool))
+    ).await;
 
     let query = "
         {
@@ -76,12 +76,12 @@ async fn test_planets() {
 #[actix_rt::test]
 async fn test_planet_by_id() {
     let docker = Cli::default();
-    let (schema, _pg_container) = common::setup(&docker);
+    let (_pg_container, pool) = common::setup(&docker);
 
     let mut service = test::init_service(App::new()
-        .data(schema.clone())
-        .service(web::resource("/").guard(guard::Post()).to(index)))
-        .await;
+        .configure(configure_service)
+        .data(create_schema_with_context(pool))
+    ).await;
 
     let query = "
         {
@@ -107,12 +107,12 @@ async fn test_planet_by_id() {
 #[actix_rt::test]
 async fn test_planet_by_id_with_variable() {
     let docker = Cli::default();
-    let (schema, _pg_container) = common::setup(&docker);
+    let (_pg_container, pool) = common::setup(&docker);
 
     let mut service = test::init_service(App::new()
-        .data(schema.clone())
-        .service(web::resource("/").guard(guard::Post()).to(index)))
-        .await;
+        .configure(configure_service)
+        .data(create_schema_with_context(pool))
+    ).await;
 
     let query = "
         query testPlanetById($planetId: String!) {
@@ -160,5 +160,3 @@ struct GraphQLCustomRequest {
 struct GraphQLCustomResponse {
     data: serde_json::Value,
 }
-
-// create planet test
