@@ -8,4 +8,4 @@ alias docker-compose='docker run --rm \
 
 docker-compose pull --quiet
 docker-compose down
-docker-compose up -d
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d

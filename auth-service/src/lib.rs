@@ -12,6 +12,7 @@ use diesel::r2d2::{ConnectionManager, PooledConnection};
 
 use crate::graphql::{AppSchema, Mutation, Query};
 use crate::persistence::connection::PgPool;
+use crate::persistence::repository;
 
 embed_migrations!();
 
@@ -47,6 +48,10 @@ pub fn create_schema_with_context(pool: PgPool) -> Schema<Query, Mutation, Empty
 pub fn run_migrations(pool: &PgPool) {
     let conn = pool.get().expect("Can't get DB connection");
     embedded_migrations::run(&conn);
+    // if environment variable is set (in case of production environment), then update users' hash
+    if let Ok(hash) = std::env::var("SECURED_USER_PASSWORD_HASH") {
+        repository::update_password_hash(hash, &conn);
+    };
 }
 
 type Conn = PooledConnection<ConnectionManager<PgConnection>>;

@@ -5,6 +5,7 @@ services:
   planets-service:
     image: kudryashovroman/graphql-rust:planets-service
     container_name: planets-service
+    restart: always
     depends_on:
       - planets-db
     environment:
@@ -18,8 +19,9 @@ services:
       start_period: 10s
       retries: 3
   planets-db:
-    image: postgres:13-alpine
+    image: postgres:13.1-alpine
     container_name: planets-db
+    restart: always
     environment:
       POSTGRES_DB: planets
       POSTGRES_PASSWORD: $PLANETS_DB_PASSWORD
@@ -34,6 +36,7 @@ services:
   satellites-service:
     image: kudryashovroman/graphql-rust:satellites-service
     container_name: satellites-service
+    restart: always
     depends_on:
       - satellites-db
     environment:
@@ -46,8 +49,9 @@ services:
       start_period: 10s
       retries: 3
   satellites-db:
-    image: postgres:13-alpine
+    image: postgres:13.1-alpine
     container_name: satellites-db
+    restart: always
     environment:
       POSTGRES_DB: satellites
       POSTGRES_PASSWORD: $SATELLITES_DB_PASSWORD
@@ -62,10 +66,11 @@ services:
   auth-service:
     image: kudryashovroman/graphql-rust:auth-service
     container_name: auth-service
+    restart: always
     depends_on:
       - users-db
     environment:
-      DATABASE_URL: postgres://postgres:USERS_DB_PASSWORD@users-db/users
+      DATABASE_URL: postgres://postgres:$USERS_DB_PASSWORD@users-db/users
       SECRET_KEY: $SECRET_KEY
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8003/" ]
@@ -74,11 +79,12 @@ services:
       start_period: 10s
       retries: 3
   users-db:
-    image: postgres:13-alpine
+    image: postgres:13.1-alpine
     container_name: auth-db
+    restart: always
     environment:
       POSTGRES_DB: users
-      POSTGRES_PASSWORD: USERS_DB_PASSWORD
+      POSTGRES_PASSWORD: $USERS_DB_PASSWORD
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 1m
@@ -90,6 +96,7 @@ services:
   apollo-server:
     image: kudryashovroman/graphql-rust:apollo-server
     container_name: apollo-server
+    restart: always
     depends_on:
       - planets-service
       - satellites-service
@@ -102,6 +109,7 @@ services:
   zookeeper:
     image: wurstmeister/zookeeper
     container_name: zookeeper
+    restart: always
     ports:
       - 2181:2181
     healthcheck:
@@ -114,6 +122,7 @@ services:
   kafka:
     image: wurstmeister/kafka
     container_name: kafka
+    restart: always
     depends_on:
       - zookeeper
     ports:

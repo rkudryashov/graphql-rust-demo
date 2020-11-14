@@ -32,7 +32,11 @@ async fn test_sign_in() {
 
     let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
-    let jwt = jsonpath::select(&response.data, "$.signIn").expect("Can't get JWT")[0].as_str().expect("Can't get JWT string");
+    let jwt = jsonpath::select(&response.data.expect("Response doesn't contain data"), "$.signIn")
+        .expect("Can't get JWT by path")
+        .first().expect("Can't get JWT")
+        .as_str().expect("Can't get JWT string")
+        .to_string();
 
     let first_dot_index = jwt.find('.').expect("Incorrect JWT");
     let last_dot_index = jwt.rfind('.').expect("Incorrect JWT");
@@ -52,7 +56,6 @@ async fn test_sign_in() {
 }
 
 #[actix_rt::test]
-#[should_panic(expected = "Can't authenticate a user")]
 async fn test_sign_in_fails() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
@@ -72,7 +75,15 @@ async fn test_sign_in_fails() {
 
     let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
 
-    test::call_service(&mut service, request).await;
+    let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
+
+    let error_message = jsonpath::select(&response.errors.expect("Response doesn't contain errors"), "$[0].message")
+        .expect("Can't get error message by path")
+        .first().expect("Can't get error message")
+        .as_str().expect("Can't get error message")
+        .to_string();
+
+    assert_eq!("Can't authenticate a user", error_message);
 }
 
 #[derive(Serialize)]
@@ -82,5 +93,6 @@ struct GraphQLCustomRequest {
 
 #[derive(Deserialize)]
 struct GraphQLCustomResponse {
-    data: serde_json::Value,
+    data: Option<serde_json::Value>,
+    errors: Option<serde_json::Value>,
 }

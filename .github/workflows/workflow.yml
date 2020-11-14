@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: docker/build-push-action@v1.1.0
+      - uses: docker/build-push-action@v1.1.2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: docker/build-push-action@v1.1.0
+      - uses: docker/build-push-action@v1.1.2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: docker/build-push-action@v1.1.0
+      - uses: docker/build-push-action@v1.1.2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
@@ -75,7 +75,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: docker/build-push-action@v1.1.0
+      - uses: docker/build-push-action@v1.1.2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
@@ -101,7 +101,7 @@ jobs:
           project_id: ${{ secrets.GCE_PROJECT }}
 
       - run: |-
-          gcloud compute scp --quiet --zone ${{ secrets.GCE_INSTANCE_ZONE }} --project ${{ secrets.GCE_PROJECT }} ./docker-compose.yml ./.env ./.github/deploy.sh ${{ secrets.GCE_INSTANCE }}:~
+          gcloud compute scp --quiet --zone ${{ secrets.GCE_INSTANCE_ZONE }} --project ${{ secrets.GCE_PROJECT }} ./docker-compose.yml ./docker-compose.prod.yml ./.env ./.github/deploy.sh ${{ secrets.GCE_INSTANCE }}:~
 
       - run: |-
           gcloud compute ssh --quiet --zone ${{ secrets.GCE_INSTANCE_ZONE }} --project ${{ secrets.GCE_PROJECT }} ${{ secrets.GCE_INSTANCE }}  --command 'bash deploy.sh'

@@ -37,18 +37,18 @@ impl Mutation {
         created_user_entity.id.into()
     }
 
-    async fn sign_in(&self, ctx: &Context<'_>, sign_in_data: SignInInput) -> String {
+    async fn sign_in(&self, ctx: &Context<'_>, sign_in_data: SignInInput) -> Result<String, Error> {
         let maybe_user = repository::get_user(&sign_in_data.username, &get_conn_from_ctx(ctx)).ok();
 
         if let Some(user) = maybe_user {
             if let Ok(matching) = verify(&user.hash, &sign_in_data.password) {
                 if matching {
-                    return create_token(user);
+                    return Ok(create_token(user));
                 }
             }
         }
 
-        panic!("Can't authenticate a user")
+        Err(Error::new("Can't authenticate a user"))
     }
 }
 
