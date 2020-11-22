@@ -1,3 +1,5 @@
+use std::env;
+
 use actix_web::{App, test};
 use jsonpath_lib as jsonpath;
 use serde::{Deserialize, Serialize};
@@ -10,6 +12,7 @@ mod common;
 
 #[actix_rt::test]
 async fn test_create_planet() {
+    env::set_var("DISABLE_AUTH", true.to_string());
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
@@ -47,7 +50,8 @@ async fn test_create_planet() {
 
     let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
-    let _new_planet_id: i32 = jsonpath::select(&response.data, "$.createPlanet").expect("Can't get satellite by JSON path")[0]
+    let _new_planet_id: i32 = jsonpath::select(&response.data.expect("Response doesn't contain data"), "$.createPlanet")
+        .expect("Can't get satellite by JSON path")[0]
         .as_str().expect("Can't get new planet id")
         .parse().expect("Can't get new planet id");
 
@@ -62,5 +66,7 @@ struct GraphQLCustomRequest {
 
 #[derive(Deserialize)]
 struct GraphQLCustomResponse {
-    data: serde_json::Value
+    data: Option<serde_json::Value>,
+    #[allow(dead_code)]
+    errors: Option<serde_json::Value>,
 }

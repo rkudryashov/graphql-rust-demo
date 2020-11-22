@@ -2,7 +2,7 @@
 
 use argonautica::{Error, Hasher, Verifier};
 use chrono::{Duration, Local};
-use jsonwebtoken::{encode, EncodingKey, Header};
+use jsonwebtoken::{decode, DecodingKey, encode, EncodingKey, Header, TokenData, Validation};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 
@@ -40,6 +40,11 @@ pub fn create_token(user: UserEntity) -> String {
 
     encode(&Header::default(), &claims, &EncodingKey::from_secret(SECRET_KEY.as_ref()))
         .expect("Can't create token")
+}
+
+pub fn decode_token(token: &str) -> TokenData<Claims> {
+    decode::<Claims>(&token, &DecodingKey::from_secret(SECRET_KEY.as_ref()), &Validation::default())
+        .expect("Can't decode token")
 }
 
 #[derive(Deserialize, Serialize)]

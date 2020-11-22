@@ -24,7 +24,7 @@ const PLANET_FRAGMENT: &str = "
 ";
 
 #[actix_rt::test]
-async fn test_planets() {
+async fn test_get_planets() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
@@ -74,7 +74,7 @@ async fn test_planets() {
 }
 
 #[actix_rt::test]
-async fn test_planet_by_id() {
+async fn test_get_planet_by_id() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
@@ -105,7 +105,7 @@ async fn test_planet_by_id() {
 }
 
 #[actix_rt::test]
-async fn test_planet_by_id_with_variable() {
+async fn test_get_planet_by_id_with_variable() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 

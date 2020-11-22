@@ -52,7 +52,7 @@ async fn test_sign_in() {
     let decoded_payload_string = str::from_utf8(&decoded_payload).expect("Can't convert to str");
     let claims: Claims = serde_json::from_str(decoded_payload_string).expect("Can't deserialize claims");
     assert_eq!("john_doe", &claims.sub);
-    assert_eq!("Admin", &claims.role);
+    assert_eq!("ADMIN", &claims.role);
 }
 
 #[actix_rt::test]

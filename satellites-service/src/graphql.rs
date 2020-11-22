@@ -1,11 +1,10 @@
 use std::str::FromStr;
 
 use async_graphql::*;
-use async_graphql::guard::Guard;
 use chrono::NaiveDate;
 use strum_macros::EnumString;
 
-use crate::{get_conn_from_ctx, Role};
+use crate::get_conn_from_ctx;
 use crate::persistence::model::SatelliteEntity;
 use crate::persistence::repository;
 
@@ -38,13 +37,13 @@ impl Query {
 struct Satellite {
     id: ID,
     name: String,
-    #[graphql(guard(RoleGuard(role = "Role::Admin")))]
     life_exists: LifeExists,
     first_spacecraft_landing_date: Option<NaiveDate>,
 }
 
-#[derive(Enum, EnumString, Copy, Clone, Eq, PartialEq)]
-enum LifeExists {
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Enum, EnumString)]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+pub enum LifeExists {
     Yes,
     OpenQuestion,
     NoData,
@@ -77,21 +76,6 @@ impl From<&SatelliteEntity> for Satellite {
             name: entity.name.clone(),
             life_exists: LifeExists::from_str(entity.life_exists.as_str()).expect("Can't convert &str to LifeExists"),
             first_spacecraft_landing_date: entity.first_spacecraft_landing_date,
-        }
-    }
-}
-
-struct RoleGuard {
-    role: Role,
-}
-
-#[async_trait::async_trait]
-impl Guard for RoleGuard {
-    async fn check(&self, ctx: &Context<'_>) -> Result<()> {
-        if ctx.data_opt::<Role>() == Some(&self.role) {
-            Ok(())
-        } else {
-            Err("Forbidden".into())
         }
     }
 }

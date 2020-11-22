@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::env;
 use std::fmt;
 use std::fmt::LowerExp;
 use std::iter::Iterator;
@@ -6,7 +7,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use async_graphql::*;
-use async_trait::async_trait;
+use async_graphql::guard::Guard;
 use bigdecimal::{BigDecimal, ToPrimitive};
 use dataloader::BatchFn;
 use dataloader::non_cached::Loader;
@@ -16,7 +17,7 @@ use serde::{Deserialize, Serialize};
 use serde::export::Formatter;
 use strum_macros::{Display, EnumString};
 
-use crate::get_conn_from_ctx;
+use crate::{get_conn_from_ctx, Role};
 use crate::kafka;
 use crate::persistence::connection::PgPool;
 use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
@@ -55,6 +56,7 @@ pub struct Mutation;
 
 #[Object]
 impl Mutation {
+    #[graphql(guard(RoleGuard(role = "Role::Admin")))]
     async fn create_planet(&self, ctx: &Context<'_>, name: String, planet_type: PlanetType, details: DetailsInput) -> ID {
         let new_planet = NewPlanetEntity {
             name,
@@ -135,7 +137,8 @@ impl Planet {
     }
 }
 
-#[derive(Enum, Display, EnumString, Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Enum, Display, EnumString)]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 enum PlanetType {
     TerrestrialPlanet,
     GasGiant,
@@ -255,7 +258,7 @@ pub struct DetailsBatchLoader {
     pub pool: Arc<PgPool>
 }
 
-#[async_trait]
+#[async_trait::async_trait]
 impl BatchFn<ID, Details> for DetailsBatchLoader {
     async fn load(&mut self, keys: &[ID]) -> HashMap<ID, Details> {
         keys.iter().map(|planet_id| {
@@ -266,5 +269,27 @@ impl BatchFn<ID, Details> for DetailsBatchLoader {
 
             (planet_id.clone(), Details::from(&details_entity))
         }).collect::<HashMap<_, _>>()
+    }
+}
+
+struct RoleGuard {
+    role: Role,
+}
+
+#[async_trait::async_trait]
+impl Guard for RoleGuard {
+    async fn check(&self, ctx: &Context<'_>) -> Result<()> {
+        // TODO: auth disabling is needed for tests. try to reimplement when https://github.com/rust-lang/rust/issues/45599 will be resolved (using cfg(test))
+        if let Ok(boolean) = env::var("DISABLE_AUTH") {
+            let disable_auth = bool::from_str(boolean.as_str()).expect("Can't parse bool");
+            if disable_auth {
+                return Ok(());
+            }
+        };
+        if ctx.data_opt::<Role>() == Some(&self.role) {
+            Ok(())
+        } else {
+            Err("Forbidden".into())
+        }
     }
 }

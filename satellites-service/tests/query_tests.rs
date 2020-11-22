@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use actix_web::{App, test};
 use chrono::NaiveDate;
 use jsonpath_lib as jsonpath;
@@ -5,7 +7,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Map;
 use testcontainers::clients::Cli;
 
-use satellites_service::{configure_service, create_schema_with_context};
+use satellites_service::{configure_service, create_schema_with_context, graphql::LifeExists};
+use satellites_service::graphql::LifeExists::{NoData, OpenQuestion};
 
 mod common;
 
@@ -14,11 +17,12 @@ const TEST_FIELDS_FRAGMENT: &str = "
         id
         name
         firstSpacecraftLandingDate
+        lifeExists
     }
 ";
 
 #[actix_rt::test]
-async fn test_satellites() {
+async fn test_get_satellites() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
@@ -51,14 +55,14 @@ async fn test_satellites() {
     }
 
     let moon_json = get_satellite_as_json(&response_data, 0);
-    check_satellite(moon_json, "Moon", Some(NaiveDate::from_ymd(1959, 9, 13)));
+    check_satellite(moon_json, "Moon", Some(NaiveDate::from_ymd(1959, 9, 13)), OpenQuestion);
 
     let titan_json = get_satellite_as_json(&response_data, 7);
-    check_satellite(titan_json, "Titan", None);
+    check_satellite(titan_json, "Titan", None, NoData);
 }
 
 #[actix_rt::test]
-async fn test_satellite() {
+async fn test_get_satellite() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
@@ -87,44 +91,20 @@ async fn test_satellite() {
     let response_data = response.data.expect("Response doesn't contain data");
 
     let moon_json = jsonpath::select(&response_data, "$.getSatellite").expect("Can't get satellite by JSON path")[0];
-    check_satellite(moon_json, "Moon", Some(NaiveDate::from_ymd(1959, 9, 13)));
+    check_satellite(moon_json, "Moon", Some(NaiveDate::from_ymd(1959, 9, 13)), OpenQuestion);
 }
 
-#[actix_rt::test]
-async fn test_satellite_should_return_forbidden() {
-    let docker = Cli::default();
-    let (_pg_container, pool) = common::setup(&docker);
+fn check_satellite(satellite_json: &serde_json::Value, name: &str, first_spacecraft_landing_date: Option<NaiveDate>, life_exists: LifeExists) {
+    let json_name = jsonpath::select(&satellite_json, "$.name").expect("Can't get property")[0]
+        .as_str().expect("Can't get property as str");
+    assert_eq!(name, json_name);
 
-    let mut service = test::init_service(App::new()
-        .configure(configure_service)
-        .data(create_schema_with_context(pool))
-    ).await;
+    let json_life_exists = LifeExists::from_str(
+        jsonpath::select(&satellite_json, "$.lifeExists").expect("Can't get property")[0]
+            .as_str().expect("Can't get property as str")
+    ).expect("Can't convert &str to LifeExists");
+    assert_eq!(life_exists, json_life_exists);
 
-    let query = "
-        {
-            getSatellite(id: 7) {
-                ... testFields
-                lifeExists
-            }
-        }
-        ".to_string() + TEST_FIELDS_FRAGMENT;
-
-    let request_body = GraphQLCustomRequest {
-        query,
-        variables: Map::new(),
-    };
-
-    let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
-
-    let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
-
-    let errors = &response.errors.expect("Response doesn't contain errors");
-    let error_message = jsonpath::select(errors, "$.[0].message").expect("Can't get error by JSON path")[0];
-    assert_eq!("Forbidden", error_message);
-}
-
-fn check_satellite(satellite_json: &serde_json::Value, name: &str, first_spacecraft_landing_date: Option<NaiveDate>) {
-    assert_eq!(name, jsonpath::select(&satellite_json, "$.name").expect("Can't get property")[0].as_str().expect("Can't get property as str"));
     match first_spacecraft_landing_date {
         Some(date) => {
             let date_string = jsonpath::select(&satellite_json, "$.firstSpacecraftLandingDate").expect("Can't get property")[0].as_str().expect("Can't get property as str");
@@ -145,5 +125,6 @@ struct GraphQLCustomRequest {
 #[derive(Deserialize)]
 struct GraphQLCustomResponse {
     data: Option<serde_json::Value>,
+    #[allow(dead_code)]
     errors: Option<serde_json::Value>,
 }

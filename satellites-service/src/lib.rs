@@ -2,17 +2,13 @@
 extern crate diesel;
 #[macro_use]
 extern crate diesel_migrations;
-extern crate strum;
 
-use std::str::FromStr;
-
-use actix_web::{HttpRequest, HttpResponse, web};
+use actix_web::{HttpResponse, web};
 use async_graphql::{Context, EmptyMutation, EmptySubscription, Schema};
 use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
 use async_graphql_actix_web::{Request, Response};
 use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
-use strum_macros::EnumString;
 
 use crate::graphql::{AppSchema, Query};
 use crate::persistence::connection::PgPool;
@@ -21,7 +17,6 @@ embed_migrations!();
 
 pub mod graphql;
 pub mod persistence;
-mod utils;
 
 pub fn configure_service(cfg: &mut web::ServiceConfig) {
     cfg
@@ -31,15 +26,8 @@ pub fn configure_service(cfg: &mut web::ServiceConfig) {
         );
 }
 
-async fn index(schema: web::Data<AppSchema>, http_req: HttpRequest, req: Request) -> Response {
-    let mut query = req.into_inner();
-
-    let maybe_role = get_role(http_req);
-    if let Some(role) = maybe_role {
-        query = query.data(role);
-    }
-
-    schema.execute(query).await.into()
+async fn index(schema: web::Data<AppSchema>, req: Request) -> Response {
+    schema.execute(req.into_inner()).await.into()
 }
 
 async fn index_playground() -> HttpResponse {
@@ -56,26 +44,7 @@ pub fn create_schema_with_context(pool: PgPool) -> Schema<Query, EmptyMutation, 
 
 pub fn run_migrations(pool: &PgPool) {
     let conn = pool.get().expect("Can't get DB connection");
-    embedded_migrations::run(&conn);
-}
-
-fn get_role(http_request: HttpRequest) -> Option<Role> {
-    http_request
-        .headers()
-        .get("Authorization")
-        .and_then(|header_value| header_value.to_str().ok().map(|s| {
-            let jwt_start_index = "Bearer ".len();
-            let jwt = s[jwt_start_index..s.len()].to_string();
-            let token_data = utils::decode_token(&jwt);
-            Role::from_str(&token_data.claims.role).expect("Can't parse role")
-        }))
-}
-
-#[derive(EnumString)]
-#[derive(Eq, PartialEq)]
-enum Role {
-    Admin,
-    User,
+    embedded_migrations::run(&conn).expect("Failed to run database migrations");
 }
 
 type Conn = PooledConnection<ConnectionManager<PgConnection>>;

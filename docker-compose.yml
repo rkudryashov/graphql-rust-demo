@@ -12,6 +12,7 @@ services:
       DATABASE_URL: postgres://postgres:$PLANETS_DB_PASSWORD@planets-db/planets
       KAFKA_BROKER: kafka:9092
       KAFKA_TOPIC: $KAFKA_TOPIC
+      SECRET_KEY: $SECRET_KEY
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8001/" ]
       interval: 1m
@@ -41,7 +42,6 @@ services:
       - satellites-db
     environment:
       DATABASE_URL: postgres://postgres:$SATELLITES_DB_PASSWORD@satellites-db/satellites
-      SECRET_KEY: $SECRET_KEY
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8002/" ]
       interval: 1m
