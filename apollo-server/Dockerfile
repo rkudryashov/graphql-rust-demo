@@ -1,5 +1,6 @@
-FROM node:14.15.0
+FROM node:14.15.1-alpine
 WORKDIR ./apollo-server
+RUN apk add --no-cache bash
 COPY package.json gateway.js wait-for-it.sh ./
 RUN npm install
 RUN chmod +x wait-for-it.sh
