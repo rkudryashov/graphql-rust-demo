@@ -6,6 +6,6 @@ alias docker-compose='docker run --rm \
     -w="$PWD" \
     docker/compose:1.27.4'
 
-docker-compose pull --quiet
+docker-compose pull
 docker-compose down
 docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d

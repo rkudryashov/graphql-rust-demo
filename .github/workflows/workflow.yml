@@ -1,4 +1,4 @@
-name: GraphQL Rust CI/CD pipeline
+name: GraphQL Rust Demo CI/CD pipeline
 
 on:
   push:
@@ -96,12 +96,21 @@ jobs:
       - name: Setup gcloud CLI
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
-          version: '316.0.0'
+          version: '319.0.0'
           service_account_key: ${{ secrets.GCE_SA_KEY }}
           project_id: ${{ secrets.GCE_PROJECT }}
 
       - run: |-
-          gcloud compute scp --quiet --zone ${{ secrets.GCE_INSTANCE_ZONE }} --project ${{ secrets.GCE_PROJECT }} ./docker-compose.yml ./docker-compose.prod.yml ./.env ./.github/deploy.sh ${{ secrets.GCE_INSTANCE }}:~
+          gcloud config set compute/zone ${{ secrets.GCE_INSTANCE_ZONE }}
 
       - run: |-
-          gcloud compute ssh --quiet --zone ${{ secrets.GCE_INSTANCE_ZONE }} --project ${{ secrets.GCE_PROJECT }} ${{ secrets.GCE_INSTANCE }}  --command 'bash deploy.sh'
+          gcloud compute instances delete --quiet ${{ secrets.GCE_INSTANCE }}
+
+      - run: |-
+          gcloud compute instances create ${{ secrets.GCE_INSTANCE }} --image cos-85-13310-1041-28 --image-project cos-cloud --machine-type e2-small --address my-static-ip
+
+      - run: |-
+          gcloud compute scp --quiet ./docker-compose.yml ./docker-compose.prod.yml ./.env ./.github/deploy.sh ${{ secrets.GCE_INSTANCE }}:~
+
+      - run: |-
+          gcloud compute ssh ${{ secrets.GCE_INSTANCE }} --command 'bash deploy.sh'
