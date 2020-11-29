@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y libpq-dev cmake
 
 # create empty project for caching dependencies
 RUN USER=root cargo new --bin /planets-service/docker-build
+COPY /common-utils/ ./planets-service/common-utils/
 WORKDIR /planets-service/docker-build
 COPY /Cargo.lock ./
 COPY /planets-service/Cargo.toml ./

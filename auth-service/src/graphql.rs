@@ -1,12 +1,16 @@
+use std::str::FromStr;
+
 use async_graphql::*;
 use async_graphql::guard::Guard;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
+use common_utils::Role as AuthRole;
+
 use crate::get_conn_from_ctx;
 use crate::persistence::model::{NewUserEntity, UserEntity};
 use crate::persistence::repository;
-use crate::utils::{create_token, hash_password, verify};
+use crate::utils::{hash_password, verify_password};
 
 pub type AppSchema = Schema<Query, Mutation, EmptySubscription>;
 
@@ -26,7 +30,7 @@ pub struct Mutation;
 
 #[Object]
 impl Mutation {
-    #[graphql(guard(RoleGuard(role = "Role::Admin")))]
+    #[graphql(guard(RoleGuard(role = "AuthRole::Admin")))]
     async fn create_user(&self, ctx: &Context<'_>, user: UserInput) -> ID {
         let new_user = NewUserEntity {
             username: user.username,
@@ -45,9 +49,10 @@ impl Mutation {
         let maybe_user = repository::get_user(&sign_in_data.username, &get_conn_from_ctx(ctx)).ok();
 
         if let Some(user) = maybe_user {
-            if let Ok(matching) = verify(&user.hash, &sign_in_data.password) {
+            if let Ok(matching) = verify_password(&user.hash, &sign_in_data.password) {
                 if matching {
-                    return Ok(create_token(user));
+                    let role = AuthRole::from_str(user.role.as_str()).expect("Can't convert &str to AuthRole");
+                    return Ok(common_utils::create_token(user.username, role));
                 }
             }
         }
@@ -61,7 +66,7 @@ struct User {
     username: String,
     first_name: String,
     last_name: String,
-    role: String,
+    role: Role,
 }
 
 #[derive(InputObject)]
@@ -92,19 +97,19 @@ impl From<&UserEntity> for User {
             username: entity.username.clone(),
             first_name: entity.first_name.clone(),
             last_name: entity.last_name.clone(),
-            role: entity.role.clone(),
+            role: Role::from_str(entity.role.as_str()).expect("Can't convert &str to Role"),
         }
     }
 }
 
 struct RoleGuard {
-    role: Role,
+    role: AuthRole,
 }
 
 #[async_trait::async_trait]
 impl Guard for RoleGuard {
     async fn check(&self, ctx: &Context<'_>) -> Result<()> {
-        if ctx.data_opt::<Role>() == Some(&self.role) {
+        if ctx.data_opt::<AuthRole>() == Some(&self.role) {
             Ok(())
         } else {
             Err("Forbidden".into())

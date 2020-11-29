@@ -645,12 +645,11 @@ dependencies = [
  "async-graphql",
  "async-graphql-actix-web",
  "base64 0.13.0",
- "chrono",
+ "common-utils",
  "diesel",
  "diesel_migrations",
  "dotenv",
  "jsonpath_lib",
- "jsonwebtoken",
  "lazy_static",
  "serde",
  "serde_json",
@@ -1000,6 +999,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb6210b637171dfba4cda12e579ac6dc73f5165ad56133e5d72ef3131f320855"
 dependencies = [
  "cc",
+]
+
+[[package]]
+name = "common-utils"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+ "chrono",
+ "jsonwebtoken",
+ "lazy_static",
+ "serde",
+ "strum",
+ "strum_macros",
 ]
 
 [[package]]
@@ -2321,13 +2333,13 @@ dependencies = [
  "async-stream",
  "async-trait",
  "bigdecimal",
+ "common-utils",
  "dataloader",
  "diesel",
  "diesel_migrations",
  "dotenv",
  "futures 0.3.8",
  "jsonpath_lib",
- "jsonwebtoken",
  "lazy_static",
  "rdkafka",
  "serde",
@@ -3006,15 +3018,15 @@ checksum = "6446ced80d6c486436db5c078dde11a9f73d42b57fb273121e160b84f63d894c"
 
 [[package]]
 name = "strum"
-version = "0.19.5"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b89a286a7e3b5720b9a477b23253bc50debac207c8d21505f8e70b36792f11b5"
+checksum = "7318c509b5ba57f18533982607f24070a55d353e90d4cae30c467cdb2ad5ac5c"
 
 [[package]]
 name = "strum_macros"
-version = "0.19.4"
+version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e61bb0be289045cb80bfce000512e32d09f8337e54c186725da381377ad1f8d5"
+checksum = "ee8bc6b87a5112aeeab1f4a9f7ab634fe6cbefc4850006df31267f4cfb9e3149"
 dependencies = [
  "heck",
  "proc-macro2 1.0.24",

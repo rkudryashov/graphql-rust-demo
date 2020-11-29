@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install -y libpq-dev clang
 
 # create empty project for caching dependencies
 RUN USER=root cargo new --bin /auth-service/docker-build
+COPY /common-utils/ ./auth-service/common-utils/
 WORKDIR /auth-service/docker-build
 COPY /Cargo.lock ./
 COPY /auth-service/Cargo.toml ./

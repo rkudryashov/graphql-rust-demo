@@ -17,7 +17,9 @@ use serde::{Deserialize, Serialize};
 use serde::export::Formatter;
 use strum_macros::{Display, EnumString};
 
-use crate::{get_conn_from_ctx, Role};
+use common_utils::Role;
+
+use crate::get_conn_from_ctx;
 use crate::kafka;
 use crate::persistence::connection::PgPool;
 use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};

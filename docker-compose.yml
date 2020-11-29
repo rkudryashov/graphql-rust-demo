@@ -12,7 +12,7 @@ services:
       DATABASE_URL: postgres://postgres:$PLANETS_DB_PASSWORD@planets-db/planets
       KAFKA_BROKER: kafka:9092
       KAFKA_TOPIC: $KAFKA_TOPIC
-      SECRET_KEY: $SECRET_KEY
+      JWT_SECRET_KEY: $JWT_SECRET_KEY
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8001/" ]
       interval: 1m
@@ -71,7 +71,8 @@ services:
       - users-db
     environment:
       DATABASE_URL: postgres://postgres:$USERS_DB_PASSWORD@users-db/users
-      SECRET_KEY: $SECRET_KEY
+      PASSWORD_SECRET_KEY: $PASSWORD_SECRET_KEY
+      JWT_SECRET_KEY: $JWT_SECRET_KEY
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8003/" ]
       interval: 1m

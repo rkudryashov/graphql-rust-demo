@@ -4,7 +4,6 @@ extern crate diesel;
 extern crate diesel_migrations;
 extern crate strum;
 
-use std::str::FromStr;
 use std::sync::Arc;
 
 use actix_web::{guard, HttpRequest, HttpResponse, Result, web};
@@ -15,7 +14,6 @@ use async_graphql_actix_web::{Request, Response, WSSubscription};
 use dataloader::non_cached::Loader;
 use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
-use strum_macros::EnumString;
 
 use crate::graphql::{AppSchema, DetailsBatchLoader, Mutation, Query, Subscription};
 use crate::persistence::connection::PgPool;
@@ -25,7 +23,6 @@ embed_migrations!();
 pub mod graphql;
 pub mod kafka;
 pub mod persistence;
-mod utils;
 
 pub fn configure_service(cfg: &mut web::ServiceConfig) {
     cfg
@@ -39,7 +36,7 @@ pub fn configure_service(cfg: &mut web::ServiceConfig) {
 async fn index(schema: web::Data<AppSchema>, http_req: HttpRequest, req: Request) -> Response {
     let mut query = req.into_inner();
 
-    let maybe_role = get_role(http_req);
+    let maybe_role = common_utils::get_role(http_req);
     if let Some(role) = maybe_role {
         query = query.data(role);
     }
@@ -83,22 +80,4 @@ type Conn = PooledConnection<ConnectionManager<PgConnection>>;
 
 pub fn get_conn_from_ctx(ctx: &Context<'_>) -> Conn {
     ctx.data::<Arc<PgPool>>().expect("Can't get pool").get().expect("Can't get DB connection")
-}
-
-fn get_role(http_request: HttpRequest) -> Option<Role> {
-    http_request
-        .headers()
-        .get("Authorization")
-        .and_then(|header_value| header_value.to_str().ok().map(|s| {
-            let jwt_start_index = "Bearer ".len();
-            let jwt = s[jwt_start_index..s.len()].to_string();
-            let token_data = utils::decode_token(&jwt);
-            Role::from_str(&token_data.claims.role).expect("Can't parse role")
-        }))
-}
-
-#[derive(Eq, PartialEq, EnumString)]
-enum Role {
-    Admin,
-    User,
 }

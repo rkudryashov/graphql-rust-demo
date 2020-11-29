@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use testcontainers::clients::Cli;
 
 use auth_service::{configure_service, create_schema_with_context};
-use auth_service::utils::Claims;
+use common_utils::Claims;
 
 mod common;
 
