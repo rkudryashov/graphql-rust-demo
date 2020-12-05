@@ -248,9 +248,9 @@ dependencies = [
 
 [[package]]
 name = "actix-web"
-version = "3.3.0"
+version = "3.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a89a7b133e734f6d1e555502d450408ae04105826aef7e3605019747d3ac732"
+checksum = "e641d4a172e7faa0862241a20ff4f1f5ab0ab7c279f00c2d4587b77483477b86"
 dependencies = [
  "actix-codec",
  "actix-http",
@@ -431,9 +431,9 @@ dependencies = [
 
 [[package]]
 name = "async-graphql"
-version = "2.1.5"
+version = "2.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9979e90b4d13133ea173593127353e8a9dd84e303c484d34c60274174faae4e"
+checksum = "e190c0c8b6794c92186a5d092edbc5fd6eb17a60365e22576376901d3fe0fd0c"
 dependencies = [
  "async-graphql-derive",
  "async-graphql-parser",
@@ -443,7 +443,6 @@ dependencies = [
  "async-trait",
  "blocking",
  "bson",
- "bytes",
  "chrono",
  "chrono-tz",
  "fnv",
@@ -454,12 +453,12 @@ dependencies = [
  "multer",
  "num-traits",
  "once_cell",
- "pin-project-lite 0.1.11",
+ "pin-project-lite 0.2.0",
  "regex",
  "serde",
  "serde_json",
  "sha2 0.9.2",
- "spin 0.6.0",
+ "spin 0.7.0",
  "static_assertions",
  "tempfile",
  "thiserror",
@@ -470,9 +469,9 @@ dependencies = [
 
 [[package]]
 name = "async-graphql-actix-web"
-version = "2.1.5"
+version = "2.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ebe93e0033ecc17cae0a0e915b5686513935b86c4dc16ab666197c046e2f7b5"
+checksum = "27e74773588a2dc276742145ded65edcb82d7dfce85acf231c710ceef69b6df9"
 dependencies = [
  "actix",
  "actix-http",
@@ -672,9 +671,9 @@ checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
 name = "awc"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9056f5e27b0d56bedd82f78eceaba0bcddcbbcbbefae3cd0a53994b28c96ff5"
+checksum = "b381e490e7b0cfc37ebc54079b0413d8093ef43d14a4e4747083f7fa47a9e691"
 dependencies = [
  "actix-codec",
  "actix-http",
@@ -2806,9 +2805,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.59"
+version = "1.0.60"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dcac07dbffa1c65e7f816ab9eba78eb142c6d44410f4eeba1e26e4f5dfa56b95"
+checksum = "1500e84d27fe482ed1dc791a56eddc2f230046a040fa908c08bda1d9fb615779"
 dependencies = [
  "indexmap",
  "itoa",
@@ -2936,9 +2935,9 @@ checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 
 [[package]]
 name = "spin"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef7b840d5ef62f81f50649ade37112748461256c64a70bccefeabb4d02c515c5"
+checksum = "652ac3743312871a5fb703f0337e68ffa3cdc28c863efad0b8dc858fa10c991b"
 
 [[package]]
 name = "standback"

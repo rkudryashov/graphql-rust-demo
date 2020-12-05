@@ -7,7 +7,6 @@ extern crate strum;
 use std::sync::Arc;
 
 use actix_web::{guard, HttpRequest, HttpResponse, Result, web};
-use actix_web_actors::ws;
 use async_graphql::{Context, Schema};
 use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
 use async_graphql_actix_web::{Request, Response, WSSubscription};
@@ -45,7 +44,7 @@ async fn index(schema: web::Data<AppSchema>, http_req: HttpRequest, req: Request
 }
 
 async fn index_ws(schema: web::Data<AppSchema>, req: HttpRequest, payload: web::Payload) -> Result<HttpResponse> {
-    ws::start_with_protocols(WSSubscription::new(schema.as_ref().to_owned()), &["graphql-ws"], &req, payload)
+    WSSubscription::start(Schema::clone(&*schema), &req, payload)
 }
 
 async fn index_playground() -> HttpResponse {
