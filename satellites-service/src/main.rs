@@ -12,9 +12,11 @@ async fn main() -> std::io::Result<()> {
     let pool = create_connection_pool();
     run_migrations(&pool);
 
+    let schema = create_schema_with_context(pool);
+
     HttpServer::new(move || App::new()
         .configure(configure_service)
-        .data(create_schema_with_context(pool.clone()))
+        .data(schema.clone())
     )
         .bind("0.0.0.0:8002")?
         .run()

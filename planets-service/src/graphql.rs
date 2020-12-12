@@ -4,7 +4,7 @@ use std::fmt;
 use std::fmt::LowerExp;
 use std::iter::Iterator;
 use std::str::FromStr;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use async_graphql::*;
 use async_graphql::guard::Guard;
@@ -86,9 +86,12 @@ pub struct Subscription;
 
 #[Subscription]
 impl Subscription {
-    async fn latest_planet(&self) -> impl Stream<Item=Planet> {
+    async fn latest_planet<'ctx>(&self, ctx: &'ctx Context<'_>) -> impl Stream<Item=Planet> + 'ctx {
+        let kafka_consumer_counter = ctx.data::<Mutex<i32>>().expect("Can't get Kafka consumer counter");
+        let consumer_group_id = kafka::get_kafka_consumer_group_id(kafka_consumer_counter);
+        let consumer = kafka::create_consumer(consumer_group_id);
+
         async_stream::stream! {
-            let consumer = kafka::create_consumer();
             let mut stream = consumer.start();
 
             while let Some(value) = stream.next().await {

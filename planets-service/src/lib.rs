@@ -4,7 +4,7 @@ extern crate diesel;
 extern crate diesel_migrations;
 extern crate strum;
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use actix_web::{guard, HttpRequest, HttpResponse, Result, web};
 use async_graphql::{Context, Schema};
@@ -60,6 +60,8 @@ pub fn create_schema_with_context(pool: PgPool) -> Schema<Query, Mutation, Subsc
         pool: cloned_pool
     }).with_max_batch_size(10);
 
+    let kafka_consumer_counter = Mutex::new(0);
+
     Schema::build(Query, Mutation, Subscription)
         // limits are commented out, because otherwise introspection query won't work
         // .limit_depth(3)
@@ -67,6 +69,7 @@ pub fn create_schema_with_context(pool: PgPool) -> Schema<Query, Mutation, Subsc
         .data(arc_pool)
         .data(details_batch_loader)
         .data(kafka::create_producer())
+        .data(kafka_consumer_counter)
         .finish()
 }
 

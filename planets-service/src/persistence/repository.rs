@@ -28,7 +28,7 @@ pub fn create(new_planet: NewPlanetEntity, mut new_details_entity: NewDetailsEnt
         .values(new_planet)
         .get_result(conn);
 
-    let new_planet_id = result.as_ref().ok().expect("Can't create planet").id;
+    let new_planet_id = result.as_ref().expect("Can't create planet").id;
 
     new_details_entity.planet_id = new_planet_id;
 

@@ -6,6 +6,7 @@ use rdkafka::config::RDKafkaLogLevel;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::util::Timeout;
+use std::sync::Mutex;
 
 lazy_static! {
     static ref KAFKA_BROKER: String = std::env::var("KAFKA_BROKER").expect("Can't read Kafka broker address");
@@ -20,10 +21,9 @@ pub(crate) fn create_producer() -> FutureProducer {
         .expect("Producer creation failed")
 }
 
-// TODO: make a message read by multiple consumers in the same group
-pub(crate) fn create_consumer() -> StreamConsumer {
+pub(crate) fn create_consumer(group_id: String) -> StreamConsumer {
     let consumer: StreamConsumer = ClientConfig::new()
-        .set("group.id", "graphql-group")
+        .set("group.id", &group_id)
         .set("bootstrap.servers", &KAFKA_BROKER)
         .set("enable.partition.eof", "false")
         .set("session.timeout.ms", "6000")
@@ -36,6 +36,12 @@ pub(crate) fn create_consumer() -> StreamConsumer {
         .expect("Can't subscribe to specified topics");
 
     consumer
+}
+
+pub(crate) fn get_kafka_consumer_group_id(kafka_consumer_counter: &Mutex<i32>) -> String {
+    let mut counter = kafka_consumer_counter.lock().expect("Can't lock counter");
+    *counter += 1;
+    format!("graphql-group-{}", *counter)
 }
 
 // TODO: send without caller blocking
