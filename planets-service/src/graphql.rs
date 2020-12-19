@@ -184,8 +184,8 @@ impl ScalarType for CustomBigInt {
     fn parse(value: Value) -> InputValueResult<Self> {
         match value {
             Value::String(s) => {
-                let number = BigDecimal::from_str(&s)?;
-                Ok(CustomBigInt(number))
+                let parsed_value = BigDecimal::from_str(&s)?;
+                Ok(CustomBigInt(parsed_value))
             }
             _ => Err(InputValueError::expected_type(value)),
         }
