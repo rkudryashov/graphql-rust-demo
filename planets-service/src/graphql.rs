@@ -137,8 +137,9 @@ impl Planet {
     }
 
     async fn details(&self, ctx: &Context<'_>) -> Details {
-        let loader = ctx.data::<Loader<ID, Details, DetailsBatchLoader>>().expect("Can't get loader");
-        loader.load(self.id.clone()).await
+        let loader = ctx.data::<Loader<i32, Details, DetailsBatchLoader>>().expect("Can't get loader");
+        let planet_id = self.id.to_string().parse::<i32>().expect("Can't convert id");
+        loader.load(planet_id).await
     }
 }
 
@@ -264,16 +265,14 @@ pub struct DetailsBatchLoader {
 }
 
 #[async_trait::async_trait]
-impl BatchFn<ID, Details> for DetailsBatchLoader {
-    async fn load(&mut self, keys: &[ID]) -> HashMap<ID, Details> {
-        keys.iter().map(|planet_id| {
-            let conn = self.pool.get().expect("Can't get DB connection");
+impl BatchFn<i32, Details> for DetailsBatchLoader {
+    async fn load(&mut self, keys: &[i32]) -> HashMap<i32, Details> {
+        let conn = self.pool.get().expect("Can't get DB connection");
+        let details = repository::get_details(keys, &conn).expect("Can't get planets' details");
 
-            let planet_id_int = planet_id.to_string().parse::<i32>().expect("Can't convert id");
-            let details_entity = repository::get_details(planet_id_int, &conn).expect("Can't get details for a planet");
-
-            (planet_id.clone(), Details::from(&details_entity))
-        }).collect::<HashMap<_, _>>()
+        details.iter()
+            .map(|details_entity| (details_entity.planet_id, Details::from(details_entity)))
+            .collect::<HashMap<_, _>>()
     }
 }
 

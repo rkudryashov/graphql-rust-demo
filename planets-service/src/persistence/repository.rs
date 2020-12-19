@@ -1,3 +1,4 @@
+use diesel::dsl::any;
 use diesel::prelude::*;
 
 use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
@@ -15,10 +16,10 @@ pub fn get(id: i32, conn: &PgConnection) -> QueryResult<PlanetEntity> {
         .get_result(conn)
 }
 
-pub fn get_details(planet_id: i32, conn: &PgConnection) -> QueryResult<DetailsEntity> {
+pub fn get_details(planet_ids: &[i32], conn: &PgConnection) -> QueryResult<Vec<DetailsEntity>> {
     details::table
-        .filter(details::planet_id.eq(planet_id))
-        .first(conn)
+        .filter(details::planet_id.eq(any(planet_ids)))
+        .load::<DetailsEntity>(conn)
 }
 
 pub fn create(new_planet: NewPlanetEntity, mut new_details_entity: NewDetailsEntity, conn: &PgConnection) -> QueryResult<PlanetEntity> {
