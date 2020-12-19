@@ -1,0 +1,3 @@
+= GraphQL Rust Demo
+
+Detailed description can be found https://romankudryashov.com/blog/2020/12/graphql-rust/[here].
