@@ -7,24 +7,18 @@ services:
     build:
       context: .
       dockerfile: ./planets-service/Dockerfile
-    ports:
-      - 8001:8001
 
   # Satellites service
   satellites-service:
     build:
       context: .
       dockerfile: ./satellites-service/Dockerfile
-    ports:
-      - 8002:8002
 
   # Auth service
   auth-service:
     build:
       context: .
       dockerfile: ./auth-service/Dockerfile
-    ports:
-      - 8003:8003
 
   # Apollo server
   apollo-server:

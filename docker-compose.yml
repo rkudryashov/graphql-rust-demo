@@ -19,6 +19,8 @@ services:
       timeout: 3s
       start_period: 10s
       retries: 3
+    ports:
+      - 8001:8001
   planets-db:
     image: postgres:13.1-alpine
     container_name: planets-db
@@ -48,6 +50,8 @@ services:
       timeout: 3s
       start_period: 10s
       retries: 3
+    ports:
+      - 8002:8002
   satellites-db:
     image: postgres:13.1-alpine
     container_name: satellites-db
@@ -79,6 +83,8 @@ services:
       timeout: 3s
       start_period: 10s
       retries: 3
+    ports:
+      - 8003:8003
   users-db:
     image: postgres:13.1-alpine
     container_name: auth-db
