@@ -1,4 +1,4 @@
-name: GraphQL Rust Demo CI/CD pipeline
+name: CI/CD
 
 on:
   push:

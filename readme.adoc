@@ -1,3 +1,5 @@
 = GraphQL Rust Demo
 
+image:https://github.com/rkudryashov/graphql-rust-demo/workflows/CI/CD/badge.svg[CI/CD,link=https://github.com/rkudryashov/graphql-rust-demo/actions]
+
 Detailed description can be found https://romankudryashov.com/blog/2020/12/graphql-rust/[here].
