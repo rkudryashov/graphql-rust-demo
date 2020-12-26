@@ -8,13 +8,13 @@ use std::sync::{Arc, Mutex};
 
 use actix_web::{guard, HttpRequest, HttpResponse, Result, web};
 use async_graphql::{Context, Schema};
+use async_graphql::dataloader::DataLoader;
 use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
 use async_graphql_actix_web::{Request, Response, WSSubscription};
-use dataloader::non_cached::Loader;
 use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
 
-use crate::graphql::{AppSchema, DetailsBatchLoader, Mutation, Query, Subscription};
+use crate::graphql::{AppSchema, DetailsLoader, Mutation, Query, Subscription};
 use crate::persistence::connection::PgPool;
 
 embed_migrations!();
@@ -56,9 +56,9 @@ async fn index_playground() -> HttpResponse {
 pub fn create_schema_with_context(pool: PgPool) -> Schema<Query, Mutation, Subscription> {
     let arc_pool = Arc::new(pool);
     let cloned_pool = Arc::clone(&arc_pool);
-    let details_batch_loader = Loader::new(DetailsBatchLoader {
+    let details_data_loader = DataLoader::new(DetailsLoader {
         pool: cloned_pool
-    }).with_max_batch_size(10);
+    }).max_batch_size(10);
 
     let kafka_consumer_counter = Mutex::new(0);
 
@@ -67,7 +67,7 @@ pub fn create_schema_with_context(pool: PgPool) -> Schema<Query, Mutation, Subsc
         // .limit_depth(3)
         // .limit_complexity(15)
         .data(arc_pool)
-        .data(details_batch_loader)
+        .data(details_data_loader)
         .data(kafka::create_producer())
         .data(kafka_consumer_counter)
         .finish()

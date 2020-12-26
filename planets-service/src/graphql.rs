@@ -7,10 +7,9 @@ use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
 use async_graphql::*;
+use async_graphql::dataloader::{DataLoader, Loader};
 use async_graphql::guard::Guard;
 use bigdecimal::{BigDecimal, ToPrimitive};
-use dataloader::BatchFn;
-use dataloader::non_cached::Loader;
 use futures::{Stream, StreamExt};
 use rdkafka::{Message, producer::FutureProducer};
 use serde::{Deserialize, Serialize};
@@ -136,10 +135,11 @@ impl Planet {
         true
     }
 
-    async fn details(&self, ctx: &Context<'_>) -> Details {
-        let loader = ctx.data::<Loader<i32, Details, DetailsBatchLoader>>().expect("Can't get loader");
+    async fn details(&self, ctx: &Context<'_>) -> Result<Details> {
+        let data_loader = ctx.data::<DataLoader<DetailsLoader>>().expect("Can't get data loader");
         let planet_id = self.id.to_string().parse::<i32>().expect("Can't convert id");
-        loader.load(planet_id).await
+        let details = data_loader.load_one(planet_id).await?;
+        details.ok_or_else(|| "Not found".into())
     }
 }
 
@@ -260,19 +260,22 @@ impl From<&DetailsEntity> for Details {
     }
 }
 
-pub struct DetailsBatchLoader {
+pub struct DetailsLoader {
     pub pool: Arc<PgPool>
 }
 
 #[async_trait::async_trait]
-impl BatchFn<i32, Details> for DetailsBatchLoader {
-    async fn load(&mut self, keys: &[i32]) -> HashMap<i32, Details> {
+impl Loader<i32> for DetailsLoader {
+    type Value = Details;
+    type Error = Error;
+
+    async fn load(&self, keys: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
         let conn = self.pool.get().expect("Can't get DB connection");
         let details = repository::get_details(keys, &conn).expect("Can't get planets' details");
 
-        details.iter()
+        Ok(details.iter()
             .map(|details_entity| (details_entity.planet_id, Details::from(details_entity)))
-            .collect::<HashMap<_, _>>()
+            .collect::<HashMap<_, _>>())
     }
 }
 
