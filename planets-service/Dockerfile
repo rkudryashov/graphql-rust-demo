@@ -1,4 +1,4 @@
-FROM rust:1.48.0
+FROM rust:1.49.0
 
 ENV CARGO_TERM_COLOR always
 RUN apt-get update && apt-get install -y libpq-dev cmake
