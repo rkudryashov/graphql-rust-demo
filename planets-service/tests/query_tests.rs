@@ -64,13 +64,13 @@ async fn test_get_planets() {
     }
 
     let mercury_json = get_planet_as_json(&response.data, 0);
-    check_planet(mercury_json, 1, "Mercury", "TERRESTRIAL_PLANET", "2439.7");
+    common::check_planet(mercury_json, 1, "Mercury", "TERRESTRIAL_PLANET", "2439.7");
 
     let earth_json = get_planet_as_json(&response.data, 2);
-    check_planet(earth_json, 3, "Earth", "TERRESTRIAL_PLANET", "6371.0");
+    common::check_planet(earth_json, 3, "Earth", "TERRESTRIAL_PLANET", "6371.0");
 
     let neptune_json = get_planet_as_json(&response.data, 7);
-    check_planet(neptune_json, 8, "Neptune", "ICE_GIANT", "24622.0");
+    common::check_planet(neptune_json, 8, "Neptune", "ICE_GIANT", "24622.0");
 }
 
 #[actix_rt::test]
@@ -101,7 +101,7 @@ async fn test_get_planet_by_id() {
     let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
     let earth_json = jsonpath::select(&response.data, "$.getPlanet").expect("Can't get planet by JSON path")[0];
-    check_planet(earth_json, 3, "Earth", "TERRESTRIAL_PLANET", "6371.0");
+    common::check_planet(earth_json, 3, "Earth", "TERRESTRIAL_PLANET", "6371.0");
 }
 
 #[actix_rt::test]
@@ -135,19 +135,7 @@ async fn test_get_planet_by_id_with_variable() {
     let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
     let jupiter_json = jsonpath::select(&response.data, "$.getPlanet").expect("Can't get planet by JSON path")[0];
-    check_planet(jupiter_json, 5, "Jupiter", "GAS_GIANT", "69911.0");
-}
-
-// todo check population
-fn check_planet(planet_json: &serde_json::Value, id: i32, name: &str, planet_type: &str, mean_radius: &str) {
-    fn check_property(planet_json: &serde_json::Value, property_name: &str, property_expected_value: &str) {
-        let json_path = format!("$.{}", property_name);
-        assert_eq!(property_expected_value, jsonpath::select(&planet_json, &json_path).expect("Can't get property")[0].as_str().expect("Can't get property as str"));
-    }
-    check_property(planet_json, "id", &id.to_string());
-    check_property(planet_json, "name", name);
-    check_property(planet_json, "type", planet_type);
-    check_property(planet_json, "details.meanRadius", mean_radius);
+    common::check_planet(jupiter_json, 5, "Jupiter", "GAS_GIANT", "69911.0");
 }
 
 #[derive(Serialize)]

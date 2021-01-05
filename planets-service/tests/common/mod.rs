@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::env;
 
 use dotenv::dotenv;
+use jsonpath_lib as jsonpath;
 use testcontainers::{Container, Docker};
 use testcontainers::clients::Cli;
 use testcontainers::images::postgres::Postgres;
@@ -29,4 +30,16 @@ fn get_pg_image() -> Postgres {
     env_args.insert("POSTGRES_DB".to_string(), "planets-db".to_string());
     env_args.insert("POSTGRES_PASSWORD".to_string(), "password".to_string());
     Postgres::with_env_vars(Postgres::default(), env_args)
+}
+
+// todo check population
+pub fn check_planet(planet_json: &serde_json::Value, id: i32, name: &str, planet_type: &str, mean_radius: &str) {
+    fn check_property(planet_json: &serde_json::Value, property_name: &str, property_expected_value: &str) {
+        let json_path = format!("$.{}", property_name);
+        assert_eq!(property_expected_value, jsonpath::select(&planet_json, &json_path).expect("Can't get property")[0].as_str().expect("Can't get property as str"));
+    }
+    check_property(planet_json, "id", &id.to_string());
+    check_property(planet_json, "name", name);
+    check_property(planet_json, "type", planet_type);
+    check_property(planet_json, "details.meanRadius", mean_radius);
 }

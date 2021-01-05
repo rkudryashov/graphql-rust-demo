@@ -58,12 +58,13 @@ pub struct Mutation;
 #[Object]
 impl Mutation {
     #[graphql(guard(RoleGuard(role = "Role::Admin")))]
-    async fn create_planet(&self, ctx: &Context<'_>, name: String, planet_type: PlanetType, details: DetailsInput) -> ID {
+    async fn create_planet(&self, ctx: &Context<'_>, planet: PlanetInput) -> Result<Planet, Error> {
         let new_planet = NewPlanetEntity {
-            name,
-            planet_type: planet_type.to_string(),
+            name: planet.name,
+            planet_type: planet.planet_type.to_string(),
         };
 
+        let details = planet.details;
         let new_planet_details = NewDetailsEntity {
             mean_radius: details.mean_radius.0,
             mass: BigDecimal::from_str(&details.mass.0.to_string()).expect("Can't get BigDecimal from string"),
@@ -71,13 +72,13 @@ impl Mutation {
             planet_id: 0,
         };
 
-        let created_planet_entity = repository::create(new_planet, new_planet_details, &get_conn_from_ctx(ctx)).expect("Can't create planet");
+        let created_planet_entity = repository::create(new_planet, new_planet_details, &get_conn_from_ctx(ctx))?;
 
         let producer = ctx.data::<FutureProducer>().expect("Can't get Kafka producer");
         let message = serde_json::to_string(&Planet::from(&created_planet_entity)).expect("Can't serialize a planet");
         kafka::send_message(producer, message).await;
 
-        created_planet_entity.id.into()
+        Ok(Planet::from(&created_planet_entity))
     }
 }
 
@@ -221,6 +222,14 @@ impl ScalarType for CustomBigDecimal {
     fn to_value(&self) -> Value {
         Value::String(self.0.to_string())
     }
+}
+
+#[derive(InputObject)]
+struct PlanetInput {
+    name: String,
+    #[graphql(name = "type")]
+    planet_type: PlanetType,
+    details: DetailsInput,
 }
 
 #[derive(InputObject)]

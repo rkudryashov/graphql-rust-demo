@@ -31,7 +31,7 @@ pub struct Mutation;
 #[Object]
 impl Mutation {
     #[graphql(guard(RoleGuard(role = "AuthRole::Admin")))]
-    async fn create_user(&self, ctx: &Context<'_>, user: UserInput) -> ID {
+    async fn create_user(&self, ctx: &Context<'_>, user: UserInput) -> User {
         let new_user = NewUserEntity {
             username: user.username,
             hash: hash_password(user.password.as_str()).expect("Can't get hash for password"),
@@ -42,14 +42,14 @@ impl Mutation {
 
         let created_user_entity = repository::create(new_user, &get_conn_from_ctx(ctx)).expect("Can't create user");
 
-        created_user_entity.id.into()
+        User::from(&created_user_entity)
     }
 
-    async fn sign_in(&self, ctx: &Context<'_>, sign_in_data: SignInInput) -> Result<String, Error> {
-        let maybe_user = repository::get_user(&sign_in_data.username, &get_conn_from_ctx(ctx)).ok();
+    async fn sign_in(&self, ctx: &Context<'_>, input: SignInInput) -> Result<String, Error> {
+        let maybe_user = repository::get_user(&input.username, &get_conn_from_ctx(ctx)).ok();
 
         if let Some(user) = maybe_user {
-            if let Ok(matching) = verify_password(&user.hash, &sign_in_data.password) {
+            if let Ok(matching) = verify_password(&user.hash, &input.password) {
                 if matching {
                     let role = AuthRole::from_str(user.role.as_str()).expect("Can't convert &str to AuthRole");
                     return Ok(common_utils::create_token(user.username, role));

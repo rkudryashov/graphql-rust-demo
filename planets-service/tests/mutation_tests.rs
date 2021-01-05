@@ -22,21 +22,34 @@ async fn test_create_planet() {
     ).await;
 
     let mutation = r#"
-        mutation ($name: String!, $meanRadius: BigDecimal!, $mass: BigInt!, $population: BigDecimal) {
+        mutation(
+            $name: String!
+            $type: PlanetType!
+            $meanRadius: BigDecimal!
+            $mass: BigInt!
+            $population: BigDecimal
+        ) {
             createPlanet(
-                name: $name
-                planetType: TERRESTRIAL_PLANET
-                details: {
-                    meanRadius: $meanRadius
-                    mass: $mass
-                    population: $population
+                planet: {
+                    name: $name
+                    type: $type
+                    details: { meanRadius: $meanRadius, mass: $mass, population: $population }
                 }
-            )
+            ) {
+                id
+                name
+                type
+                details {
+                    meanRadius
+                    mass
+                }
+            }
         }
         "#.to_string();
 
     let mut variables = Map::new();
     variables.insert("name".to_string(), "Test planet".into());
+    variables.insert("type".to_string(), "ICE_GIANT".into());
     variables.insert("meanRadius".to_string(), "10.7".into());
     variables.insert("mass".to_string(), "6.42e+23".into());
     variables.insert("population".to_string(), "0.5".into());
@@ -50,12 +63,12 @@ async fn test_create_planet() {
 
     let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
-    let _new_planet_id: i32 = jsonpath::select(&response.data.expect("Response doesn't contain data"), "$.createPlanet")
-        .expect("Can't get satellite by JSON path")[0]
-        .as_str().expect("Can't get new planet id")
-        .parse().expect("Can't get new planet id");
+    let response_data = response.data.expect("Response doesn't contain data");
 
-    // todo get last created planet and check its fields' values
+    let created_planet_json = jsonpath::select(&response_data, "$.createPlanet")
+        .expect("Can't get created planet by JSON path")[0];
+
+    common::check_planet(created_planet_json, 9, "Test planet", "ICE_GIANT", "10.7");
 }
 
 #[derive(Serialize)]

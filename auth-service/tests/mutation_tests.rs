@@ -22,7 +22,7 @@ async fn test_sign_in() {
 
     let mutation = r#"
         mutation {
-            signIn (signInData: {username: "john_doe", password: "password"})
+            signIn(input: { username: "john_doe", password: "password" })
         }
         "#.to_string();
 
@@ -67,7 +67,7 @@ async fn test_sign_in_fails() {
 
     let mutation = r#"
         mutation {
-            signIn (signInData: {username: "john_doe", password: "wrong_password"})
+            signIn(input: { username: "john_doe", password: "wrong_password" })
         }
         "#.to_string();
 
