@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::env;
 use std::fmt;
+use std::fmt::Formatter;
 use std::fmt::LowerExp;
 use std::iter::Iterator;
 use std::str::FromStr;
@@ -13,7 +14,6 @@ use bigdecimal::{BigDecimal, ToPrimitive};
 use futures::{Stream, StreamExt};
 use rdkafka::{Message, producer::FutureProducer};
 use serde::{Deserialize, Serialize};
-use serde::export::Formatter;
 use strum_macros::{Display, EnumString};
 
 use common_utils::Role;
