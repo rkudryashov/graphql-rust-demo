@@ -6,15 +6,15 @@ edition = "2018"
 
 [dependencies]
 common-utils = { path = "../common-utils" }
-async-graphql = "2.4.11"
-async-graphql-actix-web = "2.4.11"
+async-graphql = "2.5.1"
+async-graphql-actix-web = "2.5.1"
 actix-web = "3.3.2"
 actix-rt = "1.1.1"
 actix-web-actors = "3.0.0"
-futures = "0.3.11"
+futures = "0.3.12"
 async-trait = "0.1.42"
 bigdecimal = { version = "0.1.2", features = ["serde"] }
-serde = { version = "1.0.119", features = ["derive"] }
+serde = { version = "1.0.123", features = ["derive"] }
 serde_json = "1.0.61"
 diesel = { version = "1.4.5", features = ["postgres", "r2d2", "numeric"] }
 diesel_migrations = "1.4.0"
@@ -27,4 +27,4 @@ lazy_static = "1.4.0"
 
 [dev-dependencies]
 jsonpath_lib = "0.2.6"
-testcontainers = "0.9.1"
+testcontainers = "0.12.0"
