@@ -92,7 +92,7 @@ impl Subscription {
         let consumer = kafka::create_consumer(consumer_group_id);
 
         async_stream::stream! {
-            let mut stream = consumer.start();
+            let mut stream = consumer.stream();
 
             while let Some(value) = stream.next().await {
                 yield match value {

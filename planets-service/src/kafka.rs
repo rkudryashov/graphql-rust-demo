@@ -15,7 +15,7 @@ lazy_static! {
 
 pub(crate) fn create_producer() -> FutureProducer {
     ClientConfig::new()
-        .set("bootstrap.servers", &KAFKA_BROKER)
+        .set("bootstrap.servers", KAFKA_BROKER.as_str())
         .set("message.timeout.ms", "5000")
         .create()
         .expect("Producer creation failed")
@@ -24,7 +24,7 @@ pub(crate) fn create_producer() -> FutureProducer {
 pub(crate) fn create_consumer(group_id: String) -> StreamConsumer {
     let consumer: StreamConsumer = ClientConfig::new()
         .set("group.id", &group_id)
-        .set("bootstrap.servers", &KAFKA_BROKER)
+        .set("bootstrap.servers", KAFKA_BROKER.as_str())
         .set("enable.partition.eof", "false")
         .set("session.timeout.ms", "6000")
         .set("enable.auto.commit", "true")
