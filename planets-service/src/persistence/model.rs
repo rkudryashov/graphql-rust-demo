@@ -7,14 +7,13 @@ use crate::persistence::schema::{details, planets};
 pub struct PlanetEntity {
     pub id: i32,
     pub name: String,
-    #[column_name = "type"]
-    pub planet_type: String,
+    pub type_: String,
 }
 
 #[derive(Identifiable, Queryable, Associations)]
 #[table_name = "details"]
 #[belongs_to(PlanetEntity, foreign_key = "planet_id")]
-// todo store in 2 different tables (impl inheritance)
+// TODO: store in 2 different tables (impl inheritance)
 pub struct DetailsEntity {
     pub id: i32,
     pub mean_radius: BigDecimal,
@@ -27,7 +26,7 @@ pub struct DetailsEntity {
 #[table_name = "planets"]
 pub struct NewPlanetEntity {
     pub name: String,
-    pub planet_type: String,
+    pub type_: String,
 }
 
 #[derive(Insertable)]

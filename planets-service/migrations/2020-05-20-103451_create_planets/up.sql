@@ -1,7 +1,7 @@
 create table planets (
     id serial primary key,
     name varchar not null unique,
-    planet_type varchar(20) not null
+    type varchar(20) not null
 );
 
 create table details (

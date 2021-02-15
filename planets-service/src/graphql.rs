@@ -61,7 +61,7 @@ impl Mutation {
     async fn create_planet(&self, ctx: &Context<'_>, planet: PlanetInput) -> Result<Planet, Error> {
         let new_planet = NewPlanetEntity {
             name: planet.name,
-            planet_type: planet.planet_type.to_string(),
+            type_: planet.type_.to_string(),
         };
 
         let details = planet.details;
@@ -112,7 +112,7 @@ impl Subscription {
 struct Planet {
     id: ID,
     name: String,
-    planet_type: PlanetType,
+    type_: PlanetType,
 }
 
 #[Object]
@@ -127,8 +127,8 @@ impl Planet {
 
     /// From an astronomical point of view
     #[graphql(name = "type")]
-    async fn planet_type(&self) -> &PlanetType {
-        &self.planet_type
+    async fn type_(&self) -> &PlanetType {
+        &self.type_
     }
 
     #[graphql(deprecation = "Now it is not in doubt. Do not use this field")]
@@ -228,7 +228,7 @@ impl ScalarType for CustomBigDecimal {
 struct PlanetInput {
     name: String,
     #[graphql(name = "type")]
-    planet_type: PlanetType,
+    type_: PlanetType,
     details: DetailsInput,
 }
 
@@ -247,7 +247,7 @@ impl From<&PlanetEntity> for Planet {
         Planet {
             id: entity.id.into(),
             name: entity.name.clone(),
-            planet_type: PlanetType::from_str(entity.planet_type.as_str()).expect("Can't convert &str to PlanetType"),
+            type_: PlanetType::from_str(entity.type_.as_str()).expect("Can't convert &str to PlanetType"),
         }
     }
 }
