@@ -5,12 +5,12 @@
     "start-gateway": "nodemon gateway.js"
   },
   "devDependencies": {
-    "concurrently": "5.3.0",
-    "nodemon": "2.0.6"
+    "concurrently": "6.0.0",
+    "nodemon": "2.0.7"
   },
   "dependencies": {
-    "@apollo/gateway": "0.21.3",
-    "apollo-server": "2.19.0",
-    "graphql": "15.4.0"
+    "@apollo/gateway": "0.24.4",
+    "apollo-server": "2.21.2",
+    "graphql": "15.5.0"
   }
 }
