@@ -22,7 +22,7 @@ services:
     ports:
       - 8001:8001
   planets-db:
-    image: postgres:13.1-alpine
+    image: postgres:13.2-alpine
     container_name: planets-db
     restart: always
     environment:
@@ -53,7 +53,7 @@ services:
     ports:
       - 8002:8002
   satellites-db:
-    image: postgres:13.1-alpine
+    image: postgres:13.2-alpine
     container_name: satellites-db
     restart: always
     environment:
@@ -86,8 +86,8 @@ services:
     ports:
       - 8003:8003
   users-db:
-    image: postgres:13.1-alpine
-    container_name: auth-db
+    image: postgres:13.2-alpine
+    container_name: users-db
     restart: always
     environment:
       POSTGRES_DB: users
