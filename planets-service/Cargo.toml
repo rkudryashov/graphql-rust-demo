@@ -6,8 +6,8 @@ edition = "2018"
 
 [dependencies]
 common-utils = { path = "../common-utils" }
-async-graphql = "=2.5.11"
-async-graphql-actix-web = "=2.5.11"
+async-graphql = "2.6.2"
+async-graphql-actix-web = "2.6.2"
 actix-web = "3.3.2"
 actix-rt = "1.1.1"
 actix-web-actors = "3.0.0"
