@@ -5,11 +5,11 @@ authors = ["Roman Kudryashov <rskudryashov@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-async-graphql = "2.6.2"
-async-graphql-actix-web = "2.6.2"
+async-graphql = { version = "2.8.2", features = ["chrono"] }
+async-graphql-actix-web = "2.8.2"
 actix-web = "3.3.2"
 actix-rt = "1.1.1"
-serde = { version = "1.0.124", features = ["derive"] }
+serde = { version = "1.0.125", features = ["derive"] }
 diesel = { version = "1.4.6", features = ["postgres", "r2d2", "chrono"] }
 diesel_migrations = "1.4.0"
 chrono = { version = "0.4.19", features = ["serde"] }
