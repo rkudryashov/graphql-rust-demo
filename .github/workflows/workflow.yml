@@ -104,13 +104,10 @@ jobs:
           gcloud config set compute/zone ${{ secrets.GCE_INSTANCE_ZONE }}
 
       - run: |-
-          gcloud compute instances delete --quiet ${{ secrets.GCE_INSTANCE }}
+          gcloud compute ssh ${{ secrets.GCE_INSTANCE }} --command 'mkdir -p ~/graphql-rust-demo'
 
       - run: |-
-          gcloud compute instances create ${{ secrets.GCE_INSTANCE }} --image cos-85-13310-1041-28 --image-project cos-cloud --machine-type e2-small --address my-static-ip
+          gcloud compute scp --quiet ./docker-compose.yml ./docker-compose.prod.yml ./.env ./.github/deploy.sh ${{ secrets.GCE_INSTANCE }}:~/graphql-rust-demo/
 
       - run: |-
-          gcloud compute scp --quiet ./docker-compose.yml ./docker-compose.prod.yml ./.env ./.github/deploy.sh ${{ secrets.GCE_INSTANCE }}:~
-
-      - run: |-
-          gcloud compute ssh ${{ secrets.GCE_INSTANCE }} --command 'bash deploy.sh'
+          gcloud compute ssh ${{ secrets.GCE_INSTANCE }} --command 'bash ~/graphql-rust-demo/deploy.sh'
