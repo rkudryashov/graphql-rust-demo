@@ -18,7 +18,7 @@ impl Query {
         repository::get_all(&get_conn_from_ctx(ctx))
             .expect("Can't get satellites")
             .iter()
-            .map(|e| Satellite::from(e))
+            .map(Satellite::from)
             .collect()
     }
 
@@ -74,7 +74,7 @@ impl Planet {
         repository::get_by_planet_id(id, &get_conn_from_ctx(ctx))
             .expect("Can't get satellites of planet")
             .iter()
-            .map(|e| Satellite::from(e))
+            .map(Satellite::from)
             .collect()
     }
 }

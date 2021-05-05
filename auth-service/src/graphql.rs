@@ -22,7 +22,7 @@ impl Query {
         repository::get_all(&get_conn_from_ctx(ctx))
             .expect("Can't get planets")
             .iter()
-            .map(|p| User::from(p))
+            .map(User::from)
             .collect()
     }
 }
