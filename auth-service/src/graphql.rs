@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
-use async_graphql::*;
 use async_graphql::guard::Guard;
+use async_graphql::*;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
@@ -19,9 +19,10 @@ pub struct Query;
 #[Object]
 impl Query {
     async fn get_users(&self, ctx: &Context<'_>) -> Vec<User> {
-        repository::get_all(&get_conn_from_ctx(ctx)).expect("Can't get planets")
+        repository::get_all(&get_conn_from_ctx(ctx))
+            .expect("Can't get planets")
             .iter()
-            .map(|p| { User::from(p) })
+            .map(|p| User::from(p))
             .collect()
     }
 }
@@ -40,7 +41,8 @@ impl Mutation {
             role: user.role.to_string(),
         };
 
-        let created_user_entity = repository::create(new_user, &get_conn_from_ctx(ctx)).expect("Can't create user");
+        let created_user_entity =
+            repository::create(new_user, &get_conn_from_ctx(ctx)).expect("Can't create user");
 
         User::from(&created_user_entity)
     }
@@ -51,7 +53,8 @@ impl Mutation {
         if let Some(user) = maybe_user {
             if let Ok(matching) = verify_password(&user.hash, &input.password) {
                 if matching {
-                    let role = AuthRole::from_str(user.role.as_str()).expect("Can't convert &str to AuthRole");
+                    let role = AuthRole::from_str(user.role.as_str())
+                        .expect("Can't convert &str to AuthRole");
                     return Ok(common_utils::create_token(user.username, role));
                 }
             }

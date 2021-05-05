@@ -18,15 +18,11 @@ pub fn get_user(username: &str, conn: &PgConnection) -> QueryResult<UserEntity> 
 pub fn create(new_user: NewUserEntity, conn: &PgConnection) -> QueryResult<UserEntity> {
     use crate::persistence::schema::users::dsl::*;
 
-    diesel::insert_into(users)
-        .values(new_user)
-        .get_result(conn)
+    diesel::insert_into(users).values(new_user).get_result(conn)
 }
 
 pub fn update_password_hash(new_hash: String, conn: &PgConnection) -> QueryResult<usize> {
     use crate::persistence::schema::users::dsl::*;
 
-    diesel::update(users)
-        .set(hash.eq(new_hash))
-        .execute(conn)
+    diesel::update(users).set(hash.eq(new_hash)).execute(conn)
 }

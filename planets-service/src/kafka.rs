@@ -2,15 +2,17 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 use lazy_static::lazy_static;
-use rdkafka::ClientConfig;
 use rdkafka::config::RDKafkaLogLevel;
 use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::util::Timeout;
+use rdkafka::ClientConfig;
 
 lazy_static! {
-    static ref KAFKA_BROKER: String = std::env::var("KAFKA_BROKER").expect("Can't read Kafka broker address");
-    static ref KAFKA_TOPIC: String = std::env::var("KAFKA_TOPIC").expect("Can't read Kafka topic name");
+    static ref KAFKA_BROKER: String =
+        std::env::var("KAFKA_BROKER").expect("Can't read Kafka broker address");
+    static ref KAFKA_TOPIC: String =
+        std::env::var("KAFKA_TOPIC").expect("Can't read Kafka topic name");
 }
 
 pub(crate) fn create_producer() -> FutureProducer {
@@ -32,7 +34,8 @@ pub(crate) fn create_consumer(group_id: String) -> StreamConsumer {
         .create()
         .expect("Consumer creation failed");
 
-    consumer.subscribe(&[&KAFKA_TOPIC])
+    consumer
+        .subscribe(&[&KAFKA_TOPIC])
         .expect("Can't subscribe to specified topics");
 
     consumer
@@ -46,15 +49,17 @@ pub(crate) fn get_kafka_consumer_group_id(kafka_consumer_counter: &Mutex<i32>) -
 
 // TODO: send without caller blocking
 pub(crate) async fn send_message(producer: &FutureProducer, message: String) {
-    let send_to_kafka_result = producer.send(
-        FutureRecord::to(&KAFKA_TOPIC)
-            .payload(&message)
-            .key("new_planet"),
-        Timeout::After(Duration::from_secs(0)),
-    ).await;
+    let send_to_kafka_result = producer
+        .send(
+            FutureRecord::to(&KAFKA_TOPIC)
+                .payload(&message)
+                .key("new_planet"),
+            Timeout::After(Duration::from_secs(0)),
+        )
+        .await;
 
     match send_to_kafka_result {
         Ok(_) => println!("Message was sent"),
-        Err(res) => println!("Message wasn't sent: {}", res.0)
+        Err(res) => println!("Message wasn't sent: {}", res.0),
     }
 }

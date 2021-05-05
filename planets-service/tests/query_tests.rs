@@ -1,4 +1,4 @@
-use actix_web::{App, test};
+use actix_web::{test, App};
 use jsonpath_lib as jsonpath;
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
@@ -28,10 +28,12 @@ async fn test_get_planets() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
-    let mut service = test::init_service(App::new()
-        .configure(configure_service)
-        .data(create_schema_with_context(pool))
-    ).await;
+    let mut service = test::init_service(
+        App::new()
+            .configure(configure_service)
+            .data(create_schema_with_context(pool)),
+    )
+    .await;
 
     let query = "
         {
@@ -48,19 +50,24 @@ async fn test_get_planets() {
                 }
             }
         }
-        ".to_string();
+        "
+    .to_string();
 
     let request_body = GraphQLCustomRequest {
         query,
         variables: Map::new(),
     };
 
-    let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
+    let request = test::TestRequest::post()
+        .uri("/")
+        .set_json(&request_body)
+        .to_request();
 
     let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
     fn get_planet_as_json(all_planets: &serde_json::Value, index: i32) -> &serde_json::Value {
-        jsonpath::select(all_planets, &format!("$.getPlanets[{}]", index)).expect("Can't get planet by JSON path")[0]
+        jsonpath::select(all_planets, &format!("$.getPlanets[{}]", index))
+            .expect("Can't get planet by JSON path")[0]
     }
 
     let mercury_json = get_planet_as_json(&response.data, 0);
@@ -78,10 +85,12 @@ async fn test_get_planet_by_id() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
-    let mut service = test::init_service(App::new()
-        .configure(configure_service)
-        .data(create_schema_with_context(pool))
-    ).await;
+    let mut service = test::init_service(
+        App::new()
+            .configure(configure_service)
+            .data(create_schema_with_context(pool)),
+    )
+    .await;
 
     let query = "
         {
@@ -89,18 +98,24 @@ async fn test_get_planet_by_id() {
                 ... planetFragment
             }
         }
-        ".to_string() + PLANET_FRAGMENT;
+        "
+    .to_string()
+        + PLANET_FRAGMENT;
 
     let request_body = GraphQLCustomRequest {
         query,
         variables: Map::new(),
     };
 
-    let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
+    let request = test::TestRequest::post()
+        .uri("/")
+        .set_json(&request_body)
+        .to_request();
 
     let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
-    let earth_json = jsonpath::select(&response.data, "$.getPlanet").expect("Can't get planet by JSON path")[0];
+    let earth_json =
+        jsonpath::select(&response.data, "$.getPlanet").expect("Can't get planet by JSON path")[0];
     common::check_planet(earth_json, 3, "Earth", "TERRESTRIAL_PLANET", "6371.0");
 }
 
@@ -109,32 +124,37 @@ async fn test_get_planet_by_id_with_variable() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
-    let mut service = test::init_service(App::new()
-        .configure(configure_service)
-        .data(create_schema_with_context(pool))
-    ).await;
+    let mut service = test::init_service(
+        App::new()
+            .configure(configure_service)
+            .data(create_schema_with_context(pool)),
+    )
+    .await;
 
     let query = "
         query testPlanetById($planetId: String!) {
             getPlanet(id: $planetId) {
                 ... planetFragment
             }
-        }".to_string() + PLANET_FRAGMENT;
+        }"
+    .to_string()
+        + PLANET_FRAGMENT;
 
     let jupiter_id = 5;
     let mut variables = Map::new();
     variables.insert("planetId".to_string(), jupiter_id.into());
 
-    let request_body = GraphQLCustomRequest {
-        query,
-        variables,
-    };
+    let request_body = GraphQLCustomRequest { query, variables };
 
-    let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
+    let request = test::TestRequest::post()
+        .uri("/")
+        .set_json(&request_body)
+        .to_request();
 
     let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
-    let jupiter_json = jsonpath::select(&response.data, "$.getPlanet").expect("Can't get planet by JSON path")[0];
+    let jupiter_json =
+        jsonpath::select(&response.data, "$.getPlanet").expect("Can't get planet by JSON path")[0];
     common::check_planet(jupiter_json, 5, "Jupiter", "GAS_GIANT", "69911.0");
 }
 

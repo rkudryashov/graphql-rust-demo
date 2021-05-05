@@ -11,9 +11,7 @@ pub fn get_all(conn: &PgConnection) -> QueryResult<Vec<PlanetEntity>> {
 }
 
 pub fn get(id: i32, conn: &PgConnection) -> QueryResult<PlanetEntity> {
-    planets::table
-        .find(id)
-        .get_result(conn)
+    planets::table.find(id).get_result(conn)
 }
 
 pub fn get_details(planet_ids: &[i32], conn: &PgConnection) -> QueryResult<Vec<DetailsEntity>> {
@@ -22,8 +20,12 @@ pub fn get_details(planet_ids: &[i32], conn: &PgConnection) -> QueryResult<Vec<D
         .load::<DetailsEntity>(conn)
 }
 
-pub fn create(new_planet: NewPlanetEntity, mut new_details_entity: NewDetailsEntity, conn: &PgConnection) -> QueryResult<PlanetEntity> {
-    use crate::persistence::schema::{planets::dsl::*, details::dsl::*};
+pub fn create(
+    new_planet: NewPlanetEntity,
+    mut new_details_entity: NewDetailsEntity,
+    conn: &PgConnection,
+) -> QueryResult<PlanetEntity> {
+    use crate::persistence::schema::{details::dsl::*, planets::dsl::*};
 
     let created_planet: PlanetEntity = diesel::insert_into(planets)
         .values(new_planet)

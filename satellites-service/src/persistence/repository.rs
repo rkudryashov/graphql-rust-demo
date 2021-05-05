@@ -10,9 +10,7 @@ pub fn get_all(conn: &PgConnection) -> QueryResult<Vec<SatelliteEntity>> {
 }
 
 pub fn get(id: i32, conn: &PgConnection) -> QueryResult<SatelliteEntity> {
-    satellites::table
-        .find(id)
-        .get_result(conn)
+    satellites::table.find(id).get_result(conn)
 }
 
 pub fn get_by_planet_id(planet_id: i32, conn: &PgConnection) -> QueryResult<Vec<SatelliteEntity>> {

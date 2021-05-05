@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::env;
 
 use dotenv::dotenv;
-use testcontainers::{Container, Docker};
 use testcontainers::clients::Cli;
 use testcontainers::images::postgres::Postgres;
+use testcontainers::{Container, Docker};
 
 use auth_service::persistence::connection::{create_connection_pool, PgPool};
 use auth_service::run_migrations;
@@ -19,8 +19,16 @@ pub fn setup(docker: &Cli) -> (Container<Cli, Postgres>, PgPool) {
 
 fn setup_database(docker: &Cli) -> Container<Cli, Postgres> {
     let pg_container = docker.run(get_pg_image());
-    let pg_port = pg_container.get_host_port(5432).expect("Can't get port for connection to Postgres");
-    env::set_var("DATABASE_URL", format!("postgres://postgres:password@localhost:{}/users-db", pg_port));
+    let pg_port = pg_container
+        .get_host_port(5432)
+        .expect("Can't get port for connection to Postgres");
+    env::set_var(
+        "DATABASE_URL",
+        format!(
+            "postgres://postgres:password@localhost:{}/users-db",
+            pg_port
+        ),
+    );
     pg_container
 }
 

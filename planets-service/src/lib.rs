@@ -6,13 +6,13 @@ extern crate strum;
 
 use std::sync::{Arc, Mutex};
 
-use actix_web::{guard, HttpRequest, HttpResponse, Result, web};
-use async_graphql::{Context, Schema};
+use actix_web::{guard, web, HttpRequest, HttpResponse, Result};
 use async_graphql::dataloader::DataLoader;
-use async_graphql::http::{GraphQLPlaygroundConfig, playground_source};
+use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
+use async_graphql::{Context, Schema};
 use async_graphql_actix_web::{Request, Response, WSSubscription};
-use diesel::PgConnection;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
+use diesel::PgConnection;
 
 use crate::graphql::{AppSchema, DetailsLoader, Mutation, Query, Subscription};
 use crate::persistence::connection::PgPool;
@@ -24,12 +24,16 @@ pub mod kafka;
 pub mod persistence;
 
 pub fn configure_service(cfg: &mut web::ServiceConfig) {
-    cfg
-        .service(web::resource("/")
+    cfg.service(
+        web::resource("/")
             .route(web::post().to(index))
-            .route(web::get().guard(guard::Header("upgrade", "websocket")).to(index_ws))
-            .route(web::get().to(index_playground))
-        );
+            .route(
+                web::get()
+                    .guard(guard::Header("upgrade", "websocket"))
+                    .to(index_ws),
+            )
+            .route(web::get().to(index_playground)),
+    );
 }
 
 async fn index(schema: web::Data<AppSchema>, http_req: HttpRequest, req: Request) -> Response {
@@ -43,22 +47,27 @@ async fn index(schema: web::Data<AppSchema>, http_req: HttpRequest, req: Request
     schema.execute(query).await.into()
 }
 
-async fn index_ws(schema: web::Data<AppSchema>, req: HttpRequest, payload: web::Payload) -> Result<HttpResponse> {
+async fn index_ws(
+    schema: web::Data<AppSchema>,
+    req: HttpRequest,
+    payload: web::Payload,
+) -> Result<HttpResponse> {
     WSSubscription::start(Schema::clone(&*schema), &req, payload)
 }
 
 async fn index_playground() -> HttpResponse {
     HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
-        .body(playground_source(GraphQLPlaygroundConfig::new("/").subscription_endpoint("/")))
+        .body(playground_source(
+            GraphQLPlaygroundConfig::new("/").subscription_endpoint("/"),
+        ))
 }
 
 pub fn create_schema_with_context(pool: PgPool) -> Schema<Query, Mutation, Subscription> {
     let arc_pool = Arc::new(pool);
     let cloned_pool = Arc::clone(&arc_pool);
-    let details_data_loader = DataLoader::new(DetailsLoader {
-        pool: cloned_pool
-    }).max_batch_size(10);
+    let details_data_loader =
+        DataLoader::new(DetailsLoader { pool: cloned_pool }).max_batch_size(10);
 
     let kafka_consumer_counter = Mutex::new(0);
 
@@ -81,5 +90,8 @@ pub fn run_migrations(pool: &PgPool) {
 type Conn = PooledConnection<ConnectionManager<PgConnection>>;
 
 pub fn get_conn_from_ctx(ctx: &Context<'_>) -> Conn {
-    ctx.data::<Arc<PgPool>>().expect("Can't get pool").get().expect("Can't get DB connection")
+    ctx.data::<Arc<PgPool>>()
+        .expect("Can't get pool")
+        .get()
+        .expect("Can't get DB connection")
 }

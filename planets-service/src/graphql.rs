@@ -7,12 +7,12 @@ use std::iter::Iterator;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
-use async_graphql::*;
 use async_graphql::dataloader::{DataLoader, Loader};
 use async_graphql::guard::Guard;
+use async_graphql::*;
 use bigdecimal::{BigDecimal, ToPrimitive};
 use futures::{Stream, StreamExt};
-use rdkafka::{Message, producer::FutureProducer};
+use rdkafka::{producer::FutureProducer, Message};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
@@ -31,9 +31,10 @@ pub struct Query;
 #[Object]
 impl Query {
     async fn get_planets(&self, ctx: &Context<'_>) -> Vec<Planet> {
-        repository::get_all(&get_conn_from_ctx(ctx)).expect("Can't get planets")
+        repository::get_all(&get_conn_from_ctx(ctx))
+            .expect("Can't get planets")
             .iter()
-            .map(|p| { Planet::from(p) })
+            .map(|p| Planet::from(p))
             .collect()
     }
 
@@ -48,9 +49,13 @@ impl Query {
 }
 
 fn find_planet_by_id_internal(ctx: &Context<'_>, id: ID) -> Option<Planet> {
-    let id = id.to_string().parse::<i32>().expect("Can't get id from String");
-    repository::get(id, &get_conn_from_ctx(ctx)).ok()
-        .map(|p| { Planet::from(&p) })
+    let id = id
+        .to_string()
+        .parse::<i32>()
+        .expect("Can't get id from String");
+    repository::get(id, &get_conn_from_ctx(ctx))
+        .ok()
+        .map(|p| Planet::from(&p))
 }
 
 pub struct Mutation;
@@ -67,15 +72,20 @@ impl Mutation {
         let details = planet.details;
         let new_planet_details = NewDetailsEntity {
             mean_radius: details.mean_radius.0,
-            mass: BigDecimal::from_str(&details.mass.0.to_string()).expect("Can't get BigDecimal from string"),
-            population: details.population.map(|wrapper| { wrapper.0 }),
+            mass: BigDecimal::from_str(&details.mass.0.to_string())
+                .expect("Can't get BigDecimal from string"),
+            population: details.population.map(|wrapper| wrapper.0),
             planet_id: 0,
         };
 
-        let created_planet_entity = repository::create(new_planet, new_planet_details, &get_conn_from_ctx(ctx))?;
+        let created_planet_entity =
+            repository::create(new_planet, new_planet_details, &get_conn_from_ctx(ctx))?;
 
-        let producer = ctx.data::<FutureProducer>().expect("Can't get Kafka producer");
-        let message = serde_json::to_string(&Planet::from(&created_planet_entity)).expect("Can't serialize a planet");
+        let producer = ctx
+            .data::<FutureProducer>()
+            .expect("Can't get Kafka producer");
+        let message = serde_json::to_string(&Planet::from(&created_planet_entity))
+            .expect("Can't serialize a planet");
         kafka::send_message(producer, message).await;
 
         Ok(Planet::from(&created_planet_entity))
@@ -86,8 +96,13 @@ pub struct Subscription;
 
 #[Subscription]
 impl Subscription {
-    async fn latest_planet<'ctx>(&self, ctx: &'ctx Context<'_>) -> impl Stream<Item=Planet> + 'ctx {
-        let kafka_consumer_counter = ctx.data::<Mutex<i32>>().expect("Can't get Kafka consumer counter");
+    async fn latest_planet<'ctx>(
+        &self,
+        ctx: &'ctx Context<'_>,
+    ) -> impl Stream<Item = Planet> + 'ctx {
+        let kafka_consumer_counter = ctx
+            .data::<Mutex<i32>>()
+            .expect("Can't get Kafka consumer counter");
         let consumer_group_id = kafka::get_kafka_consumer_group_id(kafka_consumer_counter);
         let consumer = kafka::create_consumer(consumer_group_id);
 
@@ -137,8 +152,14 @@ impl Planet {
     }
 
     async fn details(&self, ctx: &Context<'_>) -> Result<Details> {
-        let data_loader = ctx.data::<DataLoader<DetailsLoader>>().expect("Can't get data loader");
-        let planet_id = self.id.to_string().parse::<i32>().expect("Can't convert id");
+        let data_loader = ctx
+            .data::<DataLoader<DetailsLoader>>()
+            .expect("Can't get data loader");
+        let planet_id = self
+            .id
+            .to_string()
+            .parse::<i32>()
+            .expect("Can't convert id");
         let details = data_loader.load_one(planet_id).await?;
         details.ok_or_else(|| "Not found".into())
     }
@@ -156,7 +177,7 @@ enum PlanetType {
 #[derive(Interface, Clone)]
 #[graphql(
     field(name = "mean_radius", type = "&CustomBigDecimal"),
-    field(name = "mass", type = "&CustomBigInt"),
+    field(name = "mass", type = "&CustomBigInt")
 )]
 pub enum Details {
     InhabitedPlanetDetails(InhabitedPlanetDetails),
@@ -247,7 +268,8 @@ impl From<&PlanetEntity> for Planet {
         Planet {
             id: entity.id.into(),
             name: entity.name.clone(),
-            type_: PlanetType::from_str(entity.type_.as_str()).expect("Can't convert &str to PlanetType"),
+            type_: PlanetType::from_str(entity.type_.as_str())
+                .expect("Can't convert &str to PlanetType"),
         }
     }
 }
@@ -258,19 +280,27 @@ impl From<&DetailsEntity> for Details {
             InhabitedPlanetDetails {
                 mean_radius: CustomBigDecimal(entity.mean_radius.clone()),
                 mass: CustomBigInt(entity.mass.clone()),
-                population: CustomBigDecimal(entity.population.as_ref().expect("Can't get population").clone()),
-            }.into()
+                population: CustomBigDecimal(
+                    entity
+                        .population
+                        .as_ref()
+                        .expect("Can't get population")
+                        .clone(),
+                ),
+            }
+            .into()
         } else {
             UninhabitedPlanetDetails {
                 mean_radius: CustomBigDecimal(entity.mean_radius.clone()),
                 mass: CustomBigInt(entity.mass.clone()),
-            }.into()
+            }
+            .into()
         }
     }
 }
 
 pub struct DetailsLoader {
-    pub pool: Arc<PgPool>
+    pub pool: Arc<PgPool>,
 }
 
 #[async_trait::async_trait]
@@ -282,7 +312,8 @@ impl Loader<i32> for DetailsLoader {
         let conn = self.pool.get().expect("Can't get DB connection");
         let details = repository::get_details(keys, &conn).expect("Can't get planets' details");
 
-        Ok(details.iter()
+        Ok(details
+            .iter()
             .map(|details_entity| (details_entity.planet_id, Details::from(details_entity)))
             .collect::<HashMap<_, _>>())
     }

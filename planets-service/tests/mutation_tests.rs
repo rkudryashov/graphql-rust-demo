@@ -1,6 +1,6 @@
 use std::env;
 
-use actix_web::{App, test};
+use actix_web::{test, App};
 use jsonpath_lib as jsonpath;
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
@@ -16,10 +16,12 @@ async fn test_create_planet() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
-    let mut service = test::init_service(App::new()
-        .configure(configure_service)
-        .data(create_schema_with_context(pool))
-    ).await;
+    let mut service = test::init_service(
+        App::new()
+            .configure(configure_service)
+            .data(create_schema_with_context(pool)),
+    )
+    .await;
 
     let mutation = r#"
         mutation(
@@ -45,7 +47,8 @@ async fn test_create_planet() {
                 }
             }
         }
-        "#.to_string();
+        "#
+    .to_string();
 
     let mut variables = Map::new();
     variables.insert("name".to_string(), "Test planet".into());
@@ -59,7 +62,10 @@ async fn test_create_planet() {
         variables,
     };
 
-    let request = test::TestRequest::post().uri("/").set_json(&request_body).to_request();
+    let request = test::TestRequest::post()
+        .uri("/")
+        .set_json(&request_body)
+        .to_request();
 
     let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
 
