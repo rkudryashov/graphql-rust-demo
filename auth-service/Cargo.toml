@@ -6,11 +6,11 @@ edition = "2018"
 
 [dependencies]
 common-utils = { path = "../common-utils" }
-async-graphql = "2.8.4"
-async-graphql-actix-web = "2.8.4"
+async-graphql = "2.8.5"
+async-graphql-actix-web = "2.8.5"
 actix-web = "3.3.2"
 actix-rt = "1.1.1"
-serde = { version = "1.0.125", features = ["derive"] }
+serde = { version = "1.0.126", features = ["derive"] }
 diesel = { version = "1.4.6", features = ["postgres", "r2d2"] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15.0"
