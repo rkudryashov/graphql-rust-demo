@@ -1,11 +1,3 @@
-*
-
-# root
-!/Cargo.lock
-!/common-utils/
-
-# submodules
-!/*/src/
-!/*/migrations/
-!/*/Cargo.toml
-!/*/diesel.toml
+/target/
+/*/Dockerfile
+/*/.env
