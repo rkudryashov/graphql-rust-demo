@@ -6,4 +6,4 @@ image:https://romankudryashov.com/blog/2020/12/graphql-rust/images/architecture.
 
 https://romankudryashov.com/blog/2020/12/graphql-rust/[Detailed description]
 
-http://graphql-rust.romankudryashov.com[Live demo]
+http://demo.romankudryashov.com[Live demo]
