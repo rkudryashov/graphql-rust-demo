@@ -22,4 +22,6 @@ services:
 
   # Apollo server
   apollo-server:
-    build: apollo-server
+    build:
+      context: ./apollo-server
+      dockerfile: Dockerfile

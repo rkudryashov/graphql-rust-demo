@@ -1,4 +1,4 @@
-FROM node:14.15.1-alpine
+FROM node:14.17.0-alpine
 WORKDIR ./apollo-server
 RUN apk add --no-cache bash
 COPY package.json gateway.js wait-for-it.sh ./
