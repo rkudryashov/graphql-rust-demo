@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Map;
 use testcontainers::clients::Cli;
 
-use satellites_service::graphql::LifeExists::{NoData, OpenQuestion};
-use satellites_service::{configure_service, create_schema_with_context, graphql::LifeExists};
+use satellites_service::graphql::LifeExists::{self, NoData, OpenQuestion};
+use satellites_service::{configure_service, create_schema_with_context};
 
 mod common;
 
