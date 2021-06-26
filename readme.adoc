@@ -1,6 +1,6 @@
 = GraphQL Rust Demo
 
-image:https://github.com/rkudryashov/graphql-rust-demo/workflows/CI/CD/badge.svg[CI/CD,link=https://github.com/rkudryashov/graphql-rust-demo/actions]
+image:https://github.com/rkudryashov/graphql-rust-demo/actions/workflows/workflow.yml/badge.svg[CI/CD,link=https://github.com/rkudryashov/graphql-rust-demo/actions]
 
 image:https://romankudryashov.com/blog/2020/12/graphql-rust/images/architecture.png[Architecture,800]
 
