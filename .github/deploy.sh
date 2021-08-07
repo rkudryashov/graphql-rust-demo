@@ -8,7 +8,7 @@ alias docker-compose='docker run --rm \
 
 cd ~/graphql-rust-demo
 
+docker system prune
 docker-compose pull
 docker-compose down
-docker system prune
 docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
