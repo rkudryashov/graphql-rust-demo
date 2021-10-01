@@ -1,4 +1,4 @@
-FROM rust:1.52.1
+FROM rust:1.55
 
 ENV CARGO_TERM_COLOR always
 RUN apt-get update && apt-get install -y libpq-dev clang
