@@ -8,7 +8,6 @@ use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
 use async_graphql::dataloader::{DataLoader, Loader};
-use async_graphql::guard::Guard;
 use async_graphql::*;
 use bigdecimal::{BigDecimal, ToPrimitive};
 use futures::{Stream, StreamExt};
@@ -62,7 +61,7 @@ pub struct Mutation;
 
 #[Object]
 impl Mutation {
-    #[graphql(guard(RoleGuard(role = "Role::Admin")))]
+    #[graphql(guard = "RoleGuard::new(Role::Admin)")]
     async fn create_planet(&self, ctx: &Context<'_>, planet: PlanetInput) -> Result<Planet, Error> {
         let new_planet = NewPlanetEntity {
             name: planet.name,
@@ -321,6 +320,12 @@ impl Loader<i32> for DetailsLoader {
 
 struct RoleGuard {
     role: Role,
+}
+
+impl RoleGuard {
+    fn new(role: Role) -> Self {
+        Self { role }
+    }
 }
 
 #[async_trait::async_trait]

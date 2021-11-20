@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use actix_web::{test, App};
+use actix_web::{test, web, App};
 use chrono::NaiveDate;
 use jsonpath_lib as jsonpath;
 use serde::{Deserialize, Serialize};
@@ -29,7 +29,7 @@ async fn test_get_satellites() {
     let mut service = test::init_service(
         App::new()
             .configure(configure_service)
-            .data(create_schema_with_context(pool)),
+            .app_data(web::Data::new(create_schema_with_context(pool))),
     )
     .await;
 
@@ -82,7 +82,7 @@ async fn test_get_satellite() {
     let mut service = test::init_service(
         App::new()
             .configure(configure_service)
-            .data(create_schema_with_context(pool)),
+            .app_data(web::Data::new(create_schema_with_context(pool))),
     )
     .await;
 

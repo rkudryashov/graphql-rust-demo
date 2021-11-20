@@ -1,6 +1,6 @@
 use std::str;
 
-use actix_web::{test, App};
+use actix_web::{test, web, App};
 use jsonpath_lib as jsonpath;
 use serde::{Deserialize, Serialize};
 use testcontainers::clients::Cli;
@@ -18,7 +18,7 @@ async fn test_sign_in() {
     let mut service = test::init_service(
         App::new()
             .configure(configure_service)
-            .data(create_schema_with_context(pool)),
+            .app_data(web::Data::new(create_schema_with_context(pool))),
     )
     .await;
 
@@ -75,7 +75,7 @@ async fn test_sign_in_fails() {
     let mut service = test::init_service(
         App::new()
             .configure(configure_service)
-            .data(create_schema_with_context(pool)),
+            .app_data(web::Data::new(create_schema_with_context(pool))),
     )
     .await;
 

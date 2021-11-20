@@ -10,7 +10,7 @@ use actix_web::{guard, web, HttpRequest, HttpResponse, Result};
 use async_graphql::dataloader::DataLoader;
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql::{Context, Schema};
-use async_graphql_actix_web::{Request, Response, WSSubscription};
+use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse, GraphQLSubscription};
 use diesel::r2d2::{ConnectionManager, PooledConnection};
 use diesel::PgConnection;
 
@@ -36,7 +36,11 @@ pub fn configure_service(cfg: &mut web::ServiceConfig) {
     );
 }
 
-async fn index(schema: web::Data<AppSchema>, http_req: HttpRequest, req: Request) -> Response {
+async fn index(
+    schema: web::Data<AppSchema>,
+    http_req: HttpRequest,
+    req: GraphQLRequest,
+) -> GraphQLResponse {
     let mut query = req.into_inner();
 
     let maybe_role = common_utils::get_role(http_req);
@@ -52,7 +56,7 @@ async fn index_ws(
     req: HttpRequest,
     payload: web::Payload,
 ) -> Result<HttpResponse> {
-    WSSubscription::start(Schema::clone(&*schema), &req, payload)
+    GraphQLSubscription::new(Schema::clone(&*schema)).start(&req, payload)
 }
 
 async fn index_playground() -> HttpResponse {

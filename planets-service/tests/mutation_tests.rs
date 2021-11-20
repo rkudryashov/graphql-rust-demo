@@ -1,6 +1,6 @@
 use std::env;
 
-use actix_web::{test, App};
+use actix_web::{test, web, App};
 use jsonpath_lib as jsonpath;
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
@@ -19,7 +19,7 @@ async fn test_create_planet() {
     let mut service = test::init_service(
         App::new()
             .configure(configure_service)
-            .data(create_schema_with_context(pool)),
+            .app_data(web::Data::new(create_schema_with_context(pool))),
     )
     .await;
 

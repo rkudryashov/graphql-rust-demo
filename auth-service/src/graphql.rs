@@ -1,6 +1,5 @@
 use std::str::FromStr;
 
-use async_graphql::guard::Guard;
 use async_graphql::*;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
@@ -31,7 +30,7 @@ pub struct Mutation;
 
 #[Object]
 impl Mutation {
-    #[graphql(guard(RoleGuard(role = "AuthRole::Admin")))]
+    #[graphql(guard = "RoleGuard::new(AuthRole::Admin)")]
     async fn create_user(&self, ctx: &Context<'_>, user: UserInput) -> User {
         let new_user = NewUserEntity {
             username: user.username,
@@ -107,6 +106,12 @@ impl From<&UserEntity> for User {
 
 struct RoleGuard {
     role: AuthRole,
+}
+
+impl RoleGuard {
+    fn new(role: AuthRole) -> Self {
+        Self { role }
+    }
 }
 
 #[async_trait::async_trait]
