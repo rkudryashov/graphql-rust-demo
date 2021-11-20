@@ -1,4 +1,4 @@
-FROM rust:1.55
+FROM rust:1.56
 
 ENV CARGO_TERM_COLOR always
 RUN apt-get update && apt-get install -y libpq-dev
@@ -14,7 +14,7 @@ RUN cargo install --path . --locked
 COPY /satellites-service/ ./
 RUN cargo install --path . --locked
 
-FROM debian:buster-slim
+FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y libpq-dev curl
 COPY --from=0 /usr/local/cargo/bin/satellites-service /usr/local/bin/satellites-service
 CMD ["satellites-service"]
