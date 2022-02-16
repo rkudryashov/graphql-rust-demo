@@ -103,6 +103,9 @@ impl Subscription {
             .data::<Mutex<i32>>()
             .expect("Can't get Kafka consumer counter");
         let consumer_group_id = kafka::get_kafka_consumer_group_id(kafka_consumer_counter);
+        // In fact, there should be only one Kafka consumer in this application. It should broadcast
+        // messages from a topic to each subscriber. For simplicity purposes a consumer is created per
+        // each subscription
         let consumer = kafka::create_consumer(consumer_group_id);
 
         async_stream::stream! {
