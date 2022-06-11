@@ -52,7 +52,7 @@ pub fn check_planet(
         let json_path = format!("$.{}", property_name);
         assert_eq!(
             property_expected_value,
-            jsonpath::select(&planet_json, &json_path).expect("Can't get property")[0]
+            jsonpath::select(planet_json, &json_path).expect("Can't get property")[0]
                 .as_str()
                 .expect("Can't get property as str")
         );

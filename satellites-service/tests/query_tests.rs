@@ -26,7 +26,7 @@ async fn test_get_satellites() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
-    let mut service = test::init_service(
+    let service = test::init_service(
         App::new()
             .configure(configure_service)
             .app_data(web::Data::new(create_schema_with_context(pool))),
@@ -53,8 +53,7 @@ async fn test_get_satellites() {
         .set_json(&request_body)
         .to_request();
 
-    let response: GraphQLCustomResponse =
-        test::call_and_read_body_json(&mut service, request).await;
+    let response: GraphQLCustomResponse = test::call_and_read_body_json(&service, request).await;
 
     let response_data = response.data.expect("Response doesn't contain data");
 
@@ -80,7 +79,7 @@ async fn test_get_satellite() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
-    let mut service = test::init_service(
+    let service = test::init_service(
         App::new()
             .configure(configure_service)
             .app_data(web::Data::new(create_schema_with_context(pool))),
@@ -107,8 +106,7 @@ async fn test_get_satellite() {
         .set_json(&request_body)
         .to_request();
 
-    let response: GraphQLCustomResponse =
-        test::call_and_read_body_json(&mut service, request).await;
+    let response: GraphQLCustomResponse = test::call_and_read_body_json(&service, request).await;
 
     let response_data = response.data.expect("Response doesn't contain data");
 
@@ -128,13 +126,13 @@ fn check_satellite(
     first_spacecraft_landing_date: Option<NaiveDate>,
     life_exists: LifeExists,
 ) {
-    let json_name = jsonpath::select(&satellite_json, "$.name").expect("Can't get property")[0]
+    let json_name = jsonpath::select(satellite_json, "$.name").expect("Can't get property")[0]
         .as_str()
         .expect("Can't get property as str");
     assert_eq!(name, json_name);
 
     let json_life_exists = LifeExists::from_str(
-        jsonpath::select(&satellite_json, "$.lifeExists").expect("Can't get property")[0]
+        jsonpath::select(satellite_json, "$.lifeExists").expect("Can't get property")[0]
             .as_str()
             .expect("Can't get property as str"),
     )
@@ -143,7 +141,7 @@ fn check_satellite(
 
     match first_spacecraft_landing_date {
         Some(date) => {
-            let date_string = jsonpath::select(&satellite_json, "$.firstSpacecraftLandingDate")
+            let date_string = jsonpath::select(satellite_json, "$.firstSpacecraftLandingDate")
                 .expect("Can't get property")[0]
                 .as_str()
                 .expect("Can't get property as str");
@@ -154,7 +152,7 @@ fn check_satellite(
         }
         None => {
             assert!(
-                jsonpath::select(&satellite_json, "$.firstSpacecraftLandingDate")
+                jsonpath::select(satellite_json, "$.firstSpacecraftLandingDate")
                     .expect("Can't get property")[0]
                     .is_null()
             );

@@ -15,7 +15,7 @@ async fn test_sign_in() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
-    let mut service = test::init_service(
+    let service = test::init_service(
         App::new()
             .configure(configure_service)
             .app_data(web::Data::new(create_schema_with_context(pool))),
@@ -36,8 +36,7 @@ async fn test_sign_in() {
         .set_json(&request_body)
         .to_request();
 
-    let response: GraphQLCustomResponse =
-        test::call_and_read_body_json(&mut service, request).await;
+    let response: GraphQLCustomResponse = test::call_and_read_body_json(&service, request).await;
 
     let jwt = jsonpath::select(
         &response.data.expect("Response doesn't contain data"),
@@ -73,7 +72,7 @@ async fn test_sign_in_fails() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
-    let mut service = test::init_service(
+    let service = test::init_service(
         App::new()
             .configure(configure_service)
             .app_data(web::Data::new(create_schema_with_context(pool))),
@@ -94,8 +93,7 @@ async fn test_sign_in_fails() {
         .set_json(&request_body)
         .to_request();
 
-    let response: GraphQLCustomResponse =
-        test::call_and_read_body_json(&mut service, request).await;
+    let response: GraphQLCustomResponse = test::call_and_read_body_json(&service, request).await;
 
     let error_message = jsonpath::select(
         &response.errors.expect("Response doesn't contain errors"),

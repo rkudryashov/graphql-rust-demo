@@ -16,7 +16,7 @@ async fn test_create_planet() {
     let docker = Cli::default();
     let (_pg_container, pool) = common::setup(&docker);
 
-    let mut service = test::init_service(
+    let service = test::init_service(
         App::new()
             .configure(configure_service)
             .app_data(web::Data::new(create_schema_with_context(pool))),
@@ -67,8 +67,7 @@ async fn test_create_planet() {
         .set_json(&request_body)
         .to_request();
 
-    let response: GraphQLCustomResponse =
-        test::call_and_read_body_json(&mut service, request).await;
+    let response: GraphQLCustomResponse = test::call_and_read_body_json(&service, request).await;
 
     let response_data = response.data.expect("Response doesn't contain data");
 
