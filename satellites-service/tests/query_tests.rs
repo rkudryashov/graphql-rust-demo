@@ -53,7 +53,8 @@ async fn test_get_satellites() {
         .set_json(&request_body)
         .to_request();
 
-    let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
+    let response: GraphQLCustomResponse =
+        test::call_and_read_body_json(&mut service, request).await;
 
     let response_data = response.data.expect("Response doesn't contain data");
 
@@ -106,7 +107,8 @@ async fn test_get_satellite() {
         .set_json(&request_body)
         .to_request();
 
-    let response: GraphQLCustomResponse = test::read_response_json(&mut service, request).await;
+    let response: GraphQLCustomResponse =
+        test::call_and_read_body_json(&mut service, request).await;
 
     let response_data = response.data.expect("Response doesn't contain data");
 

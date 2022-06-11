@@ -5,10 +5,10 @@ authors = ["Roman Kudryashov <rskudryashov@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-actix-web = "4.0.0-beta.11"
-serde = { version = "1.0.130", features = ["derive"] }
-jsonwebtoken = "7.2.0"
+actix-web = "4.0.1"
+serde = { version = "1.0.137", features = ["derive"] }
+jsonwebtoken = "8.1.0"
 chrono = { version = "0.4.19", features = ["serde"] }
 lazy_static = "1.4.0"
-strum = "0.23.0"
-strum_macros = "0.23.0"
+strum = "0.24.0"
+strum_macros = "0.24.0"

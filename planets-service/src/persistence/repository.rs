@@ -35,7 +35,7 @@ pub fn create(
 
     diesel::insert_into(details)
         .values(new_details_entity)
-        .execute(conn);
+        .execute(conn)?;
 
     Ok(created_planet)
 }

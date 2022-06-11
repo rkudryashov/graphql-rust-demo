@@ -5,19 +5,19 @@ authors = ["Roman Kudryashov <rskudryashov@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-async-graphql = { version = "3.0.6", features = ["chrono"] }
-async-graphql-actix-web = "3.0.6"
-actix-web = "4.0.0-beta.11"
-actix-rt = "2.4.0"
-serde = { version = "1.0.130", features = ["derive"] }
+async-graphql = { version = "4.0.2", features = ["chrono"] }
+async-graphql-actix-web = "4.0.2"
+actix-web = "4.0.1"
+actix-rt = "2.7.0"
+serde = { version = "1.0.137", features = ["derive"] }
 diesel = { version = "1.4.8", features = ["postgres", "r2d2", "chrono"] }
 diesel_migrations = "1.4.0"
 chrono = { version = "0.4.19", features = ["serde"] }
 dotenv = "0.15.0"
-strum = "0.23.0"
-strum_macros = "0.23.0"
+strum = "0.24.0"
+strum_macros = "0.24.0"
 
 [dev-dependencies]
-serde_json = "1.0.71"
+serde_json = "1.0.81"
 jsonpath_lib = "0.3.0"
-testcontainers = "0.12.0"
+testcontainers = "0.14.0"

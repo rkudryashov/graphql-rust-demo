@@ -61,7 +61,7 @@ pub fn run_migrations(pool: &PgPool) {
     embedded_migrations::run(&conn).expect("Failed to run database migrations");
     // if environment variable is set (in case of production environment), then update users' hash
     if let Ok(hash) = std::env::var("SECURED_USER_PASSWORD_HASH") {
-        repository::update_password_hash(hash, &conn);
+        repository::update_password_hash(hash, &conn).expect("Failed to update password hash");
     };
 }
 

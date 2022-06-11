@@ -1,15 +1,14 @@
-use std::collections::HashMap;
 use std::env;
 
 use dotenv::dotenv;
 use testcontainers::clients::Cli;
 use testcontainers::images::postgres::Postgres;
-use testcontainers::{Container, Docker};
+use testcontainers::{Container, RunnableImage};
 
 use auth_service::persistence::connection::{create_connection_pool, PgPool};
 use auth_service::run_migrations;
 
-pub fn setup(docker: &Cli) -> (Container<Cli, Postgres>, PgPool) {
+pub fn setup(docker: &Cli) -> (Container<Postgres>, PgPool) {
     dotenv().ok();
     let pg_container = setup_database(docker);
     let pool = create_connection_pool();
@@ -17,11 +16,9 @@ pub fn setup(docker: &Cli) -> (Container<Cli, Postgres>, PgPool) {
     (pg_container, pool)
 }
 
-fn setup_database(docker: &Cli) -> Container<Cli, Postgres> {
+fn setup_database(docker: &Cli) -> Container<Postgres> {
     let pg_container = docker.run(get_pg_image());
-    let pg_port = pg_container
-        .get_host_port(5432)
-        .expect("Can't get port for connection to Postgres");
+    let pg_port = pg_container.get_host_port_ipv4(5432);
     env::set_var(
         "DATABASE_URL",
         format!(
@@ -32,9 +29,8 @@ fn setup_database(docker: &Cli) -> Container<Cli, Postgres> {
     pg_container
 }
 
-fn get_pg_image() -> Postgres {
-    let mut env_args = HashMap::new();
-    env_args.insert("POSTGRES_DB".to_string(), "users-db".to_string());
-    env_args.insert("POSTGRES_PASSWORD".to_string(), "password".to_string());
-    Postgres::with_env_vars(Postgres::default(), env_args)
+fn get_pg_image() -> RunnableImage<Postgres> {
+    RunnableImage::from(Postgres::default())
+        .with_env_var(("POSTGRES_DB", "users-db"))
+        .with_env_var(("POSTGRES_PASSWORD", "password"))
 }

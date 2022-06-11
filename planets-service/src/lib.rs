@@ -71,7 +71,7 @@ pub fn create_schema_with_context(pool: PgPool) -> Schema<Query, Mutation, Subsc
     let arc_pool = Arc::new(pool);
     let cloned_pool = Arc::clone(&arc_pool);
     let details_data_loader =
-        DataLoader::new(DetailsLoader { pool: cloned_pool }).max_batch_size(10);
+        DataLoader::new(DetailsLoader { pool: cloned_pool }, actix_rt::spawn).max_batch_size(10);
 
     let kafka_consumer_counter = Mutex::new(0);
 

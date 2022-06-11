@@ -61,7 +61,7 @@ pub fn get_role(http_request: HttpRequest) -> Option<Role> {
 
 fn decode_token(token: &str) -> TokenData<Claims> {
     decode::<Claims>(
-        &token,
+        token,
         &DecodingKey::from_secret(JWT_SECRET_KEY.as_ref()),
         &Validation::default(),
     )

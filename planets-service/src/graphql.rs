@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 use std::env;
-use std::fmt;
-use std::fmt::Formatter;
-use std::fmt::LowerExp;
+use std::fmt::{self, Formatter, LowerExp};
 use std::iter::Iterator;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
@@ -85,7 +83,7 @@ impl Mutation {
             .expect("Can't get Kafka producer");
         let message = serde_json::to_string(&Planet::from(&created_planet_entity))
             .expect("Can't serialize a planet");
-        kafka::send_message(producer, message).await;
+        kafka::send_message(producer, &message).await;
 
         Ok(Planet::from(&created_planet_entity))
     }

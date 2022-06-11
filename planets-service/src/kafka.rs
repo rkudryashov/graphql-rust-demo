@@ -15,7 +15,7 @@ lazy_static! {
         std::env::var("KAFKA_TOPIC").expect("Can't read Kafka topic name");
 }
 
-pub(crate) fn create_producer() -> FutureProducer {
+pub fn create_producer() -> FutureProducer {
     ClientConfig::new()
         .set("bootstrap.servers", KAFKA_BROKER.as_str())
         .set("message.timeout.ms", "5000")
@@ -23,7 +23,7 @@ pub(crate) fn create_producer() -> FutureProducer {
         .expect("Producer creation failed")
 }
 
-pub(crate) fn create_consumer(group_id: String) -> StreamConsumer {
+pub fn create_consumer(group_id: String) -> StreamConsumer {
     let consumer: StreamConsumer = ClientConfig::new()
         .set("group.id", &group_id)
         .set("bootstrap.servers", KAFKA_BROKER.as_str())
@@ -41,24 +41,24 @@ pub(crate) fn create_consumer(group_id: String) -> StreamConsumer {
     consumer
 }
 
-pub(crate) fn get_kafka_consumer_group_id(kafka_consumer_counter: &Mutex<i32>) -> String {
+pub fn get_kafka_consumer_group_id(kafka_consumer_counter: &Mutex<i32>) -> String {
     let mut counter = kafka_consumer_counter.lock().expect("Can't lock counter");
     *counter += 1;
     format!("graphql-group-{}", *counter)
 }
 
 // TODO: send without caller blocking
-pub(crate) async fn send_message(producer: &FutureProducer, message: String) {
-    let send_to_kafka_result = producer
+pub async fn send_message(producer: &FutureProducer, message: &str) {
+    let delivery_status = producer
         .send(
             FutureRecord::to(&KAFKA_TOPIC)
-                .payload(&message)
+                .payload(message)
                 .key("new_planet"),
             Timeout::After(Duration::from_secs(0)),
         )
         .await;
 
-    match send_to_kafka_result {
+    match delivery_status {
         Ok(_) => println!("Message was sent"),
         Err(res) => println!("Message wasn't sent: {}", res.0),
     }

@@ -82,7 +82,7 @@ struct UserInput {
 
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Enum, Display, EnumString)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
-pub(crate) enum Role {
+pub enum Role {
     Admin,
     User,
 }
