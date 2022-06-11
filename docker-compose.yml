@@ -99,17 +99,18 @@ services:
       start_period: 10s
       retries: 3
 
-  # Apollo server
-  apollo-server:
-    image: kudryashovroman/graphql-rust:apollo-server
-    container_name: apollo-server
+  apollo-router:
+    image: ghcr.io/apollographql/router:v0.9.3
+    container_name: apollo-router
     restart: always
     depends_on:
       - planets-service
       - satellites-service
       - auth-service
-    environment:
-      NODE_ENV: docker
+    volumes:
+      - ./apollo-router/supergraph.graphql:/dist/schema/supergraph.graphql
+      - ./apollo-router/router.yaml:/dist/config/router.yaml
+    command: [ "-c", "config/router.yaml", "-s", "schema/supergraph.graphql", "--log", "info" ]
     ports:
       - 4000:4000
 

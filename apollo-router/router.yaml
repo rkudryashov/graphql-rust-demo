@@ -1,0 +1,7 @@
+server:
+  listen: 0.0.0.0:4000
+  landing_page: false
+headers:
+  all:
+    - propagate:
+        named: Authorization

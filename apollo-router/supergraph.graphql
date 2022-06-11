@@ -1,0 +1,208 @@
+
+schema
+  @link(url: "https://specs.apollo.dev/link/v1.0")
+  @link(url: "https://specs.apollo.dev/join/v0.2", for: EXECUTION)
+{
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+directive @join__field(graph: join__Graph!, requires: join__FieldSet, provides: join__FieldSet, type: String, external: Boolean, override: String, usedOverridden: Boolean) repeatable on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+
+directive @join__implements(graph: join__Graph!, interface: String!) repeatable on OBJECT | INTERFACE
+
+directive @join__type(graph: join__Graph!, key: join__FieldSet, extension: Boolean! = false, resolvable: Boolean! = true) repeatable on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | SCALAR
+
+directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+
+scalar BigDecimal
+  @join__type(graph: PLANETS_SERVICE)
+
+scalar BigInt
+  @join__type(graph: PLANETS_SERVICE)
+
+interface Details
+  @join__type(graph: PLANETS_SERVICE)
+{
+  meanRadius: BigDecimal!
+  mass: BigInt!
+}
+
+input DetailsInput
+  @join__type(graph: PLANETS_SERVICE)
+{
+  """In kilometers"""
+  meanRadius: BigDecimal!
+
+  """
+  In kilograms. A number should be represented as, for example, `6.42e+23`
+  """
+  mass: BigInt!
+
+  """In billions"""
+  population: BigDecimal
+}
+
+type InhabitedPlanetDetails implements Details
+  @join__implements(graph: PLANETS_SERVICE, interface: "Details")
+  @join__type(graph: PLANETS_SERVICE)
+{
+  meanRadius: BigDecimal!
+  mass: BigInt!
+
+  """In billions"""
+  population: BigDecimal!
+}
+
+scalar join__FieldSet
+
+enum join__Graph {
+  AUTH_SERVICE @join__graph(name: "auth-service", url: "http://auth-service:8003")
+  PLANETS_SERVICE @join__graph(name: "planets-service", url: "http://planets-service:8001")
+  SATELLITES_SERVICE @join__graph(name: "satellites-service", url: "http://satellites-service:8002")
+}
+
+enum LifeExists
+  @join__type(graph: SATELLITES_SERVICE)
+{
+  YES
+  OPEN_QUESTION
+  NO_DATA
+}
+
+scalar link__Import
+
+enum link__Purpose {
+  """
+  `SECURITY` features provide metadata necessary to securely resolve fields.
+  """
+  SECURITY
+
+  """
+  `EXECUTION` features provide metadata necessary for operation execution.
+  """
+  EXECUTION
+}
+
+type Mutation
+  @join__type(graph: AUTH_SERVICE)
+  @join__type(graph: PLANETS_SERVICE)
+{
+  createUser(user: UserInput!): User! @join__field(graph: AUTH_SERVICE)
+  signIn(input: SignInInput!): String! @join__field(graph: AUTH_SERVICE)
+  createPlanet(planet: PlanetInput!): Planet! @join__field(graph: PLANETS_SERVICE)
+}
+
+"""
+ISO 8601 calendar date without timezone.
+Format: %Y-%m-%d
+
+# Examples
+
+* `1994-11-13`
+* `2000-02-24`
+"""
+scalar NaiveDate
+  @join__type(graph: SATELLITES_SERVICE)
+
+type Planet
+  @join__type(graph: PLANETS_SERVICE, key: "id")
+  @join__type(graph: SATELLITES_SERVICE, key: "id")
+{
+  id: ID!
+  name: String! @join__field(graph: PLANETS_SERVICE)
+
+  """From an astronomical point of view"""
+  type: PlanetType! @join__field(graph: PLANETS_SERVICE)
+  isRotatingAroundSun: Boolean! @deprecated(reason: "Now it is not in doubt. Do not use this field") @join__field(graph: PLANETS_SERVICE)
+  details: Details! @join__field(graph: PLANETS_SERVICE)
+  satellites: [Satellite!]! @join__field(graph: SATELLITES_SERVICE)
+}
+
+input PlanetInput
+  @join__type(graph: PLANETS_SERVICE)
+{
+  name: String!
+  type: PlanetType!
+  details: DetailsInput!
+}
+
+enum PlanetType
+  @join__type(graph: PLANETS_SERVICE)
+{
+  TERRESTRIAL_PLANET
+  GAS_GIANT
+  ICE_GIANT
+  DWARF_PLANET
+}
+
+type Query
+  @join__type(graph: AUTH_SERVICE)
+  @join__type(graph: PLANETS_SERVICE)
+  @join__type(graph: SATELLITES_SERVICE)
+{
+  getUsers: [User!]! @join__field(graph: AUTH_SERVICE)
+  getPlanets: [Planet!]! @join__field(graph: PLANETS_SERVICE)
+  getPlanet(id: ID!): Planet @join__field(graph: PLANETS_SERVICE)
+  getSatellites: [Satellite!]! @join__field(graph: SATELLITES_SERVICE)
+  getSatellite(id: ID!): Satellite @join__field(graph: SATELLITES_SERVICE)
+}
+
+enum Role
+  @join__type(graph: AUTH_SERVICE)
+{
+  ADMIN
+  USER
+}
+
+type Satellite
+  @join__type(graph: SATELLITES_SERVICE)
+{
+  id: ID!
+  name: String!
+  lifeExists: LifeExists!
+  firstSpacecraftLandingDate: NaiveDate
+}
+
+input SignInInput
+  @join__type(graph: AUTH_SERVICE)
+{
+  username: String!
+  password: String!
+}
+
+type Subscription
+  @join__type(graph: PLANETS_SERVICE)
+{
+  latestPlanet: Planet!
+}
+
+type UninhabitedPlanetDetails implements Details
+  @join__implements(graph: PLANETS_SERVICE, interface: "Details")
+  @join__type(graph: PLANETS_SERVICE)
+{
+  meanRadius: BigDecimal!
+  mass: BigInt!
+}
+
+type User
+  @join__type(graph: AUTH_SERVICE)
+{
+  username: String!
+  firstName: String!
+  lastName: String!
+  role: Role!
+}
+
+input UserInput
+  @join__type(graph: AUTH_SERVICE)
+{
+  username: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+  role: Role!
+}

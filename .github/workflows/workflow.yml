@@ -70,24 +70,9 @@ jobs:
           tags: satellites-service
           push: ${{ github.event_name == 'push' }}
 
-  apollo-server-image:
-    needs: test-rust-services
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: docker/build-push-action@v1.1.2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: kudryashovroman/graphql-rust
-          path: ./apollo-server
-          dockerfile: ./apollo-server/Dockerfile
-          tags: apollo-server
-          push: ${{ github.event_name == 'push' }}
-
   deploy:
     if: ${{ github.event_name == 'push' }}
-    needs: [ auth-service-image, planets-service-image, satellites-service-image, apollo-server-image ]
+    needs: [ auth-service-image, planets-service-image, satellites-service-image ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

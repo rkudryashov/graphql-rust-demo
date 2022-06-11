@@ -2,26 +2,17 @@
 version: '3.8'
 services:
 
-  # Planets service
   planets-service:
     build:
       context: .
       dockerfile: ./planets-service/Dockerfile
 
-  # Satellites service
   satellites-service:
     build:
       context: .
       dockerfile: ./satellites-service/Dockerfile
 
-  # Auth service
   auth-service:
     build:
       context: .
       dockerfile: ./auth-service/Dockerfile
-
-  # Apollo server
-  apollo-server:
-    build:
-      context: ./apollo-server
-      dockerfile: Dockerfile

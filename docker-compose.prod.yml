@@ -5,6 +5,6 @@ services:
     environment:
       SECURED_USER_PASSWORD_HASH: $$argon2id$$v=19$$m=4096,t=192,p=2$$OJW5Ql4eXIkbWhsuuc74Vk56zCLq3MEuTeiFSeKbozY$$0vXHoA71GZLmhTJOwbXZtpPrWDWpH8Vv5OjUKLRuAQY
 
-  apollo-server:
+  apollo-router:
     ports:
       - 80:4000
