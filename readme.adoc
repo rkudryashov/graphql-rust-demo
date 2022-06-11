@@ -5,5 +5,3 @@ image:https://github.com/rkudryashov/graphql-rust-demo/actions/workflows/workflo
 image:https://romankudryashov.com/blog/2020/12/graphql-rust/images/architecture.png[Architecture,800]
 
 https://romankudryashov.com/blog/2020/12/graphql-rust/[Detailed description]
-
-http://demo.romankudryashov.com[Live demo]

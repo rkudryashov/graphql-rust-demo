@@ -10,7 +10,6 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # todo maybe run tests inside docker container (change Dockerfile for that). Now it is not supported by testcontainers (https://github.com/testcontainers/testcontainers-rs/issues/129)
   test-rust-services:
     runs-on: ubuntu-latest
     steps:
@@ -69,29 +68,3 @@ jobs:
           dockerfile: ./satellites-service/Dockerfile
           tags: satellites-service
           push: ${{ github.event_name == 'push' }}
-
-  deploy:
-    if: ${{ github.event_name == 'push' }}
-    needs: [ auth-service-image, planets-service-image, satellites-service-image ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Setup gcloud CLI
-        uses: google-github-actions/setup-gcloud@master
-        with:
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          project_id: ${{ secrets.GCE_PROJECT }}
-
-      - run: |-
-          gcloud config set compute/zone ${{ secrets.GCE_INSTANCE_ZONE }}
-
-      - run: |-
-          gcloud compute ssh ${{ secrets.GCE_INSTANCE }} --command 'mkdir -p ~/graphql-rust-demo'
-
-      - run: |-
-          gcloud compute scp --quiet ./docker-compose.yml ./docker-compose.prod.yml ./.env ./.github/deploy.sh ${{ secrets.GCE_INSTANCE }}:~/graphql-rust-demo/
-
-      - run: |-
-          gcloud compute ssh ${{ secrets.GCE_INSTANCE }} --command 'bash ~/graphql-rust-demo/deploy.sh'
