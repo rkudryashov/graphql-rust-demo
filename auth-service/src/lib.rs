@@ -20,6 +20,8 @@ pub mod graphql;
 pub mod persistence;
 mod utils;
 
+type AuthRole = common_utils::Role;
+
 pub fn configure_service(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::resource("/")
@@ -34,12 +36,8 @@ async fn index(
     req: GraphQLRequest,
 ) -> GraphQLResponse {
     let mut query = req.into_inner();
-
-    let maybe_role = common_utils::get_role(http_req);
-    if let Some(role) = maybe_role {
-        query = query.data(role);
-    }
-
+    let getting_role_result = common_utils::get_role(http_req);
+    query = query.data(getting_role_result);
     schema.execute(query).await.into()
 }
 

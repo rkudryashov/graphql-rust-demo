@@ -13,7 +13,7 @@ use rdkafka::{producer::FutureProducer, Message};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
-use common_utils::Role;
+use common_utils::{CustomError, Role, FORBIDDEN_MESSAGE};
 
 use crate::get_conn_from_ctx;
 use crate::kafka;
@@ -60,7 +60,7 @@ pub struct Mutation;
 #[Object]
 impl Mutation {
     #[graphql(guard = "RoleGuard::new(Role::Admin)")]
-    async fn create_planet(&self, ctx: &Context<'_>, planet: PlanetInput) -> Result<Planet, Error> {
+    async fn create_planet(&self, ctx: &Context<'_>, planet: PlanetInput) -> Result<Planet> {
         let new_planet = NewPlanetEntity {
             name: planet.name,
             type_: planet.type_.to_string(),
@@ -339,10 +339,18 @@ impl Guard for RoleGuard {
                 return Ok(());
             }
         };
-        if ctx.data_opt::<Role>() == Some(&self.role) {
-            Ok(())
-        } else {
-            Err("Forbidden".into())
+
+        let maybe_getting_role_result = ctx.data_opt::<Result<Option<Role>, CustomError>>();
+        match maybe_getting_role_result {
+            Some(getting_role_result) => {
+                let check_role_result =
+                    common_utils::check_user_role_is_allowed(getting_role_result, &self.role);
+                match check_role_result {
+                    Ok(_) => Ok(()),
+                    Err(e) => Err(Error::new(e.message)),
+                }
+            }
+            None => Err(FORBIDDEN_MESSAGE.into()),
         }
     }
 }

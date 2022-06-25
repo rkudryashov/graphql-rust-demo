@@ -1,4 +1,4 @@
-FROM rust:1.61
+FROM rust:1.62
 
 ENV CARGO_TERM_COLOR always
 RUN apt-get update && apt-get install -y libpq-dev clang
@@ -19,4 +19,3 @@ FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y libpq-dev curl
 COPY --from=0 /usr/local/cargo/bin/auth-service /usr/local/bin/auth-service
 CMD ["auth-service"]
-EXPOSE 8003

@@ -1,18 +1,13 @@
 // WARNING: THIS IS ONLY FOR DEMO! PLEASE DO MORE RESEARCH FOR PRODUCTION USE.
 use std::str::FromStr;
 
+use actix_web::http::header::ToStrError;
 use actix_web::HttpRequest;
-use chrono::{Duration, Local};
-use jsonwebtoken::{decode, DecodingKey, TokenData, Validation};
-use jsonwebtoken::{encode, EncodingKey, Header};
-use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
+use strum::ParseError;
 use strum_macros::{Display, EnumString};
 
-lazy_static! {
-    static ref JWT_SECRET_KEY: String =
-        std::env::var("JWT_SECRET_KEY").expect("Can't read JWT_SECRET_KEY");
-}
+pub const FORBIDDEN_MESSAGE: &str = "Forbidden";
 
 #[derive(Deserialize, Serialize)]
 pub struct Claims {
@@ -28,42 +23,68 @@ pub enum Role {
     User,
 }
 
-pub fn create_token(username: String, role: Role) -> String {
-    let exp_time = Local::now() + Duration::minutes(60);
+pub fn get_role(http_request: HttpRequest) -> Result<Option<Role>, CustomError> {
+    let role_header_value = http_request.headers().get("role");
 
-    let claims = Claims {
-        sub: username,
-        exp: exp_time.timestamp(),
-        role: role.to_string(),
+    match role_header_value {
+        Some(header_value) => {
+            let header_str = header_value.to_str()?;
+            Ok(Some(Role::from_str(header_str)?))
+        }
+        None => Ok(None),
+    }
+}
+
+pub fn check_user_role_is_allowed(
+    getting_role_result: &Result<Option<Role>, CustomError>,
+    allowed_role: &Role,
+) -> Result<(), CustomError> {
+    let maybe_role = match getting_role_result {
+        Ok(maybe_role) => maybe_role,
+        Err(e) => {
+            return Err(format!("Error while getting a user's role: {}", e.message)
+                .as_str()
+                .into())
+        }
     };
 
-    encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(JWT_SECRET_KEY.as_ref()),
-    )
-    .expect("Can't create token")
+    match maybe_role {
+        Some(role) => {
+            if role == allowed_role {
+                Ok(())
+            } else {
+                Err(FORBIDDEN_MESSAGE.into())
+            }
+        }
+        None => Err(FORBIDDEN_MESSAGE.into()),
+    }
 }
 
-pub fn get_role(http_request: HttpRequest) -> Option<Role> {
-    http_request
-        .headers()
-        .get("Authorization")
-        .and_then(|header_value| {
-            header_value.to_str().ok().map(|s| {
-                let jwt_start_index = "Bearer ".len();
-                let jwt = s[jwt_start_index..s.len()].to_string();
-                let token_data = decode_token(&jwt);
-                Role::from_str(&token_data.claims.role).expect("Can't parse role")
-            })
-        })
+#[derive(Debug)]
+pub struct CustomError {
+    pub message: String,
 }
 
-fn decode_token(token: &str) -> TokenData<Claims> {
-    decode::<Claims>(
-        token,
-        &DecodingKey::from_secret(JWT_SECRET_KEY.as_ref()),
-        &Validation::default(),
-    )
-    .expect("Can't decode token")
+impl From<ToStrError> for CustomError {
+    fn from(source: ToStrError) -> Self {
+        Self {
+            message: source.to_string(),
+        }
+    }
+}
+
+impl From<ParseError> for CustomError {
+    fn from(source: ParseError) -> Self {
+        Self {
+            message: source.to_string(),
+        }
+    }
+}
+
+impl From<&str> for CustomError {
+    fn from(source: &str) -> Self {
+        Self {
+            message: String::from(source),
+        }
+    }
 }

@@ -4,12 +4,12 @@ use async_graphql::*;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
-use common_utils::Role as AuthRole;
+use common_utils::{CustomError, FORBIDDEN_MESSAGE};
 
-use crate::get_conn_from_ctx;
 use crate::persistence::model::{NewUserEntity, UserEntity};
 use crate::persistence::repository;
-use crate::utils::{hash_password, verify_password};
+use crate::utils::{create_jwt_token, get_jwt_secret_key, hash_password, verify_password};
+use crate::{get_conn_from_ctx, AuthRole};
 
 pub type AppSchema = Schema<Query, Mutation, EmptySubscription>;
 
@@ -31,35 +31,30 @@ pub struct Mutation;
 #[Object]
 impl Mutation {
     #[graphql(guard = "RoleGuard::new(AuthRole::Admin)")]
-    async fn create_user(&self, ctx: &Context<'_>, user: UserInput) -> User {
+    async fn create_user(&self, ctx: &Context<'_>, user: UserInput) -> Result<User> {
         let new_user = NewUserEntity {
             username: user.username,
-            hash: hash_password(user.password.as_str()).expect("Can't get hash for password"),
+            hash: hash_password(user.password.as_str())?,
             first_name: user.first_name,
             last_name: user.last_name,
             role: user.role.to_string(),
         };
 
-        let created_user_entity =
-            repository::create(new_user, &get_conn_from_ctx(ctx)).expect("Can't create user");
+        let created_user_entity = repository::create(new_user, &get_conn_from_ctx(ctx))?;
 
-        User::from(&created_user_entity)
+        Ok(User::from(&created_user_entity))
     }
 
-    async fn sign_in(&self, ctx: &Context<'_>, input: SignInInput) -> Result<String, Error> {
-        let maybe_user = repository::get_user(&input.username, &get_conn_from_ctx(ctx)).ok();
+    async fn sign_in(&self, ctx: &Context<'_>, input: SignInInput) -> Result<String> {
+        let user = repository::get_user(&input.username, &get_conn_from_ctx(ctx))?;
 
-        if let Some(user) = maybe_user {
-            if let Ok(matching) = verify_password(&user.hash, &input.password) {
-                if matching {
-                    let role = AuthRole::from_str(user.role.as_str())
-                        .expect("Can't convert &str to AuthRole");
-                    return Ok(common_utils::create_token(user.username, role));
-                }
-            }
+        if verify_password(&user.hash, &input.password)? {
+            let role = AuthRole::from_str(user.role.as_str())?;
+            let new_token = create_jwt_token(user.username, role, &get_jwt_secret_key())?;
+            Ok(new_token)
+        } else {
+            Err("Can't authenticate a user".into())
         }
-
-        Err(Error::new("Can't authenticate a user"))
     }
 }
 
@@ -117,10 +112,17 @@ impl RoleGuard {
 #[async_trait::async_trait]
 impl Guard for RoleGuard {
     async fn check(&self, ctx: &Context<'_>) -> Result<()> {
-        if ctx.data_opt::<AuthRole>() == Some(&self.role) {
-            Ok(())
-        } else {
-            Err("Forbidden".into())
+        let maybe_getting_role_result = ctx.data_opt::<Result<Option<AuthRole>, CustomError>>();
+        match maybe_getting_role_result {
+            Some(getting_role_result) => {
+                let check_role_result =
+                    common_utils::check_user_role_is_allowed(getting_role_result, &self.role);
+                match check_role_result {
+                    Ok(_) => Ok(()),
+                    Err(e) => Err(Error::new(e.message)),
+                }
+            }
+            None => Err(FORBIDDEN_MESSAGE.into()),
         }
     }
 }

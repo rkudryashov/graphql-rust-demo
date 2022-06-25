@@ -12,7 +12,6 @@ services:
       DATABASE_URL: postgres://postgres:$PLANETS_DB_PASSWORD@planets-db/planets
       KAFKA_BROKER: kafka:9092
       KAFKA_TOPIC: $KAFKA_TOPIC
-      JWT_SECRET_KEY: $JWT_SECRET_KEY
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8001/" ]
       interval: 1m
