@@ -3,5 +3,6 @@ members = [
     "auth-service",
     "planets-service",
     "satellites-service",
+    "apollo-router",
     "common-utils",
 ]

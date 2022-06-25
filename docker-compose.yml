@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 services:
 
   # Planets service
@@ -100,17 +100,21 @@ services:
       retries: 3
 
   apollo-router:
-    image: ghcr.io/apollographql/router:v0.9.3
+    image: kudryashovroman/graphql-rust:apollo-router
     container_name: apollo-router
     restart: always
     depends_on:
       - planets-service
       - satellites-service
       - auth-service
+    environment:
+      APOLLO_ROUTER_SUPERGRAPH_PATH: /apollo-router/schema/supergraph.graphql
+      APOLLO_ROUTER_CONFIG_PATH: /apollo-router/config/router.yaml
+      APOLLO_ROUTER_LOG: debug
+      JWT_SECRET_KEY: $JWT_SECRET_KEY
     volumes:
-      - ./apollo-router/supergraph.graphql:/dist/schema/supergraph.graphql
-      - ./apollo-router/router.yaml:/dist/config/router.yaml
-    command: [ "-c", "config/router.yaml", "-s", "schema/supergraph.graphql", "--log", "info" ]
+      - ./apollo-router/supergraph.graphql:/apollo-router/schema/supergraph.graphql
+      - ./apollo-router/router.yaml:/apollo-router/config/router.yaml
     ports:
       - 4000:4000
 

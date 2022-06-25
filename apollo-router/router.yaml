@@ -1,7 +1,12 @@
 server:
   listen: 0.0.0.0:4000
   landing_page: false
+
 headers:
   all:
     - propagate:
-        named: Authorization
+        named: role
+
+plugins:
+  demo.jwt_validation:
+    secret_key: ${JWT_SECRET_KEY}
