@@ -83,6 +83,7 @@ pub fn create_schema_with_context(pool: PgPool) -> Schema<Query, Mutation, Subsc
         .data(details_data_loader)
         .data(kafka::create_producer())
         .data(kafka_consumer_counter)
+        .enable_subscription_in_federation()
         .finish()
 }
 
