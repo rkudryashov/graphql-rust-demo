@@ -2,6 +2,11 @@
 
 image:https://github.com/rkudryashov/graphql-rust-demo/actions/workflows/workflow.yml/badge.svg[CI/CD,link=https://github.com/rkudryashov/graphql-rust-demo/actions]
 
-image:https://romankudryashov.com/blog/2020/12/graphql-rust/images/architecture.png[Architecture,800]
+image:https://romankudryashov.com/blog/2022/07/apollo-router/images/architecture.png[Architecture,800]
 
-https://romankudryashov.com/blog/2020/12/graphql-rust/[Detailed description]
+Articles:
+
+* https://romankudryashov.com/blog/2020/12/graphql-rust/[GraphQL in Rust]
+* https://romankudryashov.com/blog/2022/07/apollo-router/[Building a unified GraphQL API with Apollo Router]
+
+The source code is available on https://github.com/rkudryashov/graphql-rust-demo[GitHub] and https://gitlab.com/romankudryashov/graphql-rust-demo[GitLab].
