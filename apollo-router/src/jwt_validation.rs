@@ -5,13 +5,11 @@ use std::convert::TryInto;
 use std::ops::ControlFlow;
 
 use apollo_router::{
-    graphql,
     layers::ServiceBuilderExt,
-    plugin::Plugin,
+    plugin::{Plugin, PluginInit},
     register_plugin,
     services::{RouterRequest, RouterResponse},
 };
-use futures::stream::BoxStream;
 use http::StatusCode;
 use jsonwebtoken::{decode, DecodingKey, TokenData, Validation};
 use schemars::JsonSchema;
@@ -40,21 +38,16 @@ struct JwtValidation {
 impl Plugin for JwtValidation {
     type Config = JwtValidationConfig;
 
-    async fn new(configuration: Self::Config) -> Result<Self, BoxError> {
+    async fn new(init: PluginInit<Self::Config>) -> Result<Self, BoxError> {
         Ok(JwtValidation {
-            secret_key: configuration.secret_key,
+            secret_key: init.config.secret_key,
         })
     }
 
     fn router_service(
-        &mut self,
-        service: BoxService<
-            RouterRequest,
-            RouterResponse<BoxStream<'static, graphql::Response>>,
-            BoxError,
-        >,
-    ) -> BoxService<RouterRequest, RouterResponse<BoxStream<'static, graphql::Response>>, BoxError>
-    {
+        &self,
+        service: BoxService<RouterRequest, RouterResponse, BoxError>,
+    ) -> BoxService<RouterRequest, RouterResponse, BoxError> {
         let jwt_secret_key = self.secret_key.clone();
         ServiceBuilder::new()
             .checkpoint(move |mut request: RouterRequest| {
@@ -87,7 +80,7 @@ impl Plugin for JwtValidation {
                             .context(request.context)
                             .build()?;
 
-                        Ok(ControlFlow::Break(response.boxed()))
+                        Ok(ControlFlow::Break(response))
                     }
                 }
             })
@@ -137,7 +130,10 @@ mod tests {
         apollo_router::plugin::plugins()
             .get("demo.jwt_validation")
             .expect("Plugin not found")
-            .create_instance(&serde_json::json!({"secret_key" : "example"}))
+            .create_instance(
+                &serde_json::json!({"secret_key" : "example"}),
+                Default::default(),
+            )
             .await
             .unwrap();
     }
