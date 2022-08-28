@@ -4,17 +4,16 @@
 use std::convert::TryInto;
 use std::ops::ControlFlow;
 
+use apollo_router::services::supergraph;
 use apollo_router::{
     layers::ServiceBuilderExt,
     plugin::{Plugin, PluginInit},
     register_plugin,
-    services::{RouterRequest, RouterResponse},
 };
 use http::StatusCode;
 use jsonwebtoken::{decode, DecodingKey, TokenData, Validation};
 use schemars::JsonSchema;
 use serde::Deserialize;
-use tower::util::BoxService;
 use tower::{BoxError, ServiceBuilder, ServiceExt};
 use tracing::debug;
 
@@ -44,63 +43,65 @@ impl Plugin for JwtValidation {
         })
     }
 
-    fn router_service(
-        &self,
-        service: BoxService<RouterRequest, RouterResponse, BoxError>,
-    ) -> BoxService<RouterRequest, RouterResponse, BoxError> {
+    fn supergraph_service(&self, service: supergraph::BoxService) -> supergraph::BoxService {
         let jwt_secret_key = self.secret_key.clone();
+
+        let handler = move |request: supergraph::Request| {
+            let headers = request.originating_request.headers();
+            let maybe_auth_header_value = headers.get(AUTHORIZATION_HEADER_NAME);
+
+            let jwt = match maybe_auth_header_value {
+                Some(auth_header_value) => {
+                    let auth_header_value_str = auth_header_value.to_str()?;
+                    get_jwt_from_header_value(auth_header_value_str).to_string()
+                }
+                None => return Ok(ControlFlow::Continue(request)),
+            };
+
+            match decode_jwt(&jwt, &jwt_secret_key) {
+                Ok(token_data) => {
+                    let role = token_data.claims.role;
+                    debug!("User role is: {}", &role);
+                    request.context.insert(ROLE_CONTEXT_PARAM_NAME, role)?;
+
+                    Ok(ControlFlow::Continue(request))
+                }
+                Err(e) => {
+                    let response = supergraph::Response::error_builder()
+                        .error(apollo_router::graphql::Error {
+                            message: format!("JWT is invalid: {}", e),
+                            ..Default::default()
+                        })
+                        .status_code(StatusCode::BAD_REQUEST)
+                        .context(request.context)
+                        .build()?;
+
+                    Ok(ControlFlow::Break(response))
+                }
+            }
+        };
+
+        let request_mapper = |mut request: supergraph::Request| {
+            let maybe_user_role: Option<String> = request
+                .context
+                .get(ROLE_CONTEXT_PARAM_NAME)
+                .expect("This should not return an error");
+
+            if let Some(user_role) = maybe_user_role {
+                request.originating_request.headers_mut().insert(
+                    ROLE_HEADER_NAME,
+                    user_role
+                        .try_into()
+                        .expect("Role should always be converted to HeaderValue"),
+                );
+            }
+
+            request
+        };
+
         ServiceBuilder::new()
-            .checkpoint(move |mut request: RouterRequest| {
-                let headers = request.originating_request.headers_mut();
-                let maybe_auth_header_value = headers.get(AUTHORIZATION_HEADER_NAME);
-
-                let jwt = match maybe_auth_header_value {
-                    Some(auth_header_value) => {
-                        let auth_header_value_str = auth_header_value.to_str()?;
-                        get_jwt_from_header_value(auth_header_value_str).to_string()
-                    }
-                    None => return Ok(ControlFlow::Continue(request)),
-                };
-
-                match decode_jwt(&jwt, &jwt_secret_key) {
-                    Ok(token_data) => {
-                        let role = token_data.claims.role;
-                        debug!("User role is: {}", &role);
-                        request.context.insert(ROLE_CONTEXT_PARAM_NAME, role)?;
-
-                        Ok(ControlFlow::Continue(request))
-                    }
-                    Err(e) => {
-                        let response = RouterResponse::error_builder()
-                            .error(apollo_router::graphql::Error {
-                                message: format!("JWT is invalid: {}", e),
-                                ..Default::default()
-                            })
-                            .status_code(StatusCode::BAD_REQUEST)
-                            .context(request.context)
-                            .build()?;
-
-                        Ok(ControlFlow::Break(response))
-                    }
-                }
-            })
-            .map_request(|mut request: RouterRequest| {
-                let maybe_user_role: Option<String> = request
-                    .context
-                    .get(ROLE_CONTEXT_PARAM_NAME)
-                    .expect("This should not return an error");
-
-                if let Some(user_role) = maybe_user_role {
-                    request.originating_request.headers_mut().insert(
-                        ROLE_HEADER_NAME,
-                        user_role
-                            .try_into()
-                            .expect("Role should always be converted to HeaderValue"),
-                    );
-                }
-
-                request
-            })
+            .checkpoint(handler)
+            .map_request(request_mapper)
             .service(service)
             .boxed()
     }
@@ -127,13 +128,18 @@ mod tests {
 
     #[tokio::test]
     async fn plugin_registered() {
-        apollo_router::plugin::plugins()
-            .get("demo.jwt_validation")
-            .expect("Plugin not found")
-            .create_instance(
-                &serde_json::json!({"secret_key" : "example"}),
-                Default::default(),
-            )
+        let config = serde_json::json!({
+            "plugins": {
+                "demo.jwt_validation": {
+                    "secret_key": "example"
+                }
+            }
+        });
+
+        apollo_router::TestHarness::builder()
+            .configuration_json(config)
+            .unwrap()
+            .build()
             .await
             .unwrap();
     }

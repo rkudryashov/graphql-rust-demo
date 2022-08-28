@@ -6,23 +6,23 @@ edition = "2021"
 
 [dependencies]
 common-utils = { path = "../common-utils" }
-async-graphql = "4.0.6"
-async-graphql-actix-web = "4.0.6"
+async-graphql = "4.0.11"
+async-graphql-actix-web = "4.0.11"
 actix-web = "4.1.0"
 actix-rt = "2.7.0"
-serde = { version = "1.0.142", features = ["derive"] }
+serde = { version = "1.0.144", features = ["derive"] }
 diesel = { version = "1.4.8", features = ["postgres", "r2d2"] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15.0"
 jsonwebtoken = "8.1.1"
 argonautica = "0.2.0"
-chrono = "0.4.20"
+chrono = "0.4.22"
 lazy_static = "1.4.0"
 strum = "0.24.1"
-strum_macros = "0.24.2"
+strum_macros = "0.24.3"
 
 [dev-dependencies]
-serde_json = "1.0.83"
+serde_json = "1.0.85"
 jsonpath_lib = "0.3.0"
 base64 = "0.13.0"
 testcontainers = "0.14.0"

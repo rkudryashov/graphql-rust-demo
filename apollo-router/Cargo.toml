@@ -6,14 +6,14 @@ edition = "2021"
 
 [dependencies]
 common-utils = { path = "../common-utils" }
-apollo-router = { git = "https://github.com/apollographql/router", tag = "v0.14.0" }
-anyhow = "1.0.59"
+apollo-router = { git = "https://github.com/apollographql/router", tag = "v0.16.0" }
+anyhow = "1.0.62"
 async-trait = "0.1.57"
-futures = "0.3.21"
+futures = "0.3.23"
 schemars = "0.8.10"
 jsonwebtoken = "8.1.1"
-serde = "1.0.142"
-serde_json = "1.0.83"
+serde = "1.0.144"
+serde_json = "1.0.85"
 tokio = { version = "1.20.1", features = ["full"] }
 tower = { version = "0.4.13", features = ["full"] }
 tracing = "0.1.34"
