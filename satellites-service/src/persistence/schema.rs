@@ -1,4 +1,4 @@
-table! {
+diesel::table! {
     satellites (id) {
         id -> Int4,
         name -> Varchar,

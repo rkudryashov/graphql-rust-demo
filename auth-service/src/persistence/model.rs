@@ -1,7 +1,9 @@
+use diesel::prelude::*;
+
 use crate::persistence::schema::users;
 
 #[derive(Identifiable, Queryable)]
-#[table_name = "users"]
+#[diesel(table_name = users)]
 pub struct UserEntity {
     pub id: i32,
     pub username: String,
@@ -12,7 +14,7 @@ pub struct UserEntity {
 }
 
 #[derive(Insertable)]
-#[table_name = "users"]
+#[diesel(table_name = users)]
 pub struct NewUserEntity {
     pub username: String,
     pub hash: String,

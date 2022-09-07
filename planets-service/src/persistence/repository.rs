@@ -1,29 +1,28 @@
-use diesel::dsl::any;
 use diesel::prelude::*;
 
 use crate::persistence::model::{DetailsEntity, NewDetailsEntity, NewPlanetEntity, PlanetEntity};
 use crate::persistence::schema::{details, planets};
 
-pub fn get_all(conn: &PgConnection) -> QueryResult<Vec<PlanetEntity>> {
+pub fn get_all(conn: &mut PgConnection) -> QueryResult<Vec<PlanetEntity>> {
     use crate::persistence::schema::planets::dsl::*;
 
     planets.load(conn)
 }
 
-pub fn get(id: i32, conn: &PgConnection) -> QueryResult<PlanetEntity> {
+pub fn get(id: i32, conn: &mut PgConnection) -> QueryResult<PlanetEntity> {
     planets::table.find(id).get_result(conn)
 }
 
-pub fn get_details(planet_ids: &[i32], conn: &PgConnection) -> QueryResult<Vec<DetailsEntity>> {
+pub fn get_details(planet_ids: &[i32], conn: &mut PgConnection) -> QueryResult<Vec<DetailsEntity>> {
     details::table
-        .filter(details::planet_id.eq(any(planet_ids)))
+        .filter(details::planet_id.eq_any(planet_ids))
         .load::<DetailsEntity>(conn)
 }
 
 pub fn create(
     new_planet: NewPlanetEntity,
     mut new_details_entity: NewDetailsEntity,
-    conn: &PgConnection,
+    conn: &mut PgConnection,
 ) -> QueryResult<PlanetEntity> {
     use crate::persistence::schema::{details::dsl::*, planets::dsl::*};
 

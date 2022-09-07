@@ -1,22 +1,19 @@
-#[macro_use]
-extern crate diesel;
-#[macro_use]
-extern crate diesel_migrations;
-
 use actix_web::{web, HttpResponse};
 use async_graphql::http::{playground_source, GraphQLPlaygroundConfig};
 use async_graphql::{Context, EmptyMutation, EmptySubscription, Schema};
 use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
 use diesel::r2d2::{ConnectionManager, PooledConnection};
 use diesel::PgConnection;
+use diesel_migrations::MigrationHarness;
 
 use crate::graphql::{AppSchema, Query};
 use crate::persistence::connection::PgPool;
 
-embed_migrations!();
-
 pub mod graphql;
 pub mod persistence;
+
+const MIGRATIONS: diesel_migrations::EmbeddedMigrations =
+    diesel_migrations::embed_migrations!("./migrations");
 
 pub fn configure_service(cfg: &mut web::ServiceConfig) {
     cfg.service(
@@ -42,14 +39,12 @@ pub fn create_schema_with_context(pool: PgPool) -> Schema<Query, EmptyMutation, 
         .finish()
 }
 
-pub fn run_migrations(pool: &PgPool) {
-    let conn = pool.get().expect("Can't get DB connection");
-    embedded_migrations::run(&conn).expect("Failed to run database migrations");
+pub fn run_migrations(conn: &mut PooledConnection<ConnectionManager<PgConnection>>) {
+    conn.run_pending_migrations(MIGRATIONS)
+        .expect("Failed to run database migrations");
 }
 
-type Conn = PooledConnection<ConnectionManager<PgConnection>>;
-
-pub fn get_conn_from_ctx(ctx: &Context<'_>) -> Conn {
+pub fn get_conn_from_ctx(ctx: &Context<'_>) -> PooledConnection<ConnectionManager<PgConnection>> {
     ctx.data::<PgPool>()
         .expect("Can't get pool")
         .get()

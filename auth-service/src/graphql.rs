@@ -18,7 +18,7 @@ pub struct Query;
 #[Object]
 impl Query {
     async fn get_users(&self, ctx: &Context<'_>) -> Vec<User> {
-        repository::get_all(&get_conn_from_ctx(ctx))
+        repository::get_all(&mut get_conn_from_ctx(ctx))
             .expect("Can't get planets")
             .iter()
             .map(User::from)
@@ -40,13 +40,13 @@ impl Mutation {
             role: user.role.to_string(),
         };
 
-        let created_user_entity = repository::create(new_user, &get_conn_from_ctx(ctx))?;
+        let created_user_entity = repository::create(new_user, &mut get_conn_from_ctx(ctx))?;
 
         Ok(User::from(&created_user_entity))
     }
 
     async fn sign_in(&self, ctx: &Context<'_>, input: SignInInput) -> Result<String> {
-        let user = repository::get_user(&input.username, &get_conn_from_ctx(ctx))?;
+        let user = repository::get_user(&input.username, &mut get_conn_from_ctx(ctx))?;
 
         if verify_password(&user.hash, &input.password)? {
             let role = AuthRole::from_str(user.role.as_str())?;

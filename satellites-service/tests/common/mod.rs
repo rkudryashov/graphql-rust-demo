@@ -12,7 +12,7 @@ pub fn setup(docker: &Cli) -> (Container<Postgres>, PgPool) {
     dotenv().ok();
     let pg_container = setup_database(docker);
     let pool = create_connection_pool();
-    run_migrations(&pool);
+    run_migrations(&mut pool.get().expect("Can't get DB connection"));
     (pg_container, pool)
 }
 

@@ -28,7 +28,7 @@ pub struct Query;
 #[Object]
 impl Query {
     async fn get_planets(&self, ctx: &Context<'_>) -> Vec<Planet> {
-        repository::get_all(&get_conn_from_ctx(ctx))
+        repository::get_all(&mut get_conn_from_ctx(ctx))
             .expect("Can't get planets")
             .iter()
             .map(Planet::from)
@@ -50,7 +50,7 @@ fn find_planet_by_id_internal(ctx: &Context<'_>, id: ID) -> Option<Planet> {
         .to_string()
         .parse::<i32>()
         .expect("Can't get id from String");
-    repository::get(id, &get_conn_from_ctx(ctx))
+    repository::get(id, &mut get_conn_from_ctx(ctx))
         .ok()
         .map(|p| Planet::from(&p))
 }
@@ -76,7 +76,7 @@ impl Mutation {
         };
 
         let created_planet_entity =
-            repository::create(new_planet, new_planet_details, &get_conn_from_ctx(ctx))?;
+            repository::create(new_planet, new_planet_details, &mut get_conn_from_ctx(ctx))?;
 
         let producer = ctx
             .data::<FutureProducer>()
@@ -309,8 +309,8 @@ impl Loader<i32> for DetailsLoader {
     type Error = Error;
 
     async fn load(&self, keys: &[i32]) -> Result<HashMap<i32, Self::Value>, Self::Error> {
-        let conn = self.pool.get().expect("Can't get DB connection");
-        let details = repository::get_details(keys, &conn).expect("Can't get planets' details");
+        let mut conn = self.pool.get()?;
+        let details = repository::get_details(keys, &mut conn)?;
 
         Ok(details
             .iter()

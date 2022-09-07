@@ -1,4 +1,4 @@
-table! {
+diesel::table! {
     details (id) {
         id -> Int4,
         mean_radius -> Numeric,
@@ -8,7 +8,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     planets (id) {
         id -> Int4,
         name -> Varchar,
@@ -17,6 +17,6 @@ table! {
     }
 }
 
-joinable!(details -> planets (planet_id));
+diesel::joinable!(details -> planets (planet_id));
 
-allow_tables_to_appear_in_same_query!(details, planets,);
+diesel::allow_tables_to_appear_in_same_query!(details, planets,);

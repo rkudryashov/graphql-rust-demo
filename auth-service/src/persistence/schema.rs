@@ -1,4 +1,4 @@
-table! {
+diesel::table! {
     users (id) {
         id -> Int4,
         username -> Varchar,

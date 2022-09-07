@@ -4,11 +4,12 @@
 use std::convert::TryInto;
 use std::ops::ControlFlow;
 
-use apollo_router::services::supergraph;
 use apollo_router::{
+    graphql,
     layers::ServiceBuilderExt,
     plugin::{Plugin, PluginInit},
     register_plugin,
+    services::supergraph,
 };
 use http::StatusCode;
 use jsonwebtoken::{decode, DecodingKey, TokenData, Validation};
@@ -47,7 +48,7 @@ impl Plugin for JwtValidation {
         let jwt_secret_key = self.secret_key.clone();
 
         let handler = move |request: supergraph::Request| {
-            let headers = request.originating_request.headers();
+            let headers = request.supergraph_request.headers();
             let maybe_auth_header_value = headers.get(AUTHORIZATION_HEADER_NAME);
 
             let jwt = match maybe_auth_header_value {
@@ -67,11 +68,9 @@ impl Plugin for JwtValidation {
                     Ok(ControlFlow::Continue(request))
                 }
                 Err(e) => {
+                    let error_message = format!("JWT is invalid: {}", e);
                     let response = supergraph::Response::error_builder()
-                        .error(apollo_router::graphql::Error {
-                            message: format!("JWT is invalid: {}", e),
-                            ..Default::default()
-                        })
+                        .error(graphql::Error::builder().message(error_message).build())
                         .status_code(StatusCode::BAD_REQUEST)
                         .context(request.context)
                         .build()?;
@@ -88,7 +87,7 @@ impl Plugin for JwtValidation {
                 .expect("This should not return an error");
 
             if let Some(user_role) = maybe_user_role {
-                request.originating_request.headers_mut().insert(
+                request.supergraph_request.headers_mut().insert(
                     ROLE_HEADER_NAME,
                     user_role
                         .try_into()

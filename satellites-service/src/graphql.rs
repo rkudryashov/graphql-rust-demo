@@ -15,7 +15,7 @@ pub struct Query;
 #[Object]
 impl Query {
     async fn get_satellites(&self, ctx: &Context<'_>) -> Vec<Satellite> {
-        repository::get_all(&get_conn_from_ctx(ctx))
+        repository::get_all(&mut get_conn_from_ctx(ctx))
             .expect("Can't get satellites")
             .iter()
             .map(Satellite::from)
@@ -27,7 +27,7 @@ impl Query {
             .to_string()
             .parse::<i32>()
             .expect("Can't get id from String");
-        repository::get(id, &get_conn_from_ctx(ctx))
+        repository::get(id, &mut get_conn_from_ctx(ctx))
             .ok()
             .map(|e| Satellite::from(&e))
     }
@@ -71,7 +71,7 @@ impl Planet {
             .to_string()
             .parse::<i32>()
             .expect("Can't get id from String");
-        repository::get_by_planet_id(id, &get_conn_from_ctx(ctx))
+        repository::get_by_planet_id(id, &mut get_conn_from_ctx(ctx))
             .expect("Can't get satellites of planet")
             .iter()
             .map(Satellite::from)
