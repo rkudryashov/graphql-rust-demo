@@ -8,7 +8,7 @@ edition = "2021"
 common-utils = { path = "../common-utils" }
 async-graphql = "4.0.13"
 async-graphql-actix-web = "4.0.13"
-actix-web = "4.2.0"
+actix-web = "4.2.1"
 actix-rt = "2.7.0"
 serde = { version = "1.0.144", features = ["derive"] }
 diesel = { version = "2.0.0", features = ["postgres", "r2d2"] }

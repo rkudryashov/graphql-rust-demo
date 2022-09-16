@@ -1,12 +1,19 @@
-server:
+supergraph:
   listen: 0.0.0.0:4000
-  landing_page: false
+  introspection: true
+
+sandbox:
+  enabled: true
+
+homepage:
+  enabled: false
 
 headers:
   all:
-    - propagate:
-        named: role
+    request:
+      - propagate:
+          named: role
 
 plugins:
   demo.jwt_validation:
-    secret_key: ${JWT_SECRET_KEY}
+    secret_key: ${env.JWT_SECRET_KEY}

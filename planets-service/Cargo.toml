@@ -8,7 +8,7 @@ edition = "2021"
 common-utils = { path = "../common-utils" }
 async-graphql = { version = "4.0.13", features = ["dataloader"] }
 async-graphql-actix-web = "4.0.13"
-actix-web = "4.2.0"
+actix-web = "4.2.1"
 actix-rt = "2.7.0"
 actix-web-actors = "4.1.0"
 futures = "0.3.24"
