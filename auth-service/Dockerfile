@@ -1,21 +1,21 @@
-FROM rust:1.63
+FROM rust:1.63 as builder
 
 ENV CARGO_TERM_COLOR always
 RUN apt-get update && apt-get install -y libpq-dev clang
 
+WORKDIR /usr/src/docker-build
 # create empty project for caching dependencies
-RUN USER=root cargo new --bin /auth-service/docker-build
-COPY /common-utils/ ./auth-service/common-utils/
-WORKDIR /auth-service/docker-build
-COPY /Cargo.lock ./
-COPY /auth-service/Cargo.toml ./
+RUN USER=root cargo init
+COPY common-utils ../common-utils
+COPY Cargo.lock auth-service/Cargo.toml ./
 # cache dependencies
 RUN cargo install --path . --locked
 
-COPY /auth-service/ ./
+COPY auth-service/ ./
+RUN touch src/main.rs
 RUN cargo install --path . --locked
 
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y libpq-dev curl
-COPY --from=0 /usr/local/cargo/bin/auth-service /usr/local/bin/auth-service
+COPY --from=builder /usr/local/cargo/bin/auth-service /bin/
 CMD ["auth-service"]
