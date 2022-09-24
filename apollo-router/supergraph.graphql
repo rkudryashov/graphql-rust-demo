@@ -1,4 +1,3 @@
-
 schema
   @link(url: "https://specs.apollo.dev/link/v1.0")
   @link(url: "https://specs.apollo.dev/join/v0.2", for: EXECUTION)
@@ -117,7 +116,7 @@ type Planet
 
   """From an astronomical point of view"""
   type: PlanetType! @join__field(graph: PLANETS_SERVICE)
-  isRotatingAroundSun: Boolean! @deprecated(reason: "Now it is not in doubt. Do not use this field") @join__field(graph: PLANETS_SERVICE)
+  isRotatingAroundSun: Boolean! @join__field(graph: PLANETS_SERVICE) @deprecated(reason: "Now it is not in doubt. Do not use this field")
   details: Details! @join__field(graph: PLANETS_SERVICE)
   satellites: [Satellite!]! @join__field(graph: SATELLITES_SERVICE)
 }
