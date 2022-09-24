@@ -6,6 +6,6 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4.2.1"
-serde = { version = "1.0.144", features = ["derive"] }
+serde = { version = "1.0.145", features = ["derive"] }
 strum = "0.24.1"
 strum_macros = "0.24.3"

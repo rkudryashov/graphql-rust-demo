@@ -6,13 +6,13 @@ edition = "2021"
 
 [dependencies]
 common-utils = { path = "../common-utils" }
-apollo-router = "1.0.0-rc.1"
+apollo-router = "1.0.0"
 anyhow = "1.0.65"
 async-trait = "0.1.57"
 futures = "0.3.24"
 schemars = "0.8.10"
 jsonwebtoken = "8.1.1"
-serde = "1.0.144"
+serde = "1.0.145"
 serde_json = "1.0.85"
 tokio = { version = "1.21.1", features = ["full"] }
 tower = { version = "0.4.13", features = ["full"] }

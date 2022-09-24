@@ -1,4 +1,4 @@
-FROM rust:1.63 as builder
+FROM rust:1.64 as builder
 
 ENV CARGO_TERM_COLOR always
 RUN rustup component add rustfmt
