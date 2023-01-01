@@ -751,7 +751,7 @@ dependencies = [
  "argonautica",
  "async-graphql",
  "async-graphql-actix-web",
- "base64 0.20.0",
+ "base64 0.13.1",
  "chrono",
  "common-utils",
  "diesel",

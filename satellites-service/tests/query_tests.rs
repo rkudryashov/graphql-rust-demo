@@ -63,10 +63,12 @@ async fn test_get_satellites() {
     }
 
     let moon_json = get_satellite_as_json(&response_data, 0);
+    let first_spacecraft_landing_date =
+        NaiveDate::from_ymd_opt(1959, 9, 13).expect("A date should be created");
     check_satellite(
         moon_json,
         "Moon",
-        Some(NaiveDate::from_ymd(1959, 9, 13)),
+        Some(first_spacecraft_landing_date),
         OpenQuestion,
     );
 
@@ -112,10 +114,12 @@ async fn test_get_satellite() {
 
     let moon_json = jsonpath::select(&response_data, "$.getSatellite")
         .expect("Can't get satellite by JSON path")[0];
+    let first_spacecraft_landing_date =
+        NaiveDate::from_ymd_opt(1959, 9, 13).expect("A date should be created");
     check_satellite(
         moon_json,
         "Moon",
-        Some(NaiveDate::from_ymd(1959, 9, 13)),
+        Some(first_spacecraft_landing_date),
         OpenQuestion,
     );
 }
