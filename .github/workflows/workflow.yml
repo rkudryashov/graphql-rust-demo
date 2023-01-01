@@ -13,6 +13,8 @@ jobs:
   test-rust-services:
     runs-on: ubuntu-latest
     steps:
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup
