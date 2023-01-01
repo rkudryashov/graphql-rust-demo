@@ -10,7 +10,9 @@ use apollo_router::{
     plugin::{Plugin, PluginInit},
     register_plugin,
     services::supergraph,
+    Context,
 };
+use http::header::AUTHORIZATION;
 use http::StatusCode;
 use jsonwebtoken::{decode, DecodingKey, TokenData, Validation};
 use schemars::JsonSchema;
@@ -21,7 +23,6 @@ use tracing::debug;
 use common_utils::Claims;
 
 const ROLE_CONTEXT_PARAM_NAME: &str = "user_role";
-const AUTHORIZATION_HEADER_NAME: &str = "authorization";
 const ROLE_HEADER_NAME: &str = "role";
 
 #[derive(Deserialize, JsonSchema)]
@@ -47,35 +48,90 @@ impl Plugin for JwtValidation {
     fn supergraph_service(&self, service: supergraph::BoxService) -> supergraph::BoxService {
         let jwt_secret_key = self.secret_key.clone();
 
-        let handler = move |request: supergraph::Request| {
-            let headers = request.supergraph_request.headers();
-            let maybe_auth_header_value = headers.get(AUTHORIZATION_HEADER_NAME);
+        fn failure_message(
+            context: Context,
+            message: String,
+            status: StatusCode,
+        ) -> Result<ControlFlow<supergraph::Response, supergraph::Request>, BoxError> {
+            let response = supergraph::Response::error_builder()
+                .error(
+                    graphql::Error::builder()
+                        .message(message)
+                        .extension_code("AUTH_ERROR")
+                        .build(),
+                )
+                .status_code(status)
+                .context(context)
+                .build()?;
+            Ok(ControlFlow::Break(response))
+        }
 
-            let jwt = match maybe_auth_header_value {
-                Some(auth_header_value) => {
-                    let auth_header_value_str = auth_header_value.to_str()?;
-                    get_jwt_from_header_value(auth_header_value_str).to_string()
+        let handler = move |request: supergraph::Request| {
+            let auth_header_value_result =
+                match request.supergraph_request.headers().get(AUTHORIZATION) {
+                    Some(auth_header_value) => auth_header_value.to_str(),
+                    // in this project, I decided to allow the passage of requests without the AUTHORIZATION header. then each subgraph performs authorization based on the ROLE header
+                    // your case may be different. be careful
+                    None => return Ok(ControlFlow::Continue(request)),
+                };
+
+            let auth_header_value_untrimmed = match auth_header_value_result {
+                Ok(auth_header_value) => auth_header_value,
+                Err(_not_a_string_error) => {
+                    return failure_message(
+                        request.context,
+                        "AUTHORIZATION' header is not convertible to a string".to_string(),
+                        StatusCode::BAD_REQUEST,
+                    )
                 }
-                None => return Ok(ControlFlow::Continue(request)),
             };
+
+            let auth_header_value = auth_header_value_untrimmed.trim();
+
+            if !auth_header_value
+                .to_uppercase()
+                .as_str()
+                .starts_with("BEARER ")
+            {
+                return failure_message(
+                    request.context,
+                    format!("'{auth_header_value_untrimmed}' is not correctly formatted"),
+                    StatusCode::BAD_REQUEST,
+                );
+            }
+
+            let auth_header_value_parts: Vec<&str> = auth_header_value.splitn(2, ' ').collect();
+            if auth_header_value_parts.len() != 2 {
+                return failure_message(
+                    request.context,
+                    format!("'{auth_header_value}' is not correctly formatted"),
+                    StatusCode::BAD_REQUEST,
+                );
+            }
+
+            let jwt = auth_header_value_parts[1].trim_end();
 
             match decode_jwt(&jwt, &jwt_secret_key) {
                 Ok(token_data) => {
                     let role = token_data.claims.role;
                     debug!("User role is: {}", &role);
-                    request.context.insert(ROLE_CONTEXT_PARAM_NAME, role)?;
+                    if let Err(error) = request.context.insert(ROLE_CONTEXT_PARAM_NAME, role) {
+                        return failure_message(
+                            request.context,
+                            format!("Failed to pass a user's role: {}", error),
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                        );
+                    }
 
                     Ok(ControlFlow::Continue(request))
                 }
                 Err(e) => {
                     let error_message = format!("JWT is invalid: {}", e);
-                    let response = supergraph::Response::error_builder()
-                        .error(graphql::Error::builder().message(error_message).build())
-                        .status_code(StatusCode::BAD_REQUEST)
-                        .context(request.context)
-                        .build()?;
-
-                    Ok(ControlFlow::Break(response))
+                    return failure_message(
+                        request.context,
+                        error_message,
+                        StatusCode::BAD_REQUEST,
+                    );
                 }
             }
         };
@@ -106,11 +162,6 @@ impl Plugin for JwtValidation {
     }
 }
 
-fn get_jwt_from_header_value(auth_header_value: &str) -> &str {
-    let jwt_start_index = "Bearer ".len();
-    &auth_header_value[jwt_start_index..auth_header_value.len()]
-}
-
 // this also includes JWT validation
 fn decode_jwt(jwt: &str, secret_key: &str) -> jsonwebtoken::errors::Result<TokenData<Claims>> {
     decode::<Claims>(
@@ -138,7 +189,7 @@ mod tests {
         apollo_router::TestHarness::builder()
             .configuration_json(config)
             .unwrap()
-            .build()
+            .build_supergraph()
             .await
             .unwrap();
     }

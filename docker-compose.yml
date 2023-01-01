@@ -21,14 +21,14 @@ services:
     ports:
       - 8001:8001
   planets-db:
-    image: postgres:13.2-alpine
+    image: postgres:15.1-alpine
     container_name: planets-db
     restart: always
     environment:
       POSTGRES_DB: planets
       POSTGRES_PASSWORD: $PLANETS_DB_PASSWORD
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: "pg_isready -U postgres -d planets"
       interval: 1m
       timeout: 5s
       start_period: 10s
@@ -52,14 +52,14 @@ services:
     ports:
       - 8002:8002
   satellites-db:
-    image: postgres:13.2-alpine
+    image: postgres:15.1-alpine
     container_name: satellites-db
     restart: always
     environment:
       POSTGRES_DB: satellites
       POSTGRES_PASSWORD: $SATELLITES_DB_PASSWORD
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: "pg_isready -U postgres -d satellites"
       interval: 1m
       timeout: 5s
       start_period: 10s
@@ -85,14 +85,14 @@ services:
     ports:
       - 8003:8003
   users-db:
-    image: postgres:13.2-alpine
+    image: postgres:15.1-alpine
     container_name: users-db
     restart: always
     environment:
       POSTGRES_DB: users
       POSTGRES_PASSWORD: $USERS_DB_PASSWORD
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: "pg_isready -U postgres -d users"
       interval: 1m
       timeout: 5s
       start_period: 10s
