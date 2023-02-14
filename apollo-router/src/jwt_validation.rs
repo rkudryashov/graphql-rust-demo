@@ -1,7 +1,6 @@
 //! DISCLAIMER:
 //! This is an example for only illustrative purposes. It demonstrates how to perform JWT verification via a router plugin
 
-use std::convert::TryInto;
 use std::ops::ControlFlow;
 
 use apollo_router::{
@@ -23,7 +22,6 @@ use tracing::debug;
 use common_utils::Claims;
 
 const ROLE_CONTEXT_PARAM_NAME: &str = "user_role";
-const ROLE_HEADER_NAME: &str = "role";
 
 #[derive(Deserialize, JsonSchema)]
 struct JwtValidationConfig {
@@ -80,7 +78,7 @@ impl Plugin for JwtValidation {
                 Err(_not_a_string_error) => {
                     return failure_message(
                         request.context,
-                        "AUTHORIZATION' header is not convertible to a string".to_string(),
+                        "'AUTHORIZATION' header is not convertible to a string".to_string(),
                         StatusCode::BAD_REQUEST,
                     )
                 }
@@ -136,27 +134,8 @@ impl Plugin for JwtValidation {
             }
         };
 
-        let request_mapper = |mut request: supergraph::Request| {
-            let maybe_user_role: Option<String> = request
-                .context
-                .get(ROLE_CONTEXT_PARAM_NAME)
-                .expect("This should not return an error");
-
-            if let Some(user_role) = maybe_user_role {
-                request.supergraph_request.headers_mut().insert(
-                    ROLE_HEADER_NAME,
-                    user_role
-                        .try_into()
-                        .expect("Role should always be converted to HeaderValue"),
-                );
-            }
-
-            request
-        };
-
         ServiceBuilder::new()
             .checkpoint(handler)
-            .map_request(request_mapper)
             .service(service)
             .boxed()
     }

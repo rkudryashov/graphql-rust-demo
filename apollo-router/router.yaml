@@ -11,8 +11,11 @@ homepage:
 headers:
   all:
     request:
-      - propagate:
-          named: role
+      - remove:
+          named: .*
+      - insert:
+          name: "role"
+          from_context: "user_role"
 
 plugins:
   demo.jwt_validation:
