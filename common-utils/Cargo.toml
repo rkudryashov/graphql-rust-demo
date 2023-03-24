@@ -5,7 +5,7 @@ authors = ["Roman Kudryashov <rskudryashov@gmail.com>"]
 edition = "2021"
 
 [dependencies]
-actix-web = "4.2.1"
-serde = { version = "1.0.152", features = ["derive"] }
+actix-web = "4.3.1"
+serde = { version = "1.0.158", features = ["derive"] }
 strum = "0.24.1"
 strum_macros = "0.24.3"
