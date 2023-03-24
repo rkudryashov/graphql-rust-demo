@@ -1,6 +1,7 @@
 use std::str;
 
 use actix_web::{test, web, App};
+use base64::{alphabet, engine, Engine};
 use jsonpath_lib as jsonpath;
 use serde::{Deserialize, Serialize};
 use testcontainers::clients::Cli;
@@ -53,14 +54,21 @@ async fn test_sign_in() {
     let first_dot_index = jwt.find('.').expect("Incorrect JWT");
     let last_dot_index = jwt.rfind('.').expect("Incorrect JWT");
 
+    let base64_engine =
+        engine::GeneralPurpose::new(&alphabet::STANDARD, engine::general_purpose::NO_PAD);
+
     let encoded_header = &jwt[0..first_dot_index];
-    let decoded_header = base64::decode(encoded_header).expect("Can't decode Base64");
+    let decoded_header = base64_engine
+        .decode(encoded_header)
+        .expect("Can't decode Base64");
     let decoded_header_string = str::from_utf8(&decoded_header).expect("Can't convert to str");
     let expected_header = "{\"typ\":\"JWT\",\"alg\":\"HS256\"}";
     assert_eq!(expected_header, decoded_header_string);
 
     let encoded_payload = &jwt[(first_dot_index + 1)..last_dot_index];
-    let decoded_payload = base64::decode(encoded_payload).expect("Can't decode Base64");
+    let decoded_payload = base64_engine
+        .decode(encoded_payload)
+        .expect("Can't decode Base64");
     let decoded_payload_string = str::from_utf8(&decoded_payload).expect("Can't convert to str");
     let claims: Claims =
         serde_json::from_str(decoded_payload_string).expect("Can't deserialize claims");
