@@ -98,23 +98,23 @@ services:
       start_period: 10s
       retries: 3
 
-  apollo-router:
-    image: kudryashovroman/graphql-rust:apollo-router
-    container_name: apollo-router
+  gateway:
+    image: kudryashovroman/graphql-rust:gateway
+    container_name: gateway
     restart: always
     depends_on:
       - planets-service
       - satellites-service
       - auth-service
     environment:
-      APOLLO_ROUTER_SUPERGRAPH_PATH: /apollo-router/schema/supergraph.graphql
-      APOLLO_ROUTER_CONFIG_PATH: /apollo-router/config/router.yaml
+      APOLLO_ROUTER_SUPERGRAPH_PATH: /gateway/schema/supergraph.graphql
+      APOLLO_ROUTER_CONFIG_PATH: /gateway/config/router.yaml
       APOLLO_ROUTER_LOG: debug
       APOLLO_TELEMETRY_DISABLED: 1
       JWT_SECRET_KEY: $JWT_SECRET_KEY
     volumes:
-      - ./apollo-router/supergraph.graphql:/apollo-router/schema/supergraph.graphql
-      - ./apollo-router/router.yaml:/apollo-router/config/router.yaml
+      - ./gateway/supergraph.graphql:/gateway/schema/supergraph.graphql
+      - ./gateway/router.yaml:/gateway/config/router.yaml
     ports:
       - 4000:4000
 

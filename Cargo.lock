@@ -375,26 +375,6 @@ dependencies = [
 
 [[package]]
 name = "apollo-router"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "apollo-router 1.13.0",
- "async-trait",
- "common-utils",
- "dotenv",
- "futures 0.3.27",
- "http",
- "jsonwebtoken",
- "schemars",
- "serde",
- "serde_json",
- "tokio",
- "tower",
- "tracing",
-]
-
-[[package]]
-name = "apollo-router"
 version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "76f64c1d015c74c6185ee0146505c0e7974b582f65483c7c3924c5419cf4cd11"
@@ -2077,6 +2057,26 @@ dependencies = [
  "pin-project-lite",
  "pin-utils",
  "slab",
+]
+
+[[package]]
+name = "gateway"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "apollo-router",
+ "async-trait",
+ "common-utils",
+ "dotenv",
+ "futures 0.3.27",
+ "http",
+ "jsonwebtoken",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tower",
+ "tracing",
 ]
 
 [[package]]

@@ -89,7 +89,7 @@ jobs:
           push: ${{ github.event_name == 'push' }}
           tags: kudryashovroman/graphql-rust:satellites-service
 
-  apollo-router-image:
+  gateway-image:
     needs: test-rust-services
     runs-on: ubuntu-latest
     steps:
@@ -106,6 +106,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: ./apollo-router/Dockerfile
+          file: ./gateway/Dockerfile
           push: ${{ github.event_name == 'push' }}
-          tags: kudryashovroman/graphql-rust:apollo-router
+          tags: kudryashovroman/graphql-rust:gateway

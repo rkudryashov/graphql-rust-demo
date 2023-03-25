@@ -17,7 +17,7 @@ services:
       context: .
       dockerfile: ./auth-service/Dockerfile
 
-  apollo-router:
+  gateway:
     build:
       context: .
-      dockerfile: ./apollo-router/Dockerfile
+      dockerfile: ./gateway/Dockerfile
