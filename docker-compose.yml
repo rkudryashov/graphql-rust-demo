@@ -110,7 +110,7 @@ services:
       APOLLO_ROUTER_SUPERGRAPH_PATH: /gateway/schema/supergraph.graphql
       APOLLO_ROUTER_CONFIG_PATH: /gateway/config/router.yaml
       APOLLO_ROUTER_LOG: debug
-      APOLLO_TELEMETRY_DISABLED: 1
+      APOLLO_TELEMETRY_DISABLED: true
       JWT_SECRET_KEY: $JWT_SECRET_KEY
     volumes:
       - ./gateway/supergraph.graphql:/gateway/schema/supergraph.graphql

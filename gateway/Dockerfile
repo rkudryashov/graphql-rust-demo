@@ -1,8 +1,7 @@
 FROM rust:1.68.1 as builder
 
 ENV CARGO_TERM_COLOR always
-RUN rustup component add rustfmt
-RUN apt-get update && apt-get install -y npm protobuf-compiler
+RUN apt-get update && apt-get install -y protobuf-compiler
 
 WORKDIR /usr/src/docker-build
 # create empty project for caching dependencies
