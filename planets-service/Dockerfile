@@ -1,4 +1,4 @@
-FROM rust:1.68.1 as builder
+FROM rust:1.69.0 as builder
 
 ENV CARGO_TERM_COLOR always
 RUN apt-get update && apt-get install -y libpq-dev cmake
