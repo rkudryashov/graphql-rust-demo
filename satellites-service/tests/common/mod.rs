@@ -22,7 +22,7 @@ fn setup_database(docker: &Cli) -> Container<Postgres> {
     env::set_var(
         "DATABASE_URL",
         format!(
-            "postgres://postgres:password@localhost:{}/satellites-db",
+            "postgres://postgres:password@localhost:{}/satellites",
             pg_port
         ),
     );
@@ -31,6 +31,6 @@ fn setup_database(docker: &Cli) -> Container<Postgres> {
 
 fn get_pg_image() -> RunnableImage<Postgres> {
     RunnableImage::from(Postgres::default())
-        .with_env_var(("POSTGRES_DB", "satellites-db"))
+        .with_env_var(("POSTGRES_DB", "satellites"))
         .with_env_var(("POSTGRES_PASSWORD", "password"))
 }

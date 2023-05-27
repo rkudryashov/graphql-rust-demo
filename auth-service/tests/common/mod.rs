@@ -21,16 +21,13 @@ fn setup_database(docker: &Cli) -> Container<Postgres> {
     let pg_port = pg_container.get_host_port_ipv4(5432);
     env::set_var(
         "DATABASE_URL",
-        format!(
-            "postgres://postgres:password@localhost:{}/users-db",
-            pg_port
-        ),
+        format!("postgres://postgres:password@localhost:{}/users", pg_port),
     );
     pg_container
 }
 
 fn get_pg_image() -> RunnableImage<Postgres> {
     RunnableImage::from(Postgres::default())
-        .with_env_var(("POSTGRES_DB", "users-db"))
+        .with_env_var(("POSTGRES_DB", "users"))
         .with_env_var(("POSTGRES_PASSWORD", "password"))
 }
