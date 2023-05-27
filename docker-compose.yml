@@ -9,16 +9,17 @@ services:
     depends_on:
       - planets-db
     environment:
+      SERVER_PORT: 8080
       DATABASE_URL: postgres://postgres:$PLANETS_DB_PASSWORD@planets-db/planets
       KAFKA_BROKER: kafka:9092
       KAFKA_TOPIC: $KAFKA_TOPIC
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8001/" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8080/" ]
       interval: 10s
       timeout: 3s
       retries: 3
     ports:
-      - 8001:8001
+      - "8001:8080"
   planets-db:
     image: postgres:15.1-alpine
     container_name: planets-db
@@ -42,14 +43,15 @@ services:
     depends_on:
       - satellites-db
     environment:
+      SERVER_PORT: 8080
       DATABASE_URL: postgres://postgres:$SATELLITES_DB_PASSWORD@satellites-db/satellites
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8002/" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8080/" ]
       interval: 10s
       timeout: 3s
       retries: 3
     ports:
-      - 8002:8002
+      - "8002:8080"
   satellites-db:
     image: postgres:15.1-alpine
     container_name: satellites-db
@@ -73,15 +75,16 @@ services:
     depends_on:
       - users-db
     environment:
+      SERVER_PORT: 8080
       DATABASE_URL: postgres://postgres:$USERS_DB_PASSWORD@users-db/users
       JWT_SECRET_KEY: $JWT_SECRET_KEY
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8003/" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8080/" ]
       interval: 10s
       timeout: 3s
       retries: 3
     ports:
-      - 8003:8003
+      - "8003:8080"
   users-db:
     image: postgres:15.1-alpine
     container_name: users-db
@@ -115,7 +118,7 @@ services:
       - ./gateway/supergraph.graphql:/gateway/schema/supergraph.graphql
       - ./gateway/router.yaml:/gateway/config/router.yaml
     ports:
-      - 4000:4000
+      - "4000:4000"
 
   zookeeper:
     image: wurstmeister/zookeeper
@@ -127,7 +130,7 @@ services:
       timeout: 3s
       retries: 3
     ports:
-      - 2181:2181
+      - "2181:2181"
 
   kafka:
     image: wurstmeister/kafka
@@ -140,4 +143,4 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_CREATE_TOPICS: "$KAFKA_TOPIC:1:1"
     ports:
-      - 9092:9092
+      - "9092:9092"

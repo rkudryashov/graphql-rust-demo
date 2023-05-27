@@ -1,6 +1,5 @@
 //! DISCLAIMER:
 //! This is an example for only illustrative purposes. It demonstrates how to perform JWT verification via a router plugin
-
 use std::ops::ControlFlow;
 
 use apollo_router::{

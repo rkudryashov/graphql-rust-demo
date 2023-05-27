@@ -2,14 +2,14 @@ federation_version: =2.3.2
 
 subgraphs:
   planets-service:
-    routing_url: http://planets-service:8001
+    routing_url: http://planets-service:8080
     schema:
       subgraph_url: http://localhost:8001
   satellites-service:
-    routing_url: http://satellites-service:8002
+    routing_url: http://satellites-service:8080
     schema:
       subgraph_url: http://localhost:8002
   auth-service:
-    routing_url: http://auth-service:8003
+    routing_url: http://auth-service:8080
     schema:
       subgraph_url: http://localhost:8003
