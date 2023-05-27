@@ -33,6 +33,8 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 3
+    ports:
+      - "5491:5432"
 
   # Satellites service
   satellites-service:
@@ -64,6 +66,8 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 3
+    ports:
+      - "5492:5432"
 
   # Auth service
   auth-service:
@@ -96,6 +100,8 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 3
+    ports:
+      - "5493:5432"
 
   gateway:
     image: kudryashovroman/graphql-rust:gateway
