@@ -14,9 +14,8 @@ services:
       KAFKA_TOPIC: $KAFKA_TOPIC
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8001/" ]
-      interval: 1m
+      interval: 10s
       timeout: 3s
-      start_period: 10s
       retries: 3
     ports:
       - 8001:8001
@@ -29,9 +28,8 @@ services:
       POSTGRES_PASSWORD: $PLANETS_DB_PASSWORD
     healthcheck:
       test: "pg_isready -U postgres -d planets"
-      interval: 1m
-      timeout: 5s
-      start_period: 10s
+      interval: 10s
+      timeout: 3s
       retries: 3
     ports:
       - "5491:5432"
@@ -47,9 +45,8 @@ services:
       DATABASE_URL: postgres://postgres:$SATELLITES_DB_PASSWORD@satellites-db/satellites
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8002/" ]
-      interval: 1m
+      interval: 10s
       timeout: 3s
-      start_period: 10s
       retries: 3
     ports:
       - 8002:8002
@@ -62,9 +59,8 @@ services:
       POSTGRES_PASSWORD: $SATELLITES_DB_PASSWORD
     healthcheck:
       test: "pg_isready -U postgres -d satellites"
-      interval: 1m
-      timeout: 5s
-      start_period: 10s
+      interval: 10s
+      timeout: 3s
       retries: 3
     ports:
       - "5492:5432"
@@ -81,9 +77,8 @@ services:
       JWT_SECRET_KEY: $JWT_SECRET_KEY
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8003/" ]
-      interval: 1m
+      interval: 10s
       timeout: 3s
-      start_period: 10s
       retries: 3
     ports:
       - 8003:8003
@@ -96,9 +91,8 @@ services:
       POSTGRES_PASSWORD: $USERS_DB_PASSWORD
     healthcheck:
       test: "pg_isready -U postgres -d users"
-      interval: 1m
-      timeout: 5s
-      start_period: 10s
+      interval: 10s
+      timeout: 3s
       retries: 3
     ports:
       - "5493:5432"
@@ -129,10 +123,9 @@ services:
     restart: always
     healthcheck:
       test: [ "CMD", "nc", "-vz", "localhost", "2181" ]
-      interval: 1m30s
-      timeout: 10s
+      interval: 10s
+      timeout: 3s
       retries: 3
-      start_period: 10s
     ports:
       - 2181:2181
 
