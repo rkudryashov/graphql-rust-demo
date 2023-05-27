@@ -74,7 +74,6 @@ services:
       - users-db
     environment:
       DATABASE_URL: postgres://postgres:$USERS_DB_PASSWORD@users-db/users
-      PASSWORD_SECRET_KEY: $PASSWORD_SECRET_KEY
       JWT_SECRET_KEY: $JWT_SECRET_KEY
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8003/" ]

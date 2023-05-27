@@ -1,1 +1,1 @@
-insert into users(username, hash, first_name, last_name, role) values ('john_doe', '$argon2id$v=19$m=4096,t=192,p=4$NEWWvndJryPwSgvsuF23RjCDcLclz1uZLN3bSqy1SF0$kFfrW7jHZfGU0rxSscBIjAbHND45bViJYdXlrCzu7T4', 'John', 'Doe', 'ADMIN');
+insert into users(username, hash, first_name, last_name, role) values ('john_doe', '$argon2id$v=19$m=19456,t=2,p=1$X0Dkt0r0KkQOP5vk0lX5Og$6+3QHJLT3lqMzXBC8SvHpd/PMt2hTMyCuYQNBVRdAD8', 'John', 'Doe', 'ADMIN');

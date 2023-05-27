@@ -1,7 +1,7 @@
 FROM rust:1.69.0 as builder
 
 ENV CARGO_TERM_COLOR always
-RUN apt-get update && apt-get install -y libpq-dev clang
+RUN apt-get update && apt-get install -y libpq-dev
 
 WORKDIR /usr/src/docker-build
 # create empty project for caching dependencies

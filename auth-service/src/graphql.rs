@@ -47,14 +47,10 @@ impl Mutation {
 
     async fn sign_in(&self, ctx: &Context<'_>, input: SignInInput) -> Result<String> {
         let user = repository::get_user(&input.username, &mut get_conn_from_ctx(ctx))?;
-
-        if verify_password(&user.hash, &input.password)? {
-            let role = AuthRole::from_str(user.role.as_str())?;
-            let new_token = create_jwt_token(user.username, role, &get_jwt_secret_key())?;
-            Ok(new_token)
-        } else {
-            Err("Can't authenticate a user".into())
-        }
+        verify_password(&user.hash, &input.password)?;
+        let role = AuthRole::from_str(user.role.as_str())?;
+        let new_token = create_jwt_token(user.username, role, &get_jwt_secret_key())?;
+        Ok(new_token)
     }
 }
 

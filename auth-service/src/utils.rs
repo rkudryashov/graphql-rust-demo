@@ -1,6 +1,13 @@
 // WARNING: THIS IS ONLY FOR DEMO! PLEASE DO MORE RESEARCH FOR PRODUCTION USE.
+use std::str;
+
 use actix_web::Result;
-use argonautica::{Error, Hasher, Verifier};
+use argon2::{
+    password_hash::{
+        rand_core::OsRng, Error, PasswordHash, PasswordHasher, PasswordVerifier, SaltString,
+    },
+    Argon2,
+};
 use chrono::{Duration, Local};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use lazy_static::lazy_static;
@@ -10,25 +17,22 @@ use common_utils::Claims;
 use crate::AuthRole;
 
 lazy_static! {
-    static ref PASSWORD_SECRET_KEY: String =
-        std::env::var("PASSWORD_SECRET_KEY").expect("Can't read PASSWORD_SECRET_KEY");
     static ref JWT_SECRET_KEY: String =
         std::env::var("JWT_SECRET_KEY").expect("Can't read JWT_SECRET_KEY");
 }
 
 pub fn hash_password(password: &str) -> Result<String, Error> {
-    Hasher::default()
-        .with_password(password)
-        .with_secret_key(PASSWORD_SECRET_KEY.as_str())
-        .hash()
+    let salt = SaltString::generate(&mut OsRng);
+    let argon2 = Argon2::default();
+    let password_hash_string = argon2
+        .hash_password(password.as_bytes(), &salt)?
+        .to_string();
+    Ok(password_hash_string)
 }
 
-pub fn verify_password(hash: &str, password: &str) -> Result<bool, Error> {
-    Verifier::default()
-        .with_hash(hash)
-        .with_password(password)
-        .with_secret_key(PASSWORD_SECRET_KEY.as_str())
-        .verify()
+pub fn verify_password(password_hash_string: &str, input_password: &str) -> Result<(), Error> {
+    let parsed_hash = PasswordHash::new(&password_hash_string)?;
+    Argon2::default().verify_password(input_password.as_bytes(), &parsed_hash)
 }
 
 pub fn get_jwt_secret_key() -> String {
