@@ -115,7 +115,7 @@ async fn test_sign_in_fails() {
     .expect("Can't get error message")
     .to_string();
 
-    assert_eq!("Can't authenticate a user", error_message);
+    assert_eq!("invalid password", error_message);
 }
 
 #[derive(Serialize)]
