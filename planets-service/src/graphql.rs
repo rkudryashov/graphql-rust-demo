@@ -176,8 +176,8 @@ enum PlanetType {
 
 #[derive(Interface, Clone)]
 #[graphql(
-    field(name = "mean_radius", type = "&CustomBigDecimal"),
-    field(name = "mass", type = "&CustomBigInt")
+    field(name = "mean_radius", ty = "&CustomBigDecimal"),
+    field(name = "mass", ty = "&CustomBigInt")
 )]
 pub enum Details {
     InhabitedPlanetDetails(InhabitedPlanetDetails),
