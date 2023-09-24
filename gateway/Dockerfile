@@ -1,7 +1,7 @@
-FROM rust:1.71.0 as builder
+FROM rust:1.72.1 as builder
 
 ENV CARGO_TERM_COLOR always
-RUN apt-get update && apt-get install -y protobuf-compiler
+RUN apt-get update && apt-get install -y protobuf-compiler cmake
 
 WORKDIR /usr/src/docker-build
 # create empty project for caching dependencies

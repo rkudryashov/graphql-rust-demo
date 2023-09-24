@@ -1,4 +1,4 @@
-FROM rust:1.71.0 as builder
+FROM rust:1.72.1 as builder
 
 ENV CARGO_TERM_COLOR always
 RUN apt-get update && apt-get install -y libpq-dev
