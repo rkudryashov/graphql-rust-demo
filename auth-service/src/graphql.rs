@@ -105,7 +105,6 @@ impl RoleGuard {
     }
 }
 
-#[async_trait::async_trait]
 impl Guard for RoleGuard {
     async fn check(&self, ctx: &Context<'_>) -> Result<()> {
         let maybe_getting_role_result = ctx.data_opt::<Result<Option<AuthRole>, CustomError>>();

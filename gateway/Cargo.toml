@@ -6,16 +6,16 @@ edition = "2021"
 
 [dependencies]
 common-utils = { path = "../common-utils" }
-apollo-router = "1.30.1"
-anyhow = "1.0.75"
-async-trait = "0.1.73"
-futures = "0.3.28"
-schemars = "0.8.15"
-jsonwebtoken = "8.3.0"
-serde = "1.0.188"
-serde_json = "1.0.107"
-tokio = { version = "1.32.0", features = ["full"] }
+apollo-router = "1.46.0"
+anyhow = "1.0.85"
+async-trait = "0.1.80"
+futures = "0.3.30"
+schemars = "0.8.19"
+jsonwebtoken = "9.3.0"
+serde = "1.0.202"
+serde_json = "1.0.117"
+tokio = { version = "1.37.0", features = ["full"] }
 tower = { version = "0.4.13", features = ["full"] }
-tracing = "0.1.37"
-http = "0.2.9"
+tracing = "0.1.40"
+http = "1.1.0"
 dotenv = "0.15.0"

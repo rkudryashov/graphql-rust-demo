@@ -303,7 +303,6 @@ pub struct DetailsLoader {
     pub pool: Arc<PgPool>,
 }
 
-#[async_trait::async_trait]
 impl Loader<i32> for DetailsLoader {
     type Value = Details;
     type Error = Error;
@@ -329,7 +328,6 @@ impl RoleGuard {
     }
 }
 
-#[async_trait::async_trait]
 impl Guard for RoleGuard {
     async fn check(&self, ctx: &Context<'_>) -> Result<()> {
         // TODO: auth disabling is needed for tests. try to reimplement when https://github.com/rust-lang/rust/issues/45599 will be resolved (using cfg(test))

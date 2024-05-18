@@ -57,20 +57,24 @@ impl Plugin for JwtValidation {
                         .extension_code("AUTH_ERROR")
                         .build(),
                 )
-                .status_code(status)
+                // TODO: don't know why by the commented line doesn't compile
+                // .status_code(Some(status))
                 .context(context)
                 .build()?;
             Ok(ControlFlow::Break(response))
         }
 
         let handler = move |request: supergraph::Request| {
-            let auth_header_value_result =
-                match request.supergraph_request.headers().get(AUTHORIZATION) {
-                    Some(auth_header_value) => auth_header_value.to_str(),
-                    // in this project, I decided to allow the passage of requests without the AUTHORIZATION header. then each subgraph performs authorization based on the ROLE header
-                    // your case may be different. be careful
-                    None => return Ok(ControlFlow::Continue(request)),
-                };
+            let auth_header_value_result = match request
+                .supergraph_request
+                .headers()
+                .get(AUTHORIZATION.as_str())
+            {
+                Some(auth_header_value) => auth_header_value.to_str(),
+                // in this project, I decided to allow the passage of requests without the AUTHORIZATION header. then each subgraph performs authorization based on the ROLE header
+                // your case may be different. be careful
+                None => return Ok(ControlFlow::Continue(request)),
+            };
 
             let auth_header_value_untrimmed = match auth_header_value_result {
                 Ok(auth_header_value) => auth_header_value,
